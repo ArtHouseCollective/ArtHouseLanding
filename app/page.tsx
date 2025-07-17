@@ -299,46 +299,64 @@ export default function Page() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Feature 1: Curated Onboarding */}
-            <div className="relative flex flex-col items-center justify-center p-6 bg-zinc-900/50 rounded-lg border border-zinc-700/50 backdrop-blur-sm mx-auto w-[70vw] max-w-[256px] h-[70vw] max-h-[256px] overflow-hidden">
-              <img
-                src="/assets/icons/cards 2.png"
-                alt="Curated Onboarding"
-                className="absolute inset-0 w-full h-full object-cover opacity-20"
-              />
-              <div className="relative z-10 flex flex-col items-center text-center">
-                <h3 className="text-xl font-semibold text-white mb-2">Curated Onboarding</h3>
-                <p className="text-zinc-400 text-center">
-                  Every member is handpicked or verified. No followers. Just professional collaborators.
-                </p>
+            <div className="flex flex-col items-center">
+              {" "}
+              {/* Add a wrapper div for title and card */}
+              <h3 className="text-xl font-semibold text-white mb-4">Curated Onboarding</h3> {/* Moved title */}
+              <div className="relative flex flex-col items-center justify-center p-6 bg-zinc-950/70 rounded-lg border border-zinc-700/50 backdrop-blur-sm mx-auto w-[70vw] max-w-[256px] h-[70vw] max-h-[256px] overflow-hidden">
+                <img
+                  src="/assets/icons/cards 2.png"
+                  alt="Curated Onboarding"
+                  className="absolute inset-0 w-full h-full object-cover opacity-40"
+                />
+                <div className="relative z-10 flex flex-col items-center text-center">
+                  <p className="text-white text-center">
+                    {" "}
+                    {/* Changed text color */}
+                    Every member is handpicked or verified. No followers. Just professional collaborators.
+                  </p>
+                </div>
               </div>
             </div>
             {/* Feature 2: Swipe by Style */}
-            <div className="relative flex flex-col items-center justify-center p-6 bg-zinc-900/50 rounded-lg border border-zinc-700/50 backdrop-blur-sm mx-auto w-[70vw] max-w-[256px] h-[70vw] max-h-[256px] overflow-hidden">
-              <img
-                src="/assets/icons/resonance.png"
-                alt="Swipe by Style"
-                className="absolute inset-0 w-full h-full object-cover opacity-20"
-              />
-              <div className="relative z-10 flex flex-col items-center text-center">
-                <h3 className="text-xl font-semibold text-white mb-2">Swipe by Style</h3>
-                <p className="text-zinc-400 text-center">
-                  Match with actors, directors, writers, musicians based on genre, portfolio, and vibe.
-                </p>
+            <div className="flex flex-col items-center">
+              {" "}
+              {/* Add a wrapper div for title and card */}
+              <h3 className="text-xl font-semibold text-white mb-4">Swipe by Style</h3> {/* Moved title */}
+              <div className="relative flex flex-col items-center justify-center p-6 bg-zinc-950/70 rounded-lg border border-zinc-700/50 backdrop-blur-sm mx-auto w-[70vw] max-w-[256px] h-[70vw] max-h-[256px] overflow-hidden">
+                <img
+                  src="/assets/icons/resonance.png"
+                  alt="Swipe by Style"
+                  className="absolute inset-0 w-full h-full object-cover opacity-40"
+                />
+                <div className="relative z-10 flex flex-col items-center text-center">
+                  <p className="text-white text-center">
+                    {" "}
+                    {/* Changed text color */}
+                    Match with actors, directors, writers, musicians based on genre, portfolio, and vibe.
+                  </p>
+                </div>
               </div>
             </div>
             {/* Feature 3: Join Collectives */}
-            <div className="relative flex flex-col items-center justify-center p-6 bg-zinc-900/50 rounded-lg border border-zinc-700/50 backdrop-blur-sm mx-auto w-[70vw] max-w-[256px] h-[70vw] max-h-[256px] overflow-hidden">
-              <img
-                src="/assets/icons/collective.png"
-                alt="Join Collectives"
-                className="absolute inset-0 w-full h-full object-cover opacity-20"
-              />
-              <div className="relative z-10 flex flex-col items-center text-center">
-                <h3 className="text-xl font-semibold text-white mb-2">Join Collectives</h3>
-                <p className="text-zinc-400 text-center">
-                  Join local or international groups based on shared interests. Create your own communities to build
-                  your creative network.
-                </p>
+            <div className="flex flex-col items-center">
+              {" "}
+              {/* Add a wrapper div for title and card */}
+              <h3 className="text-xl font-semibold text-white mb-4">Join Collectives</h3> {/* Moved title */}
+              <div className="relative flex flex-col items-center justify-center p-6 bg-zinc-950/70 rounded-lg border border-zinc-700/50 backdrop-blur-sm mx-auto w-[70vw] max-w-[256px] h-[70vw] max-h-[256px] overflow-hidden">
+                <img
+                  src="/assets/icons/collective.png"
+                  alt="Join Collectives"
+                  className="absolute inset-0 w-full h-full object-cover opacity-40"
+                />
+                <div className="relative z-10 flex flex-col items-center text-center">
+                  <p className="text-white text-center">
+                    {" "}
+                    {/* Changed text color */}
+                    Join local or international groups based on shared interests. Create your own communities to build
+                    your creative network.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
