@@ -318,7 +318,7 @@ export default function Page() {
                   </div>
                   <div className="flex-none p-6 flex items-center justify-center text-center bg-zinc-900/70 border-t border-zinc-700 w-full">
                     <p className="text-white text-center">
-                      Every member is handpicked or verified. No followers. Just professional collaborators.
+                      Every member is handpicked and verified. No followers. Just professional collaborators.
                     </p>
                   </div>
                 </div>
@@ -343,7 +343,7 @@ export default function Page() {
                   </div>
                   <div className="flex-none p-6 flex items-center justify-center text-center bg-zinc-900/70 border-t border-zinc-700 w-full">
                     <p className="text-white text-center">
-                      Match with actors, directors, writers, musicians based on genre, portfolio, and vibe.
+                      Match with artists based on genre, portfolio, and vibe.
                     </p>
                   </div>
                 </div>
@@ -368,8 +368,7 @@ export default function Page() {
                   </div>
                   <div className="flex-none p-6 flex items-center justify-center text-center bg-zinc-900/70 border-t border-zinc-700 w-full">
                     <p className="text-white text-center">
-                      Join local or international groups based on shared interests. Create your own communities to build
-                      your creative network.
+                      Join collectives based on shared interests. Create your own communities to build.
                     </p>
                   </div>
                 </div>
