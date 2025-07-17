@@ -1,4 +1,5 @@
 "use client"
+
 import * as React from "react"
 import { Drawer as DrawerPrimitive } from "vaul"
 
@@ -70,7 +71,7 @@ const DrawerDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DrawerPrimitive.Description ref={ref} className={cn("text-sm text-muted-foreground", className)} {...props} />
 ))
-DrawerDescription.displayName = DrawerPrimitive.Description.displayName
+DrawerDescription.displayName = "DrawerDescription"
 
 export {
   Drawer,

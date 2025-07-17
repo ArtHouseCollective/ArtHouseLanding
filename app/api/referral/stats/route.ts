@@ -1,33 +1,29 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getFirestore } from "firebase-admin/firestore"
-import { initializeApp, cert, getApps } from "firebase-admin/app"
+import { initializeFirebaseAdmin } from "@/lib/firebase-admin"
+import { FOUNDERS_CIRCLE_CAP, FOUNDERS_CIRCLE_FILLED } from "@/lib/constants"
 
-const serviceAccount = {
-  projectId: process.env.FIREBASE_PROJECT_ID,
-  clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-  privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
-}
-
-if (!getApps().length) {
-  initializeApp({
-    credential: cert(serviceAccount),
-  })
-}
-
-const db = getFirestore()
+initializeFirebaseAdmin()
 
 export async function GET(req: NextRequest) {
   try {
-    const snapshot = await db.collection("referrals").get()
-    let totalReferrals = 0
-    snapshot.forEach((doc) => {
-      const data = doc.data()
-      totalReferrals += data.count || 0
-    })
+    const db = getFirestore()
+    const statsDoc = await db.collection("stats").doc("foundersCircle").get()
 
-    return NextResponse.json({ totalReferrals })
+    if (!statsDoc.exists) {
+      return NextResponse.json({
+        foundersCircleFilled: FOUNDERS_CIRCLE_FILLED,
+        foundersCircleCap: FOUNDERS_CIRCLE_CAP,
+      })
+    }
+
+    const data = statsDoc.data()
+    return NextResponse.json({
+      foundersCircleFilled: data?.filled || FOUNDERS_CIRCLE_FILLED,
+      foundersCircleCap: data?.cap || FOUNDERS_CIRCLE_CAP,
+    })
   } catch (error) {
-    console.error("Error fetching referral stats:", error)
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+    console.error("Error fetching founders circle stats:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

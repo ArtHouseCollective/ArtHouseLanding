@@ -1,42 +1,60 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getFirestore } from "firebase-admin/firestore"
-import { initializeApp, cert, getApps } from "firebase-admin/app"
+import { initializeFirebaseAdmin } from "@/lib/firebase-admin"
+import { generateReferralCode } from "@/lib/referral"
 
-const serviceAccount = {
-  projectId: process.env.FIREBASE_PROJECT_ID,
-  clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-  privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
-}
-
-if (!getApps().length) {
-  initializeApp({
-    credential: cert(serviceAccount),
-  })
-}
-
-const db = getFirestore()
+initializeFirebaseAdmin()
 
 export async function POST(req: NextRequest) {
-  const { email, referralCode } = await req.json()
+  const { email, referralCode: incomingReferralCode } = await req.json()
 
-  if (!email || !referralCode) {
-    return NextResponse.json({ error: "Email and referralCode are required" }, { status: 400 })
+  if (!email) {
+    return NextResponse.json({ error: "Email is required" }, { status: 400 })
   }
 
   try {
-    const docRef = db.collection("referrals").doc(email)
-    await docRef.set(
-      {
-        referralCode: referralCode,
-        count: 0, // Initialize count for the new referrer
-        createdAt: new Date().toISOString(),
-      },
-      { merge: true },
-    )
+    const db = getFirestore()
 
-    return NextResponse.json({ message: "Referral signup successful" })
+    // Check if user already exists
+    const userDoc = await db.collection("users").doc(email).get()
+    if (userDoc.exists) {
+      return NextResponse.json({ message: "User already signed up" }, { status: 200 })
+    }
+
+    // Generate a new referral code for the new user
+    const newReferralCode = generateReferralCode()
+
+    // Create new user entry
+    await db
+      .collection("users")
+      .doc(email)
+      .set({
+        email,
+        referralCode: newReferralCode,
+        signedUpAt: new Date().toISOString(),
+        invitedBy: incomingReferralCode || null,
+      })
+
+    // Increment signups for the incoming referral code, if present
+    if (incomingReferralCode) {
+      const referralRef = db.collection("referrals").doc(incomingReferralCode)
+      await referralRef.update({
+        signups: getFirestore.FieldValue.increment(1),
+      })
+    }
+
+    // Increment total founders circle filled spots
+    const statsRef = db.collection("stats").doc("foundersCircle")
+    await statsRef.update({
+      filled: getFirestore.FieldValue.increment(1),
+    })
+
+    return NextResponse.json({
+      message: "Successfully signed up and generated referral code",
+      referralCode: newReferralCode,
+    })
   } catch (error) {
     console.error("Error during referral signup:", error)
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

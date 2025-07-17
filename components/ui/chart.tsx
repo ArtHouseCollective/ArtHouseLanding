@@ -14,10 +14,7 @@ import {
   Area,
   AreaChart,
 } from "recharts"
-import {
-  ChartContainer as RechartsChartContainer,
-  type ChartContainerProps as RechartsChartContainerProps,
-} from "@tremor/react"
+import { cn } from "@/lib/utils"
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
@@ -40,7 +37,7 @@ function getChartType(data: any[], dataKeys: string[]) {
   return "line" // Default to line for multi-series or time-series like data
 }
 
-interface ChartProps extends RechartsChartContainerProps {
+interface ChartProps {
   data: Record<string, any>[]
   dataKeys: string[]
   chartType?: "line" | "bar" | "pie" | "radial" | "area"
@@ -212,9 +209,16 @@ const Chart: React.FC<ChartProps> = ({
           </SelectContent>
         </Select>
       )}
-      <RechartsChartContainer {...props}>{children || renderChart()}</RechartsChartContainer>
+      <div className={cn("flex aspect-video justify-center text-tremor-content")}>{children || renderChart()}</div>
     </div>
   )
 }
 
-export { Chart }
+const ChartContainer = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+  ({ className, ...props }, ref) => (
+    <div ref={ref} className={cn("flex aspect-video justify-center text-tremor-content", className)} {...props} />
+  ),
+)
+ChartContainer.displayName = "ChartContainer"
+
+export { Chart, ChartContainer }

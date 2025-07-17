@@ -132,18 +132,15 @@ const SidebarProvider = React.forwardRef<
 SidebarProvider.displayName = "SidebarProvider"
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
-  items: {
-    href: string
-    title: string
-    icon: React.ReactNode
-  }[]
-  links: {
-    title: string
-    label?: string
-    icon: React.ElementType
-    href: string
-  }[]
-  isCollapsed: boolean
+  children?: React.ReactNode
+}
+
+export function Sidebar({ className, children, ...props }: SidebarProps) {
+  return (
+    <div className={cn("flex h-full flex-col", className)} {...props}>
+      {children}
+    </div>
+  )
 }
 
 const SidebarComponent = React.forwardRef<

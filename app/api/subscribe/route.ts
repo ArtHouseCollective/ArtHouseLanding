@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
   const BEEHIIV_PUBLICATION_ID = process.env.BEEHIIV_PUBLICATION_ID
 
   if (!BEEHIIV_API_KEY || !BEEHIIV_PUBLICATION_ID) {
-    console.error("Beehiiv API key or Publication ID is not set.")
+    console.error("Beehiiv API key or Publication ID not set.")
     return NextResponse.json({ error: "Server configuration error" }, { status: 500 })
   }
 
@@ -24,23 +24,21 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         email,
+        utm_source: "arthouse_landing_page",
         send_welcome_email: true,
-        utm_source: "ArtHouseLandingPage",
-        utm_medium: "website",
-        utm_campaign: "early_access",
       }),
     })
 
-    const data = await response.json()
-
     if (!response.ok) {
-      console.error("Beehiiv API error:", data)
-      return NextResponse.json({ error: data.message || "Failed to subscribe" }, { status: response.status })
+      const errorData = await response.json()
+      console.error("Beehiiv subscription error:", errorData)
+      return NextResponse.json({ error: errorData.message || "Failed to subscribe" }, { status: response.status })
     }
 
+    const data = await response.json()
     return NextResponse.json({ message: "Subscription successful", data })
   } catch (error) {
     console.error("Error subscribing to Beehiiv:", error)
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
