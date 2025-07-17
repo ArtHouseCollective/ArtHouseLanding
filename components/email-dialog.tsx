@@ -1,95 +1,159 @@
 "use client"
 
-import { useState, type FormEvent } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { useToast } from "@/components/ui/use-toast"
+import { CopyIcon } from "lucide-react"
 
 interface EmailDialogProps {
-  isOpen: boolean
-  onClose: () => void
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  initialEmail: string
 }
 
-export function EmailDialog({ isOpen, onClose }: EmailDialogProps) {
-  const [email, setEmail] = useState("")
-  const [isSubmitted, setIsSubmitted] = useState(false)
+export function EmailDialog({ open, onOpenChange, initialEmail }: EmailDialogProps) {
+  const [email, setEmail] = useState(initialEmail)
+  const [referralCode, setReferralCode] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState("")
+  const { toast } = useToast()
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+  const handleRequestInvite = async () => {
     setIsLoading(true)
-    setError("")
-
     try {
-      const response = await fetch("/api/subscribe", {
+      // Subscribe to Beehiiv
+      const subscribeResponse = await fetch("/api/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       })
 
-      const data = await response.json()
-
-      if (response.ok) {
-        setIsSubmitted(true)
-      } else {
-        setError(data.error || "Something went wrong. Please try again.")
+      if (!subscribeResponse.ok) {
+        const errorData = await subscribeResponse.json()
+        throw new Error(errorData.message || "Failed to subscribe to newsletter.")
       }
-    } catch (err) {
-      setError("Network error. Please try again.")
+
+      // Generate referral code
+      const referralResponse = await fetch("/api/referral", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      })
+
+      if (!referralResponse.ok) {
+        const errorData = await referralResponse.json()
+        throw new Error(errorData.message || "Failed to generate referral code.")
+      }
+
+      const { referralCode: newReferralCode } = await referralResponse.json()
+      setReferralCode(newReferralCode)
+
+      toast({
+        title: "Success!",
+        description: "You've successfully requested early access. Share your referral code!",
+        className: "bg-green-500 text-white",
+      })
+    } catch (error: any) {
+      console.error("Error during invite request:", error)
+      toast({
+        title: "Error",
+        description: error.message || "Something went wrong. Please try again.",
+        variant: "destructive",
+      })
     } finally {
       setIsLoading(false)
     }
   }
 
+  const handleCopyReferralCode = () => {
+    if (referralCode) {
+      navigator.clipboard.writeText(`${window.location.origin}?ref=${referralCode}`)
+      toast({
+        title: "Copied!",
+        description: "Referral link copied to clipboard.",
+      })
+    }
+  }
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] bg-zinc-900 text-white border-zinc-700">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[425px] bg-gray-900 text-white border-gray-700">
         <DialogHeader>
-          <DialogTitle className="text-white">Apply for Early Access</DialogTitle>
-          <DialogDescription className="text-zinc-400">
-            Enter your email to request an invite to ArtHouse.
+          <DialogTitle className="text-yellow-400">
+            {referralCode ? "Your Early Access Link" : "Request Early Access"}
+          </DialogTitle>
+          <DialogDescription className="text-gray-300">
+            {referralCode
+              ? "Share this link with your friends to help them skip the waitlist!"
+              : "Enter your email to join the waitlist and get early access."}
           </DialogDescription>
         </DialogHeader>
-        {!isSubmitted ? (
-          <form onSubmit={handleSubmit} className="space-y-4 py-4">
+        <div className="grid gap-4 py-4">
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="email" className="text-right text-gray-200">
+              Email
+            </Label>
             <Input
-              type="email"
-              placeholder="Your email address"
+              id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              required
-              disabled={isLoading}
-              className="w-full px-4 py-2 text-lg bg-zinc-800 border-zinc-700 rounded-md focus:border-white focus:ring-1 focus:ring-white transition-all duration-300 placeholder:text-zinc-500 disabled:opacity-50"
+              className="col-span-3 bg-gray-800 text-white border-gray-700 focus:border-yellow-400"
+              disabled={isLoading || !!referralCode}
             />
-            {error && <p className="text-red-400 text-sm text-center">{error}</p>}
+          </div>
+          {referralCode && (
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="referral-link" className="text-right text-gray-200">
+                Link
+              </Label>
+              <div className="col-span-3 flex items-center space-x-2">
+                <Input
+                  id="referral-link"
+                  value={`${window.location.origin}?ref=${referralCode}`}
+                  readOnly
+                  className="flex-1 bg-gray-800 text-white border-gray-700"
+                />
+                <Button
+                  type="button"
+                  onClick={handleCopyReferralCode}
+                  className="bg-yellow-500 hover:bg-yellow-600 text-black"
+                >
+                  <CopyIcon className="h-4 w-4 mr-2" /> Copy
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+        <DialogFooter>
+          {!referralCode && (
             <Button
               type="submit"
-              disabled={isLoading}
-              className="w-full py-2 text-lg font-semibold bg-white text-black hover:bg-zinc-200 transition-all duration-300 rounded-md shadow-lg hover:shadow-xl transform hover:scale-[1.02] disabled:opacity-50 disabled:transform-none"
+              onClick={handleRequestInvite}
+              disabled={isLoading || !email}
+              className="bg-yellow-500 hover:bg-yellow-600 text-black"
             >
-              {isLoading ? "Submitting..." : "Request Invite"}
+              {isLoading ? "Requesting..." : "Request Invite"}
             </Button>
-          </form>
-        ) : (
-          <div className="text-center space-y-6 py-4 animate-fade-in">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-500/20 flex items-center justify-center">
-              <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <div>
-              <h3 className="text-xl font-semibold text-white mb-2">Thanks for signing up!</h3>
-              <p className="text-zinc-400">{"Welcome to ArtHouse. Check your inbox for more info."}</p>
-            </div>
+          )}
+          {referralCode && (
             <Button
-              onClick={onClose}
-              className="w-full py-2 text-lg font-semibold bg-white text-black hover:bg-zinc-200 transition-all duration-300 rounded-md shadow-lg hover:shadow-xl"
+              type="button"
+              onClick={() => onOpenChange(false)}
+              className="bg-gray-700 hover:bg-gray-600 text-white"
             >
               Close
             </Button>
-          </div>
-        )}
+          )}
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   )

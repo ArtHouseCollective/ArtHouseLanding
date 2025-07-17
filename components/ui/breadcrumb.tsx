@@ -1,6 +1,6 @@
 import * as React from "react"
 import { ChevronRightIcon, DotsHorizontalIcon } from "@radix-ui/react-icons"
-import { Link } from "react-router-dom" // Assuming Link is used for routing
+import { Slot } from "@radix-ui/react-slot"
 
 import { cn } from "@/lib/utils"
 
@@ -34,53 +34,20 @@ const BreadcrumbLink = React.forwardRef<
     asChild?: boolean
   }
 >(({ asChild, className, ...props }, ref) => {
-  const Comp = asChild ? React.Fragment : Link
+  const Comp = asChild ? Slot : "a"
+
   return <Comp ref={ref} className={cn("transition-colors hover:text-foreground", className)} {...props} />
 })
 BreadcrumbLink.displayName = "BreadcrumbLink"
 
-const BreadcrumbSeparator = React.forwardRef<HTMLLIElement, React.ComponentPropsWithoutRef<"li">>(
-  ({ className, children, ...props }, ref) => (
-    <li ref={ref} role="presentation" aria-hidden="true" className={cn("[&>svg]:size-3.5", className)} {...props}>
-      {children ?? <ChevronRightIcon />}
-    </li>
-  ),
+const BreadcrumbSeparator = React.forwardRef<SVGSVGElement, React.ComponentPropsWithoutRef<typeof ChevronRightIcon>>(
+  ({ className, ...props }, ref) => <ChevronRightIcon ref={ref} className={cn("h-4 w-4", className)} {...props} />,
 )
 BreadcrumbSeparator.displayName = "BreadcrumbSeparator"
 
-const BreadcrumbPage = React.forwardRef<HTMLSpanElement, React.ComponentPropsWithoutRef<"span">>(
-  ({ className, ...props }, ref) => (
-    <span
-      ref={ref}
-      role="link"
-      aria-disabled="true"
-      aria-current="page"
-      className={cn("font-normal text-foreground", className)}
-      {...props}
-    />
-  ),
-)
-BreadcrumbPage.displayName = "BreadcrumbPage"
-
-const BreadcrumbEllipsis = ({ className, ...props }: React.ComponentPropsWithoutRef<"span">) => (
-  <span
-    role="presentation"
-    aria-hidden="true"
-    className={cn("flex h-9 w-9 items-center justify-center", className)}
-    {...props}
-  >
-    <DotsHorizontalIcon className="h-4 w-4" />
-    <span className="sr-only">More pages</span>
-  </span>
+const BreadcrumbEllipsis = React.forwardRef<SVGSVGElement, React.ComponentPropsWithoutRef<typeof DotsHorizontalIcon>>(
+  ({ className, ...props }, ref) => <DotsHorizontalIcon ref={ref} className={cn("h-4 w-4", className)} {...props} />,
 )
 BreadcrumbEllipsis.displayName = "BreadcrumbEllipsis"
 
-export {
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-  BreadcrumbEllipsis,
-}
+export { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbEllipsis }

@@ -15,6 +15,7 @@ import { Separator } from "@/components/ui/separator"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { buttonVariants } from "@/components/ui/button"
 
 const SIDEBAR_COOKIE_NAME = "sidebar:state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
@@ -135,7 +136,6 @@ interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   items: {
     href: string
     title: string
-    icon: React.ReactNode
   }[]
   links: {
     title: string
@@ -157,7 +157,6 @@ const SidebarComponent = React.forwardRef<
     items?: {
       href: string
       title: string
-      icon: React.ReactNode
     }[]
     links?: {
       title: string
@@ -203,8 +202,7 @@ const SidebarComponent = React.forwardRef<
                     pathname === item.href ? "bg-muted font-medium" : "transparent",
                   )}
                 >
-                  {item.icon}
-                  <span className="ml-3">{item.title}</span>
+                  {item.title}
                 </Link>
               ))
             : links?.map((link, index) =>
@@ -280,8 +278,7 @@ const SidebarComponent = React.forwardRef<
                         pathname === item.href ? "bg-muted font-medium" : "transparent",
                       )}
                     >
-                      {item.icon}
-                      <span className="ml-3">{item.title}</span>
+                      {item.title}
                     </Link>
                   ))
                 : links?.map((link, index) =>
@@ -387,8 +384,7 @@ const SidebarComponent = React.forwardRef<
                         pathname === item.href ? "bg-muted font-medium" : "transparent",
                       )}
                     >
-                      {item.icon}
-                      <span className="ml-3">{item.title}</span>
+                      {item.title}
                     </Link>
                   ))
                 : links?.map((link, index) =>
@@ -861,4 +857,26 @@ export {
   SidebarSeparator,
   SidebarTrigger,
   useSidebar,
+}
+
+export function SidebarNav({ className, items, ...props }: { items: { href: string; title: string }[] }) {
+  const pathname = usePathname()
+
+  return (
+    <nav className={cn("flex space-x-2 lg:flex-col lg:space-x-0 lg:space-y-1", className)} {...props}>
+      {items.map((item) => (
+        <Link
+          key={item.href}
+          href={item.href}
+          className={cn(
+            buttonVariants({ variant: "ghost" }),
+            pathname === item.href ? "bg-muted hover:bg-muted" : "hover:bg-transparent hover:underline",
+            "justify-start",
+          )}
+        >
+          {item.title}
+        </Link>
+      ))}
+    </nav>
+  )
 }
