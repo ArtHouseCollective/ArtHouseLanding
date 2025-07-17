@@ -10,11 +10,11 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'lh3.googleusercontent.com',
+        hostname: 'blob.v0.dev',
       },
       {
         protocol: 'https',
-        hostname: 'avatars.githubusercontent.com',
+        hostname: 'hebbkx1anhila5yf.public.blob.vercel-storage.com',
       },
     ],
     unoptimized: true,

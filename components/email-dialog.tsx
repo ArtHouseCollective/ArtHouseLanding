@@ -1,11 +1,12 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
+import { useState, type FormEvent } from "react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { Label } from "@/components/ui/label"
+import { useToast } from "@/components/ui/use-toast"
+import { generateReferralCode } from "@/lib/referral"
 
 interface EmailDialogProps {
   isOpen: boolean
@@ -14,78 +15,132 @@ interface EmailDialogProps {
 
 export function EmailDialog({ isOpen, onClose }: EmailDialogProps) {
   const [email, setEmail] = useState("")
-  const [isSubmitted, setIsSubmitted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState("")
+  const [isSubmitted, setIsSubmitted] = useState(false)
+  const [referralCode, setReferralCode] = useState<string | null>(null)
+  const { toast } = useToast()
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
-    setError("")
 
     try {
-      const response = await fetch("/api/subscribe", {
+      // 1. Subscribe to Beehiiv
+      const subscribeResponse = await fetch("/api/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       })
 
-      const data = await response.json()
-
-      if (response.ok) {
-        setIsSubmitted(true)
-      } else {
-        setError(data.error || "Something went wrong. Please try again.")
+      if (!subscribeResponse.ok) {
+        const errorData = await subscribeResponse.json()
+        throw new Error(errorData.error || "Failed to subscribe to newsletter.")
       }
-    } catch (err) {
-      setError("Network error. Please try again.")
+
+      // 2. Generate and store referral code
+      const newReferralCode = generateReferralCode(email)
+      setReferralCode(newReferralCode)
+      localStorage.setItem("referralCode", newReferralCode) // Store for future use
+
+      // 3. Register referral in Firebase
+      const referralSignupResponse = await fetch("/api/referralSignup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, referralCode: newReferralCode }),
+      })
+
+      if (!referralSignupResponse.ok) {
+        const errorData = await referralSignupResponse.json()
+        throw new Error(errorData.error || "Failed to register referral.")
+      }
+
+      setIsSubmitted(true)
+      toast({
+        title: "Application Submitted!",
+        description: "Check your email for a confirmation and your unique referral link.",
+      })
+    } catch (error: any) {
+      console.error("Submission error:", error)
+      toast({
+        title: "Submission Failed",
+        description: error.message || "There was an error processing your request. Please try again.",
+        variant: "destructive",
+      })
     } finally {
       setIsLoading(false)
     }
   }
 
+  const handleCopyReferral = () => {
+    if (referralCode) {
+      const referralLink = `${window.location.origin}?ref=${referralCode}`
+      navigator.clipboard.writeText(referralLink)
+      toast({
+        title: "Copied to clipboard!",
+        description: "Share your unique link with friends.",
+      })
+    }
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] bg-zinc-900 text-white border-zinc-700 rounded-xl">
-        {/* Added rounded-xl for more sleekness */}
+      <DialogContent className="sm:max-w-[425px] bg-zinc-950 text-white border-zinc-700">
         <DialogHeader>
-          <DialogTitle className="text-center text-2xl font-bold text-white">Join the ArtHouse Circle</DialogTitle>
-          <DialogDescription className="text-center text-zinc-400">
-            Enter your email for early access and exclusive updates.
+          <DialogTitle className="text-white">Join the ArtHouse Founder's Circle</DialogTitle>
+          <DialogDescription className="text-zinc-400">
+            Enter your email to apply for early access and receive your unique referral link.
           </DialogDescription>
         </DialogHeader>
         {!isSubmitted ? (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <Input
-              type="email"
-              placeholder="Your email address"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              disabled={isLoading}
-              className="w-full px-4 py-2 text-base bg-zinc-800 border-zinc-700 rounded-md focus:border-white focus:ring-1 focus:ring-white placeholder:text-zinc-500 disabled:opacity-50"
-            />
-            {error && <p className="text-red-400 text-sm text-center">{error}</p>}
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="w-full py-2 text-base font-semibold bg-gradient-to-r from-zinc-700 to-zinc-800 hover:from-zinc-600 hover:to-zinc-700 text-white transition-all duration-300 rounded-md shadow-lg disabled:opacity-50"
-            >
-              {isLoading ? "Submitting..." : "Request Invite"}
+          <form onSubmit={handleSubmit} className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="email" className="text-zinc-300">
+                Email
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="your@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={isLoading}
+                className="bg-zinc-800 border-zinc-700 text-white focus:border-cobalt-500"
+              />
+            </div>
+            <Button type="submit" disabled={isLoading} className="bg-cobalt-700 hover:bg-cobalt-800 text-white">
+              {isLoading ? "Applying..." : "Apply for Early Access"}
             </Button>
           </form>
         ) : (
-          <div className="text-center space-y-4 animate-fade-in">
-            <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-green-500/20 flex items-center justify-center">
-              <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <div>
-              <h3 className="text-xl font-semibold text-white mb-1">Thanks for signing up!</h3>
-              <p className="text-zinc-400">{"Welcome to ArtHouse. Check your inbox for more info."}</p>
-            </div>
-            <Button onClick={onClose} className="w-full bg-zinc-700 text-white hover:bg-zinc-600 transition-colors">
+          <div className="text-center py-4">
+            <h4 className="text-lg font-semibold text-white mb-2">Application Received!</h4>
+            <p className="text-zinc-400 mb-4">
+              Thank you for your interest in ArtHouse. We'll notify you when your spot is ready.
+            </p>
+            {referralCode && (
+              <div className="mt-4 p-3 bg-zinc-800 rounded-md border border-zinc-700">
+                <p className="text-zinc-300 text-sm mb-2">Your unique referral link:</p>
+                <div className="flex items-center space-x-2">
+                  <Input
+                    type="text"
+                    value={`${window.location.origin}?ref=${referralCode}`}
+                    readOnly
+                    className="flex-grow bg-zinc-700 border-zinc-600 text-white text-sm"
+                  />
+                  <Button
+                    onClick={handleCopyReferral}
+                    variant="outline"
+                    size="sm"
+                    className="border-cobalt-700 text-cobalt-400 hover:bg-cobalt-900 hover:text-white bg-transparent"
+                  >
+                    Copy
+                  </Button>
+                </div>
+                <p className="text-xs text-zinc-500 mt-2">Share this link to invite friends and skip the wait!</p>
+              </div>
+            )}
+            <Button onClick={onClose} className="mt-6 bg-zinc-700 hover:bg-zinc-600 text-white">
               Close
             </Button>
           </div>

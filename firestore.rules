@@ -4,5 +4,13 @@ service cloud.firestore {
     match /{document=**} {
       allow read, write: if false;
     }
+    match /waitlist/{email} {
+      allow create: if request.auth != null; // Allow authenticated users to create waitlist entries
+      allow read: if request.auth != null && request.auth.token.email == email; // Allow users to read their own entry
+      allow write: if false; // No updates or deletes
+    }
+    match /referrals/{document=**} {
+      allow read, write: if request.auth != null;
+    }
   }
 }
