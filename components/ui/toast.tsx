@@ -103,4 +103,4 @@ type ToastPropsWithChildren = ToastProps & {
   children: React.ReactNode
 }
 
-export { ToastProvider, ToastViewport, Toast, ToastTitle, ToastDescription, ToastClose, ToastAction }
+export { ToastProvider, ToastViewport, Toast, ToastTitle, ToastDescription, ToastAction, ToastClose }

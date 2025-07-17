@@ -12,6 +12,7 @@ yarn-error.log*
 
 # TypeScript
 *.tsbuildinfo
+next-env.d.ts
 
 # VS Code
 .vscode/
@@ -27,6 +28,7 @@ yarn.lock
 
 # pnpm package manager
 pnpm-lock.yaml
+pnpm-workspace.yaml
 
 # Log files
 *.log
@@ -34,7 +36,8 @@ pnpm-lock.yaml
 # Misc
 .env
 .env.*
-.env.local
+.env.development.local
+.env.production.local
 .DS_Store
 .idea/
 .vscode/

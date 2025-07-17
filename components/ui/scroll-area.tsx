@@ -2,8 +2,6 @@
 
 import * as React from "react"
 import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area"
-import { RxCornerBottomRight } from "react-icons/rx"
-
 import { cn } from "@/lib/utils"
 
 const ScrollArea = React.forwardRef<
@@ -13,9 +11,7 @@ const ScrollArea = React.forwardRef<
   <ScrollAreaPrimitive.Root ref={ref} className={cn("relative overflow-hidden", className)} {...props}>
     <ScrollAreaPrimitive.Viewport className="h-full w-full rounded-[inherit]">{children}</ScrollAreaPrimitive.Viewport>
     <ScrollBar />
-    <ScrollAreaPrimitive.Corner className="bg-border">
-      <RxCornerBottomRight />
-    </ScrollAreaPrimitive.Corner>
+    <ScrollAreaPrimitive.Corner />
   </ScrollAreaPrimitive.Root>
 ))
 ScrollArea.displayName = ScrollAreaPrimitive.Root.displayName
@@ -35,7 +31,9 @@ const ScrollBar = React.forwardRef<
     )}
     {...props}
   >
-    <ScrollAreaPrimitive.ScrollAreaThumb className={cn("relative flex-1 rounded-full bg-border")} />
+    <ScrollAreaPrimitive.ScrollAreaThumb
+      className={cn("relative rounded-full bg-border", orientation === "vertical" && "flex-1")}
+    />
   </ScrollAreaPrimitive.ScrollAreaScrollbar>
 ))
 ScrollBar.displayName = ScrollAreaPrimitive.ScrollAreaScrollbar.displayName

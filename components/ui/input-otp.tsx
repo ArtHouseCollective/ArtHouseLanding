@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { OTPInput, Slot, OTPInputContext } from "input-otp"
+import { OTPInput, type SlotProps } from "input-otp"
 import { MinusIcon } from "@radix-ui/react-icons"
 
 import { cn } from "@/lib/utils"
@@ -23,32 +23,29 @@ const InputOTPGroup = React.forwardRef<React.ElementRef<"div">, React.ComponentP
 )
 InputOTPGroup.displayName = "InputOTPGroup"
 
-const InputOTPSlot = React.forwardRef<
-  React.ElementRef<typeof Slot>,
-  React.ComponentPropsWithoutRef<typeof Slot> & { index: number }
->(({ index, className, ...props }, ref) => {
-  const inputOTPContext = React.useContext(OTPInputContext)
-  const { char, has } = inputOTPContext.slots[index]
-
-  return (
-    <Slot
-      ref={ref}
-      className={cn(
-        "relative flex h-9 w-9 items-center justify-center border-y border-r border-input text-sm shadow-sm transition-all first:rounded-l-md first:border-l last:rounded-r-md",
-        has && "z-10 ring-1 ring-ring",
-        className,
-      )}
-      {...props}
-    >
-      {char}
-    </Slot>
-  )
-})
+const InputOTPSlot = React.forwardRef<React.ElementRef<"div">, SlotProps & React.ComponentPropsWithoutRef<"div">>(
+  ({ char, has = { adjacent: false }, isActive, className, ...props }, ref) => {
+    return (
+      <div
+        ref={ref}
+        className={cn(
+          "relative flex h-9 w-9 items-center justify-center border border-input text-sm shadow-sm transition-all",
+          isActive && "z-10 ring-1 ring-ring",
+          has.adjacent && "border-r-0",
+          className,
+        )}
+        {...props}
+      >
+        {char}
+      </div>
+    )
+  },
+)
 InputOTPSlot.displayName = "InputOTPSlot"
 
 const InputOTPSeparator = React.forwardRef<React.ElementRef<"div">, React.ComponentPropsWithoutRef<"div">>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("flex items-center justify-center", className)} {...props}>
+    <div ref={ref} className={cn("-mx-2 flex items-center justify-center", className)} {...props}>
       <MinusIcon />
     </div>
   ),

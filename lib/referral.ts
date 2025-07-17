@@ -15,22 +15,16 @@ if (!getApps().length) {
 
 const db = getFirestore()
 
-export async function generateReferralCode(email: string): Promise<string> {
-  const prefix = email
-    .split("@")[0]
-    .replace(/[^a-zA-Z0-9]/g, "")
-    .substring(0, 5)
-  const randomSuffix = Math.random().toString(36).substring(2, 7)
-  const referralCode = `${prefix}-${randomSuffix}`.toUpperCase()
+export function generateReferralCode(email: string): string {
+  // Simple hash function for demonstration purposes
+  // In a real application, you'd want a more robust, unique, and collision-resistant method
+  const hash = btoa(email).substring(0, 8) // Base64 encode and take first 8 chars
+  return `ARTHOUSE-${hash.toUpperCase()}`
+}
 
-  await db.collection("referrals").doc(referralCode).set({
-    referrerEmail: email,
-    signups: 0,
-    clicks: 0,
-    createdAt: FieldValue.serverTimestamp(),
-  })
-
-  return referralCode
+export function isValidReferralCode(code: string): boolean {
+  // Basic validation: starts with ARTHOUSE- and has 8 alphanumeric chars after
+  return /^ARTHOUSE-[A-Z0-9]{8}$/.test(code)
 }
 
 export async function trackReferralClick(referralCode: string): Promise<void> {

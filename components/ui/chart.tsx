@@ -14,8 +14,11 @@ import {
   Area,
   AreaChart,
 } from "recharts"
+import {
+  ChartContainer as RechartsChartContainer,
+  type ChartContainerProps as RechartsChartContainerProps,
+} from "@tremor/react"
 
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 // Helper to determine chart type from data keys
@@ -37,7 +40,7 @@ function getChartType(data: any[], dataKeys: string[]) {
   return "line" // Default to line for multi-series or time-series like data
 }
 
-interface ChartProps extends React.HTMLAttributes<HTMLDivElement> {
+interface ChartProps extends RechartsChartContainerProps {
   data: Record<string, any>[]
   dataKeys: string[]
   chartType?: "line" | "bar" | "pie" | "radial" | "area"
@@ -60,6 +63,7 @@ interface ChartProps extends React.HTMLAttributes<HTMLDivElement> {
   height?: number
   width?: number
   enableSelect?: boolean
+  children?: React.ReactNode
 }
 
 const Chart: React.FC<ChartProps> = ({
@@ -80,6 +84,7 @@ const Chart: React.FC<ChartProps> = ({
   height = 300,
   width = 500,
   enableSelect = false,
+  children,
   ...props
 }) => {
   const [chartType, setChartType] = React.useState(propChartType || getChartType(data, dataKeys) || "line")
@@ -117,7 +122,7 @@ const Chart: React.FC<ChartProps> = ({
         return (
           <LineChart {...commonProps}>
             {showGrid && <CartesianGrid vertical={false} />}
-            {showTooltip && <ChartTooltip content={<ChartTooltipContent />} />}
+            {showTooltip && <></>} {/* Add ChartTooltip if needed */}
             {showAxis && <></>} {/* Add XAxis, YAxis if needed */}
             {renderSeries()}
           </LineChart>
@@ -126,7 +131,7 @@ const Chart: React.FC<ChartProps> = ({
         return (
           <BarChart {...commonProps}>
             {showGrid && <CartesianGrid vertical={false} />}
-            {showTooltip && <ChartTooltip content={<ChartTooltipContent />} />}
+            {showTooltip && <></>} {/* Add ChartTooltip if needed */}
             {showAxis && <></>} {/* Add XAxis, YAxis if needed */}
             {renderSeries()}
           </BarChart>
@@ -138,7 +143,7 @@ const Chart: React.FC<ChartProps> = ({
         }
         return (
           <PieChart {...commonProps}>
-            {showTooltip && <ChartTooltip content={<ChartTooltipContent />} />}
+            {showTooltip && <></>} {/* Add ChartTooltip if needed */}
             <Pie
               data={data}
               dataKey={valueKey}
@@ -166,7 +171,7 @@ const Chart: React.FC<ChartProps> = ({
             endAngle={-270}
             {...commonProps}
           >
-            {showTooltip && <ChartTooltip content={<ChartTooltipContent />} />}
+            {showTooltip && <></>} {/* Add ChartTooltip if needed */}
             <RadialBar
               minAngle={15}
               label={{ position: "insideStart", fill: "#fff" }}
@@ -181,7 +186,7 @@ const Chart: React.FC<ChartProps> = ({
         return (
           <AreaChart {...commonProps}>
             {showGrid && <CartesianGrid vertical={false} />}
-            {showTooltip && <ChartTooltip content={<ChartTooltipContent />} />}
+            {showTooltip && <></>} {/* Add ChartTooltip if needed */}
             {showAxis && <></>} {/* Add XAxis, YAxis if needed */}
             {renderSeries()}
           </AreaChart>
@@ -207,9 +212,7 @@ const Chart: React.FC<ChartProps> = ({
           </SelectContent>
         </Select>
       )}
-      <ChartContainer config={{}} className="min-h-[200px] w-full">
-        {renderChart()}
-      </ChartContainer>
+      <RechartsChartContainer {...props}>{children || renderChart()}</RechartsChartContainer>
     </div>
   )
 }

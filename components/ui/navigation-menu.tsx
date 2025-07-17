@@ -1,8 +1,8 @@
 "use client"
 
 import * as React from "react"
-import { ChevronDownIcon } from "@radix-ui/react-icons"
 import * as NavigationMenuPrimitive from "@radix-ui/react-navigation-menu"
+import { ChevronDownIcon } from "@radix-ui/react-icons"
 import { cva } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
@@ -17,7 +17,7 @@ const NavigationMenu = React.forwardRef<
     {...props}
   >
     {children}
-    <NavigationMenuIndicator />
+    <NavigationMenuViewport />
   </NavigationMenuPrimitive.Root>
 ))
 NavigationMenu.displayName = NavigationMenuPrimitive.Root.displayName
@@ -65,7 +65,7 @@ const NavigationMenuContent = React.forwardRef<
   <NavigationMenuPrimitive.Content
     ref={ref}
     className={cn(
-      "left-0 top-0 w-full data-[animate=in]:fade-in data-[animate=out]:fade-out data-[animate=out]:zoom-out-95 data-[animate=in]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 md:absolute md:w-auto ",
+      "left-0 top-0 w-full data-[motion^=from-]:animate-in data-[motion^=to-]:animate-out data-[motion^=from-]:fade-in data-[motion^=to-]:fade-out data-[motion^=from-]:zoom-in-90 data-[motion^=to-]:zoom-out-90 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 md:absolute md:w-auto ",
       className,
     )}
     {...props}
@@ -104,7 +104,7 @@ const NavigationMenuIndicator = React.forwardRef<
     )}
     {...props}
   >
-    <div className="relative top-[60%] h-2 w-2 rounded-tl-full bg-border shadow-md" />
+    <div className="relative top-[60%] h-2 w-2 rotate-45 rounded-tl-sm bg-border shadow-md" />
   </NavigationMenuPrimitive.Indicator>
 ))
 NavigationMenuIndicator.displayName = NavigationMenuPrimitive.Indicator.displayName
@@ -117,6 +117,6 @@ export {
   NavigationMenuContent,
   NavigationMenuTrigger,
   NavigationMenuLink,
-  NavigationMenuViewport,
   NavigationMenuIndicator,
+  NavigationMenuViewport,
 }

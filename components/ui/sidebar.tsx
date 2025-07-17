@@ -135,7 +135,7 @@ interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   items: {
     href: string
     title: string
-    disabled?: boolean
+    icon: React.ReactNode
   }[]
   links: {
     title: string
@@ -156,7 +156,7 @@ const SidebarComponent = React.forwardRef<
     items?: {
       href: string
       title: string
-      disabled?: boolean
+      icon: React.ReactNode
     }[]
     links?: {
       title: string
@@ -198,9 +198,9 @@ const SidebarComponent = React.forwardRef<
                   className={cn(
                     "flex w-full items-center rounded-md p-2 text-foreground hover:underline",
                     pathname === item.href ? "bg-muted font-medium" : "transparent",
-                    item.disabled && "cursor-not-allowed opacity-80",
                   )}
                 >
+                  {item.icon}
                   {item.title}
                 </Link>
               ))
@@ -275,9 +275,9 @@ const SidebarComponent = React.forwardRef<
                       className={cn(
                         "flex w-full items-center rounded-md p-2 text-foreground hover:underline",
                         pathname === item.href ? "bg-muted font-medium" : "transparent",
-                        item.disabled && "cursor-not-allowed opacity-80",
                       )}
                     >
+                      {item.icon}
                       {item.title}
                     </Link>
                   ))
@@ -382,9 +382,9 @@ const SidebarComponent = React.forwardRef<
                       className={cn(
                         "flex w-full items-center rounded-md p-2 text-foreground hover:underline",
                         pathname === item.href ? "bg-muted font-medium" : "transparent",
-                        item.disabled && "cursor-not-allowed opacity-80",
                       )}
                     >
+                      {item.icon}
                       {item.title}
                     </Link>
                   ))

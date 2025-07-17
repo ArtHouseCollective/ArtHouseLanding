@@ -131,6 +131,9 @@ export default function Page() {
   const [isAppMockupsVisible, setIsAppMockupsVisible] = useState(false) // State for new section
   const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false) // State for the new dialog
 
+  const featureBoardRef = useRef<HTMLDivElement>(null)
+  const [isFeatureBoardVisible, setIsFeatureBoardVisible] = useState(false)
+
   // Capture referral code from URL and store in localStorage (for initial landing)
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search)
@@ -160,6 +163,24 @@ export default function Page() {
 
     if (appMockupsRef.current) {
       observer.observe(appMockupsRef.current)
+    }
+
+    return () => observer.disconnect()
+  }, [])
+
+  // Scroll reveal for feature board
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsFeatureBoardVisible(true)
+        }
+      },
+      { threshold: 0.3 }, // Adjust threshold as needed
+    )
+
+    if (featureBoardRef.current) {
+      observer.observe(featureBoardRef.current)
     }
 
     return () => observer.disconnect()
@@ -301,7 +322,12 @@ export default function Page() {
 
       {/* New Feature Board Section */}
       <div className="py-20 px-4">
-        <div className="max-w-6xl mx-auto text-center">
+        <div
+          ref={featureBoardRef}
+          className={`max-w-6xl mx-auto text-center transition-all duration-1000 ease-out ${
+            isFeatureBoardVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+          }`}
+        >
           <h2 className="text-2xl md:text-3xl font-bold text-center mb-12 text-zinc-200">
             BUILT FOR CREATIVES. BY CREATIVES.
           </h2>
