@@ -149,7 +149,7 @@ export default function Page() {
 
         <div className="relative z-10 flex flex-col items-center justify-center">
           {/* Logo */}
-          <div className="mb-12 text-center">
+          <div className="mb-6 text-center">
             <h1 className="text-6xl md:text-8xl font-bold tracking-tight mb-4 relative">
               <span className="bg-gradient-to-r from-white via-zinc-200 to-white bg-clip-text text-transparent drop-shadow-2xl flex items-start">
                 ArtHouse
@@ -162,7 +162,7 @@ export default function Page() {
           </div>
 
           {/* Tagline */}
-          <div className="mb-16 text-center">
+          <div className="mb-6 text-center">
             <p className="text-xl md:text-2xl text-zinc-300 font-light tracking-wide animate-fade-in-up">
               Where bold creatives meet.
             </p>
