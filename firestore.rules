@@ -1,0 +1,16 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Referrals collection - only allow server-side writes
+    match /referrals/{email} {
+      allow read: if false; // No client reads
+      allow write: if false; // Only server can write
+    }
+    
+    // Referral counts collection - only allow server-side writes
+    match /referralCounts/{referrer} {
+      allow read: if false; // No client reads  
+      allow write: if false; // Only server can write
+    }
+  }
+}
