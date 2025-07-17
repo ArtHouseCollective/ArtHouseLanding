@@ -61,6 +61,13 @@ const creators = [
     specialty: "Magnum P.I., Foursome",
   },
   {
+    name: "Mario Garcia",
+    title: "Writer",
+    image: "/images/creators/MarioGarcia.jpg",
+    genre: "Comedy",
+    specialty: "The Throwback",
+  },
+  {
     name: "Rhondda Stark Atlas",
     title: "Producer",
     image: "/images/creators/rhondda.jpg",
