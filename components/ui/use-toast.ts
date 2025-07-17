@@ -2,7 +2,7 @@
 
 import * as React from "react"
 
-import type { ToastActionElement, ToastProps } from "@/components/ui/toast"
+import type { ToasterToast } from "@/components/ui/toast"
 
 const TOAST_LIMIT = 1
 const TOAST_REMOVE_DELAY = 1000000
@@ -10,7 +10,7 @@ const TOAST_REMOVE_DELAY = 1000000
 type ToastsMap = Map<
   string,
   {
-    toast: ToastProps
+    toast: ToasterToast
     timeout: ReturnType<typeof setTimeout> | undefined
   }
 >
@@ -18,14 +18,15 @@ type ToastsMap = Map<
 type ActionType =
   | {
       type: "ADD_TOAST"
-      toast: ToastProps
+      toast: ToasterToast
     }
   | {
       type: "UPDATE_TOAST"
-      toast: ToastProps
+      toast: ToasterToast
     }
   | {
       type: "DISMISS_TOAST"
+      toastId?: string
     }
   | {
       type: "REMOVE_TOAST"
@@ -33,12 +34,12 @@ type ActionType =
     }
 
 interface State {
-  toasts: ToastProps[]
+  toasts: ToasterToast[]
 }
 
 const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>()
 
-const addToRemoveQueue = (toastId: string) => {
+function addToRemoveQueue(toastId: string) {
   if (toastTimeouts.has(toastId)) {
     return
   }
@@ -69,19 +70,29 @@ export const reducer = (state: State, action: ActionType): State => {
       }
 
     case "DISMISS_TOAST":
-      const { toasts } = state
-      const [toastToDismiss] = toasts.splice(toasts.length - 1, 1)
-
-      if (toastToDismiss) {
-        clearTimeout(toastTimeouts.get(toastToDismiss.id!))
-        addToRemoveQueue(toastToDismiss.id!)
+      const { toastId } = action
+      // ! Side effects ! - This means it is not a pure reducer.
+      // We are doing this to avoid both storing the timeout for each toast in the state,
+      // and to avoid having a side effect in the toast component.
+      if (toastId) {
+        addToRemoveQueue(toastId)
+      } else {
+        state.toasts.forEach((toast) => {
+          addToRemoveQueue(toast.id)
+        })
       }
 
       return {
         ...state,
-        toasts: [...toasts],
+        toasts: state.toasts.map((t) =>
+          t.id === toastId || toastId === undefined
+            ? {
+                ...t,
+                open: false,
+              }
+            : t,
+        ),
       }
-
     case "REMOVE_TOAST":
       if (action.toastId === undefined) {
         return {
@@ -105,8 +116,35 @@ function dispatch(action: ActionType) {
   listeners.forEach((listener) => listener(memoryState))
 }
 
-type Toast = Pick<ToastProps, "id" | "title" | "description" | "type"> & {
-  action?: ToastActionElement
+type Toast = Omit<ToasterToast, "id">
+
+function toast({ ...props }: Toast) {
+  const id = crypto.randomUUID()
+
+  const update = (props: ToasterToast) =>
+    dispatch({
+      type: "UPDATE_TOAST",
+      toast: { ...props, id },
+    })
+  const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id })
+
+  dispatch({
+    type: "ADD_TOAST",
+    toast: {
+      ...props,
+      id,
+      open: true,
+      onOpenChange: (open) => {
+        if (!open) dismiss()
+      },
+    },
+  })
+
+  return {
+    id: id,
+    dismiss,
+    update,
+  }
 }
 
 function useToast() {
@@ -122,40 +160,11 @@ function useToast() {
     }
   }, [state])
 
-  const addToast = React.useCallback((toast: Toast) => {
-    const id = toast.id || Math.random().toString(36).substring(2, 9)
-
-    dispatch({
-      type: "ADD_TOAST",
-      toast: {
-        ...toast,
-        id,
-        onOpenChange: (open) => {
-          if (!open) {
-            dispatch({ type: "DISMISS_TOAST" })
-          }
-        },
-      },
-    })
-  }, [])
-
-  const updateToast = React.useCallback((toast: Toast) => {
-    dispatch({
-      type: "UPDATE_TOAST",
-      toast,
-    })
-  }, [])
-
-  const dismissToast = React.useCallback(() => {
-    dispatch({ type: "DISMISS_TOAST" })
-  }, [])
-
   return {
     ...state,
-    toast: addToast,
-    updateToast,
-    dismissToast,
+    toast,
+    dismiss: React.useCallback((toastId?: string) => dispatch({ type: "DISMISS_TOAST", toastId }), []),
   }
 }
 
-export { useToast }
+export { useToast, toast }

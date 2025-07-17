@@ -137,6 +137,13 @@ interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
     title: string
     icon: React.ReactNode
   }[]
+  links: {
+    title: string
+    label?: string
+    icon: React.ElementType
+    href: string
+  }[]
+  isCollapsed: boolean
 }
 
 const SidebarComponent = React.forwardRef<
@@ -151,6 +158,12 @@ const SidebarComponent = React.forwardRef<
       title: string
       icon: React.ReactNode
     }[]
+    links?: {
+      title: string
+      label?: string
+      icon: React.ElementType
+      href: string
+    }[]
   }
 >(
   (
@@ -160,6 +173,7 @@ const SidebarComponent = React.forwardRef<
       collapsible = "offcanvas",
       isCollapsed = false,
       items,
+      links,
       className,
       children,
       ...props
@@ -190,7 +204,50 @@ const SidebarComponent = React.forwardRef<
                   <span className="ml-3">{item.title}</span>
                 </Link>
               ))
-            : children}
+            : links?.map((link, index) =>
+                isCollapsed ? (
+                  <TooltipProvider key={index}>
+                    <Tooltip delayDuration={0}>
+                      <TooltipTrigger asChild>
+                        <Link
+                          href={link.href}
+                          className={cn(
+                            "flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground",
+                            pathname === link.href && "bg-accent text-accent-foreground",
+                            "dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted dark:hover:text-foreground",
+                            "shrink-0",
+                          )}
+                        >
+                          <link.icon className="h-5 w-5" />
+                          <span className="sr-only">{link.title}</span>
+                        </Link>
+                      </TooltipTrigger>
+                      <TooltipContent side="right" className="flex items-center gap-4">
+                        {link.title}
+                        {link.label && <span className="ml-auto text-muted-foreground">{link.label}</span>}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                ) : (
+                  <Link
+                    key={index}
+                    href={link.href}
+                    className={cn(
+                      "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-foreground",
+                      pathname === link.href && "bg-accent text-accent-foreground",
+                      "dark:bg-muted dark:text-white dark:hover:bg-muted dark:hover:text-white",
+                    )}
+                  >
+                    <link.icon className="h-5 w-5" />
+                    {link.title}
+                    {link.label && (
+                      <span className={cn("ml-auto", pathname === link.href && "text-background dark:text-white")}>
+                        {link.label}
+                      </span>
+                    )}
+                  </Link>
+                ),
+              )}
         </div>
       )
     }
@@ -224,7 +281,50 @@ const SidebarComponent = React.forwardRef<
                       <span className="ml-3">{item.title}</span>
                     </Link>
                   ))
-                : children}
+                : links?.map((link, index) =>
+                    isCollapsed ? (
+                      <TooltipProvider key={index}>
+                        <Tooltip delayDuration={0}>
+                          <TooltipTrigger asChild>
+                            <Link
+                              href={link.href}
+                              className={cn(
+                                "flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground",
+                                pathname === link.href && "bg-accent text-accent-foreground",
+                                "dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted dark:hover:text-foreground",
+                                "shrink-0",
+                              )}
+                            >
+                              <link.icon className="h-5 w-5" />
+                              <span className="sr-only">{link.title}</span>
+                            </Link>
+                          </TooltipTrigger>
+                          <TooltipContent side="right" className="flex items-center gap-4">
+                            {link.title}
+                            {link.label && <span className="ml-auto text-muted-foreground">{link.label}</span>}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    ) : (
+                      <Link
+                        key={index}
+                        href={link.href}
+                        className={cn(
+                          "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-foreground",
+                          pathname === link.href && "bg-accent text-accent-foreground",
+                          "dark:bg-muted dark:text-white dark:hover:bg-muted dark:hover:text-white",
+                        )}
+                      >
+                        <link.icon className="h-5 w-5" />
+                        {link.title}
+                        {link.label && (
+                          <span className={cn("ml-auto", pathname === link.href && "text-background dark:text-white")}>
+                            {link.label}
+                          </span>
+                        )}
+                      </Link>
+                    ),
+                  )}
             </div>
           </SheetContent>
         </Sheet>
@@ -288,7 +388,50 @@ const SidebarComponent = React.forwardRef<
                       <span className="ml-3">{item.title}</span>
                     </Link>
                   ))
-                : children}
+                : links?.map((link, index) =>
+                    isCollapsed ? (
+                      <TooltipProvider key={index}>
+                        <Tooltip delayDuration={0}>
+                          <TooltipTrigger asChild>
+                            <Link
+                              href={link.href}
+                              className={cn(
+                                "flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground",
+                                pathname === link.href && "bg-accent text-accent-foreground",
+                                "dark:bg-muted dark:text-muted-foreground dark:hover:bg-muted dark:hover:text-foreground",
+                                "shrink-0",
+                              )}
+                            >
+                              <link.icon className="h-5 w-5" />
+                              <span className="sr-only">{link.title}</span>
+                            </Link>
+                          </TooltipTrigger>
+                          <TooltipContent side="right" className="flex items-center gap-4">
+                            {link.title}
+                            {link.label && <span className="ml-auto text-muted-foreground">{link.label}</span>}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    ) : (
+                      <Link
+                        key={index}
+                        href={link.href}
+                        className={cn(
+                          "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-foreground",
+                          pathname === link.href && "bg-accent text-accent-foreground",
+                          "dark:bg-muted dark:text-white dark:hover:bg-muted dark:hover:text-white",
+                        )}
+                      >
+                        <link.icon className="h-5 w-5" />
+                        {link.title}
+                        {link.label && (
+                          <span className={cn("ml-auto", pathname === link.href && "text-background dark:text-white")}>
+                            {link.label}
+                          </span>
+                        )}
+                      </Link>
+                    ),
+                  )}
             </nav>
           </div>
         </div>

@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/:path*",
+      "destination": "/:path*"
+    },
+    {
       "source": "/api/subscribe",
       "destination": "/api/subscribe"
     },

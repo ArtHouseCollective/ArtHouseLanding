@@ -1,59 +1,68 @@
 "use client"
 
 import * as React from "react"
-import { Label, PolarGrid, PolarRadiusAxis, RadialBar, RadialBarChart } from "recharts"
-import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import { cn } from "@/lib/utils"
+import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart"
+import { Label, Pie, PieChart } from "recharts"
 
-// Define the ChartConfig type for the chart
+const desktopData = [
+  { month: "January", desktop: 186 },
+  { month: "February", desktop: 305 },
+  { month: "March", desktop: 237 },
+  { month: "April", desktop: 73 },
+  { month: "May", desktop: 209 },
+  { month: "June", desktop: 214 },
+]
+
 const chartConfig = {
-  progress: {
-    label: "Progress",
+  desktop: {
+    label: "Desktop",
     color: "hsl(var(--chart-1))",
+  },
+  mobile: {
+    label: "Mobile",
+    color: "hsl(var(--chart-2))",
   },
 } satisfies ChartConfig
 
-// Define the props for the CircularProgress component
-interface CircularProgressProps extends React.HTMLAttributes<HTMLDivElement> {
-  value: number
-  size?: number
-  strokeWidth?: number
-  showLabel?: boolean
+export function Component() {
+  const totalVisitors = React.useMemo(() => desktopData.reduce((acc, curr) => acc + curr.desktop, 0), [])
+
+  return (
+    <ChartContainer config={chartConfig} className="mx-auto aspect-square h-[250px]">
+      <PieChart>
+        <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+        <Pie
+          data={desktopData}
+          dataKey="desktop"
+          nameKey="month"
+          innerRadius={60}
+          strokeWidth={5}
+          activeIndex={0}
+          activeShape={({
+            outerRadius = 0,
+            fill = "",
+            ...props
+          }: {
+            outerRadius: number
+            fill: string
+          }) => (
+            <g>
+              <circle cx={0} cy={0} r={outerRadius + 10} fill={fill} stroke="none" />
+              <path d="M 0 0 L 0 0 L 0 0 A 0 0 0 0 1 0 0 Z" fill={fill} stroke="none" {...props} />
+            </g>
+          )}
+        >
+          <Label
+            content={() => (
+              <div className="flex flex-col items-center justify-center">
+                <span className="text-5xl font-bold tracking-tighter">{totalVisitors}</span>
+                <span className="text-sm text-muted-foreground">Visitors</span>
+              </div>
+            )}
+            position="center"
+          />
+        </Pie>
+      </PieChart>
+    </ChartContainer>
+  )
 }
-
-const CircularProgress = React.forwardRef<HTMLDivElement, CircularProgressProps>(
-  ({ value, size = 120, strokeWidth = 10, showLabel = true, className, ...props }, ref) => {
-    const chartData = [{ browser: "progress", progress: value }]
-
-    return (
-      <div
-        ref={ref}
-        className={cn("flex items-center justify-center", className)}
-        style={{ width: size, height: size }}
-        {...props}
-      >
-        <ChartContainer config={chartConfig} className="h-full w-full">
-          <RadialBarChart
-            data={chartData}
-            cx="50%"
-            cy="50%"
-            innerRadius={size / 2 - strokeWidth}
-            outerRadius={size / 2}
-            startAngle={90}
-            endAngle={90 + (value / 100) * 360}
-          >
-            <PolarGrid gridType="circle" radius={[size / 2 - strokeWidth, size / 2]} polarAngles={[0]}>
-              <PolarRadiusAxis axisLine={false} tick={false} />
-            </PolarGrid>
-            <RadialBar dataKey="progress" cornerRadius={strokeWidth / 2} />
-            <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
-            {showLabel && <Label value={`${value}%`} position="center" className="fill-foreground text-lg font-bold" />}
-          </RadialBarChart>
-        </ChartContainer>
-      </div>
-    )
-  },
-)
-CircularProgress.displayName = "CircularProgress"
-
-export { CircularProgress }
