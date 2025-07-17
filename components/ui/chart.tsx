@@ -1,97 +1,68 @@
 "use client"
 
 import * as React from "react"
-import {
-  CartesianGrid,
-  Line,
-  LineChart,
-  Bar,
-  BarChart,
-  Pie,
-  PieChart,
-  RadialBar,
-  RadialBarChart,
-  Area,
-  AreaChart,
-} from "recharts"
-import { useChart } from "@/hooks/useChart" // Import the useChart hook
+import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart"
+import { Label, Pie, PieChart } from "recharts"
 
-import {
-  type ChartConfig,
-  ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart"
+const desktopData = [
+  { month: "January", desktop: 186 },
+  { month: "February", desktop: 305 },
+  { month: "March", desktop: 237 },
+  { month: "April", desktop: 73 },
+  { month: "May", desktop: 209 },
+  { month: "June", desktop: 214 },
+]
 
-// Helper to add CSS variables to Recharts components
-function addStyle(component: React.ReactElement, chartConfig: ChartConfig) {
-  return React.cloneElement(component, {
-    ...component.props,
-    stroke: `var(--color-${component.props.dataKey})`,
-    fill: `var(--color-${component.props.dataKey})`,
-  })
-}
+const chartConfig = {
+  desktop: {
+    label: "Desktop",
+    color: "hsl(var(--chart-1))",
+  },
+  mobile: {
+    label: "Mobile",
+    color: "hsl(var(--chart-2))",
+  },
+} satisfies ChartConfig
 
-function Chart({ children, chartConfig, className, ...props }: React.ComponentProps<typeof ChartContainer>) {
-  const hasChartComponents = React.useMemo(
-    () =>
-      React.Children.toArray(children).some(
-        (child) =>
-          React.isValidElement(child) &&
-          (child.type === Line ||
-            child.type === Bar ||
-            child.type === Area ||
-            child.type === RadialBar ||
-            child.type === Pie),
-      ),
-    [children],
-  )
+export function Component() {
+  const totalVisitors = React.useMemo(() => desktopData.reduce((acc, curr) => acc + curr.desktop, 0), [])
 
   return (
-    <ChartContainer className={className} chartConfig={chartConfig} {...props}>
-      {hasChartComponents
-        ? React.Children.map(children, (child) => {
-            if (React.isValidElement(child) && hasChartComponents) {
-              return addStyle(child, chartConfig)
-            }
-            return child
-          })
-        : children}
+    <ChartContainer config={chartConfig} className="mx-auto aspect-square h-[250px]">
+      <PieChart>
+        <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+        <Pie
+          data={desktopData}
+          dataKey="desktop"
+          nameKey="month"
+          innerRadius={60}
+          strokeWidth={5}
+          activeIndex={0}
+          activeShape={({
+            outerRadius = 0,
+            fill = "",
+            ...props
+          }: {
+            outerRadius: number
+            fill: string
+          }) => (
+            <g>
+              <circle cx={0} cy={0} r={outerRadius + 10} fill={fill} stroke="none" />
+              <path d="M 0 0 L 0 0 L 0 0 A 0 0 0 0 1 0 0 Z" fill={fill} stroke="none" {...props} />
+            </g>
+          )}
+        >
+          <Label
+            content={() => (
+              <div className="flex flex-col items-center justify-center">
+                <span className="text-5xl font-bold tracking-tighter">{totalVisitors}</span>
+                <span className="text-sm text-muted-foreground">Visitors</span>
+              </div>
+            )}
+            position="center"
+          />
+        </Pie>
+      </PieChart>
     </ChartContainer>
   )
-}
-
-function ChartTooltip_({ cursor = false, content, ...props }: React.ComponentProps<typeof ChartTooltip>) {
-  const { chartConfig } = useChart()
-  return (
-    <ChartTooltip
-      cursor={cursor}
-      content={<ChartTooltipContent hideLabel hideIndicator chartConfig={chartConfig} />}
-      {...props}
-    />
-  )
-}
-
-function ChartLegend_({ content, ...props }: React.ComponentProps<typeof ChartLegend>) {
-  const { chartConfig } = useChart()
-  return <ChartLegend content={<ChartLegendContent chartConfig={chartConfig} />} {...props} />
-}
-
-export {
-  Chart,
-  ChartTooltip_ as ChartTooltip,
-  ChartLegend_ as ChartLegend,
-  CartesianGrid,
-  Line,
-  LineChart,
-  Bar,
-  BarChart,
-  Pie,
-  PieChart,
-  RadialBar,
-  RadialBarChart,
-  Area,
-  AreaChart,
 }

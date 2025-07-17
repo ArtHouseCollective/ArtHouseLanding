@@ -74,16 +74,3 @@
     @apply bg-background text-foreground;
   }
 }
-
-.scrolling-carousel {
-  animation: scroll 30s linear infinite;
-}
-
-@keyframes scroll {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-100%);
-  }
-}

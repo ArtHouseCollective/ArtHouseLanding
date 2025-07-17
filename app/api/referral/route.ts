@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server"
 import { getFirestore } from "firebase-admin/firestore"
 import { initializeApp, cert, getApps } from "firebase-admin/app"
-import { generateReferralCode } from "@/lib/referral"
 
 const serviceAccount = {
   projectId: process.env.FIREBASE_PROJECT_ID,
@@ -37,21 +36,6 @@ export async function GET(request: Request) {
     return NextResponse.json({ referralCode: userData?.referralCode, referralCount: userData?.referralCount || 0 })
   } catch (error) {
     console.error("Error fetching referral data:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
-  }
-}
-
-export async function POST(req: Request) {
-  try {
-    const { email } = await req.json()
-    if (!email) {
-      return NextResponse.json({ error: "Email is required" }, { status: 400 })
-    }
-
-    const referralCode = await generateReferralCode(email)
-    return NextResponse.json({ referralCode })
-  } catch (error) {
-    console.error("Error generating referral code:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

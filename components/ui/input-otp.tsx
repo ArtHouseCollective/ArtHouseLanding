@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { OTPInput, type Slot, type OTPInputProps } from "input-otp"
+import { OTPInput, Slot, type OTPInputProps } from "input-otp"
 import { Minus } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -26,19 +26,19 @@ InputOTPGroup.displayName = "InputOTPGroup"
 const InputOTPSlot = React.forwardRef<
   React.ElementRef<typeof Slot>,
   React.ComponentPropsWithoutRef<typeof Slot> & { index: number }
->(({ index, className, ...props }, ref) => (
-  <div
+>(({ index, className, children }, ref) => (
+  <Slot
     ref={ref}
+    index={index}
     className={cn(
-      "relative flex h-9 w-9 items-center justify-center border border-input text-sm shadow-sm transition-all focus-within:z-10",
-      index === 0 ? "rounded-l-md" : "",
-      index === props.maxLength - 1 ? "rounded-r-md" : "",
+      "relative flex h-9 w-9 items-center justify-center border-y border-r border-input text-sm shadow-sm transition-all first:rounded-l-md first:border-l last:rounded-r-md",
+      "focus:z-10 focus:border-ring focus:ring-offset-background",
       className,
     )}
     {...props}
   >
-    {props.children}
-  </div>
+    {children}
+  </Slot>
 ))
 InputOTPSlot.displayName = "InputOTPSlot"
 

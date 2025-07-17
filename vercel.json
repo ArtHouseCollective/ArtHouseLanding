@@ -3,6 +3,26 @@
     {
       "source": "/:path*",
       "destination": "/:path*"
+    },
+    {
+      "source": "/api/subscribe",
+      "destination": "/api/subscribe"
+    },
+    {
+      "source": "/api/referral",
+      "destination": "/api/referral"
+    },
+    {
+      "source": "/api/referral/stats",
+      "destination": "/api/referral/stats"
+    },
+    {
+      "source": "/api/referralSignup",
+      "destination": "/api/referralSignup"
+    },
+    {
+      "source": "/api/trackReferral",
+      "destination": "/api/trackReferral"
     }
   ]
 }
