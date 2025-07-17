@@ -324,7 +324,7 @@ export default function Page() {
                   </div>
                   <div className="flex-none p-6 flex items-center justify-center text-center bg-zinc-900/70 border-t border-zinc-700 w-full h-1/2">
                     <p className="text-white text-center font-light tracking-wide">
-                      Every member is verified. No followers. Just professional collaborators.
+                      Every member is verified. Professional collaborators only.
                     </p>
                   </div>
                 </div>
