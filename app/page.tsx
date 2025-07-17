@@ -81,7 +81,7 @@ function CreatorCard({ creator }: { creator: Creator }) {
   return (
     <div className="flex-shrink-0 relative">
       {/* Golden glow background */}
-      <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 via-blue-500/30 to-blue-400/20 rounded-2xl blur-xl scale-110"></div>
+      <div className="absolute inset-0 bg-gradient-to-r from-cobalt-600/20 via-cobalt-700/30 to-cobalt-600/20 rounded-2xl blur-xl scale-110"></div>
 
       {/* Profile card */}
       <div className="relative bg-zinc-950/80 border border-zinc-700/50 rounded-2xl p-6 md:p-8 w-[70vw] max-w-[256px] h-[104vw] max-h-[416px] backdrop-blur-sm">
@@ -99,7 +99,7 @@ function CreatorCard({ creator }: { creator: Creator }) {
           </div>
           <div className="flex flex-col items-center text-center flex-grow justify-end min-h-[120px]">
             <h3 className="text-base md:text-lg font-bold text-white leading-tight">{creator.name}</h3>
-            <p className="text-sm md:text-base text-blue-400 font-medium">{creator.title}</p>
+            <p className="text-sm md:text-base text-cobalt-400 font-medium">{creator.title}</p>
             <p className="text-xs leading-tight tracking-wide uppercase font-semibold text-zinc-300">{creator.genre}</p>
             <p className="text-sm leading-snug text-zinc-400">{creator.specialty}</p>
           </div>
@@ -300,7 +300,7 @@ export default function Page() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Feature 1: Curated Onboarding */}
-            <div className="flex flex-col items-center p-6 bg-zinc-900/50 rounded-lg border border-zinc-700/50 backdrop-blur-sm justify-between">
+            <div className="flex flex-col items-center p-6 bg-zinc-900/50 rounded-lg border border-zinc-700/50 backdrop-blur-sm justify-between mx-auto w-[70vw] max-w-[256px] h-[104vw] max-h-[416px]">
               <div className="flex flex-col items-center">
                 <h3 className="text-xl font-semibold text-white mb-2">Curated Onboarding</h3>
                 <p className="text-zinc-400 text-center">
@@ -308,11 +308,11 @@ export default function Page() {
                 </p>
               </div>
               <div className="mt-6 p-3 rounded-full bg-zinc-800/70 border border-zinc-700/50 flex items-center justify-center">
-                <UserCheck className="w-10 h-10 bg-gradient-to-r from-blue-300 to-purple-400 bg-clip-text text-transparent" />
+                <UserCheck className="w-10 h-10 bg-gradient-to-r from-cobalt-600 to-cobalt-800 bg-clip-text text-transparent" />
               </div>
             </div>
             {/* Feature 2: Swipe by Style */}
-            <div className="flex flex-col items-center p-6 bg-zinc-900/50 rounded-lg border border-zinc-700/50 backdrop-blur-sm justify-between">
+            <div className="flex flex-col items-center p-6 bg-zinc-900/50 rounded-lg border border-zinc-700/50 backdrop-blur-sm justify-between mx-auto w-[70vw] max-w-[256px] h-[104vw] max-h-[416px]">
               <div className="flex flex-col items-center">
                 <h3 className="text-xl font-semibold text-white mb-2">Swipe by Style</h3>
                 <p className="text-zinc-400 text-center">
@@ -320,11 +320,11 @@ export default function Page() {
                 </p>
               </div>
               <div className="mt-6 p-3 rounded-full bg-zinc-800/70 border border-zinc-700/50 flex items-center justify-center">
-                <Hand className="w-10 h-10 bg-gradient-to-r from-blue-300 to-purple-400 bg-clip-text text-transparent" />
+                <Hand className="w-10 h-10 bg-gradient-to-r from-cobalt-600 to-cobalt-800 bg-clip-text text-transparent" />
               </div>
             </div>
             {/* Feature 3: Join Collectives */}
-            <div className="flex flex-col items-center p-6 bg-zinc-900/50 rounded-lg border border-zinc-700/50 backdrop-blur-sm justify-between">
+            <div className="flex flex-col items-center p-6 bg-zinc-900/50 rounded-lg border border-zinc-700/50 backdrop-blur-sm justify-between mx-auto w-[70vw] max-w-[256px] h-[104vw] max-h-[416px]">
               <div className="flex flex-col items-center">
                 <h3 className="text-xl font-semibold text-white mb-2">Join Collectives</h3>
                 <p className="text-zinc-400 text-center">
@@ -333,7 +333,7 @@ export default function Page() {
                 </p>
               </div>
               <div className="mt-6 p-3 rounded-full bg-zinc-800/70 border border-zinc-700/50 flex items-center justify-center">
-                <Users className="w-10 h-10 bg-gradient-to-r from-blue-300 to-purple-400 bg-clip-text text-transparent" />
+                <Users className="w-10 h-10 bg-gradient-to-r from-cobalt-600 to-cobalt-800 bg-clip-text text-transparent" />
               </div>
             </div>
           </div>
@@ -348,7 +348,7 @@ export default function Page() {
         </p>
         <a
           onClick={() => setIsEmailDialogOpen(true)} // Open the dialog
-          className="inline-block bg-gradient-to-r from-zinc-700 to-zinc-800 hover:from-zinc-600 hover:to-zinc-700 text-white font-medium py-3 px-6 rounded-full transition cursor-pointer shadow-lg hover:shadow-xl"
+          className="inline-block bg-gradient-to-r from-cobalt-700 to-cobalt-800 hover:from-cobalt-600 hover:to-cobalt-700 text-white font-medium py-3 px-6 rounded-full transition cursor-pointer shadow-lg hover:shadow-xl"
         >
           Apply Now
         </a>
@@ -361,7 +361,7 @@ export default function Page() {
             <span className="text-lg">🪩</span>
             <span className="text-white text-sm font-medium">{foundersCount} / 150 Founders Circle Spots Filled</span>
           </div>
-          <div className="absolute inset-0 rounded-full bg-gradient-to-r from-yellow-400/20 to-yellow-600/20 blur-sm -z-10"></div>
+          <div className="absolute inset-0 rounded-full bg-gradient-to-r from-cobalt-600/20 to-cobalt-800/20 blur-sm -z-10"></div>
         </div>
       </div>
 
