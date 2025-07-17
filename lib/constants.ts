@@ -1,15 +1,17 @@
 //
-// Shared typed accessors for all secret keys & IDs.
-// Keep every string non-empty in production but guard during local dev.
+// Shared runtime constants – typed once, imported everywhere
 //
+
+// Firebase
 export const FIREBASE_PROJECT_ID = process.env.FIREBASE_PROJECT_ID ?? ""
 
 export const FIREBASE_CLIENT_EMAIL = process.env.FIREBASE_CLIENT_EMAIL ?? ""
 
-export const FIREBASE_PRIVATE_KEY =
-  // GitHub / Vercel automatically convert line-breaks to '\n'
-  (process.env.FIREBASE_PRIVATE_KEY ?? "").replace(/\\n/g, "\n")
+// Important: Firebase private keys are multiline; the replace() keeps the
+// newline format that the Admin SDK expects.
+export const FIREBASE_PRIVATE_KEY = (process.env.FIREBASE_PRIVATE_KEY ?? "").replace(/\\n/g, "\n")
 
+// Beehiiv
 export const BEEHIIV_API_KEY = process.env.BEEHIIV_API_KEY ?? ""
 
 export const BEEHIIV_PUBLICATION_ID = process.env.BEEHIIV_PUBLICATION_ID ?? ""
