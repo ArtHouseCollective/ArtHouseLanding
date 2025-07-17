@@ -12,10 +12,7 @@ const BreadcrumbList = React.forwardRef<HTMLOListElement, React.ComponentPropsWi
   ({ className, ...props }, ref) => (
     <ol
       ref={ref}
-      className={cn(
-        "flex flex-wrap items-center gap-1.5 break-words text-sm text-muted-foreground sm:gap-2.5",
-        className,
-      )}
+      className={cn("flex flex-wrap items-center gap-1.5 break-words text-sm text-muted-foreground", className)}
       {...props}
     />
   ),
@@ -30,22 +27,17 @@ BreadcrumbItem.displayName = "BreadcrumbItem"
 const BreadcrumbLink = React.forwardRef<
   HTMLAnchorElement,
   React.ComponentPropsWithoutRef<"a"> & {
-    isCurrentPage?: boolean
+    asChild?: boolean
   }
->(({ className, isCurrentPage = false, ...props }, ref) => (
-  <a
-    ref={ref}
-    className={cn("transition-colors hover:text-foreground", isCurrentPage && "text-foreground", className)}
-    aria-current={isCurrentPage ? "page" : undefined}
-    {...props}
-  />
+>(({ asChild, className, ...props }, ref) => (
+  <a ref={ref} className={cn("transition-colors hover:text-foreground", className)} {...props} />
 ))
 BreadcrumbLink.displayName = "BreadcrumbLink"
 
 const BreadcrumbSeparator = React.forwardRef<HTMLLIElement, React.ComponentPropsWithoutRef<"li">>(
-  ({ className, children, ...props }, ref) => (
-    <li ref={ref} role="presentation" aria-hidden="true" className={cn("[&>svg]:size-3.5", className)} {...props}>
-      {children ?? <ChevronRightIcon />}
+  ({ className, ...props }, ref) => (
+    <li ref={ref} aria-hidden="true" className={cn("[&>svg]:size-3.5", className)} {...props}>
+      <ChevronRightIcon />
     </li>
   ),
 )

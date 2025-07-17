@@ -1,19 +1,18 @@
 import { NextResponse } from "next/server"
-import { trackReferral } from "@/lib/referral"
+import { trackReferralSignup } from "@/lib/referral"
 
 export async function POST(request: Request) {
+  const { email, referralCode } = await request.json()
+
+  if (!email || !referralCode) {
+    return NextResponse.json({ error: "Email and referral code are required" }, { status: 400 })
+  }
+
   try {
-    const { referrerCode, referredEmail } = await request.json()
-
-    if (!referrerCode || !referredEmail) {
-      return NextResponse.json({ error: "Referrer code and referred email are required" }, { status: 400 })
-    }
-
-    await trackReferral(referrerCode, referredEmail)
-
-    return NextResponse.json({ message: "Referral tracked successfully" }, { status: 200 })
+    await trackReferralSignup(email, referralCode)
+    return NextResponse.json({ message: "Referral signup tracked successfully" })
   } catch (error) {
-    console.error("Error tracking referral:", error)
-    return NextResponse.json({ error: "Failed to track referral" }, { status: 500 })
+    console.error("Error tracking referral signup:", error)
+    return NextResponse.json({ error: "Failed to track referral signup" }, { status: 500 })
   }
 }

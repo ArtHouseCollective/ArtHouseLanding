@@ -16,14 +16,14 @@ type FormFieldContextValue<
   name: TName
 }
 
-const FormFieldContext = React.createContext<FormFieldContextValue | null>(null)
+const FormFieldContext = React.createContext<FormFieldContextValue>({} as FormFieldContextValue)
 
 const FormField = <
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 >({
   ...props
-}: React.PropsWithChildren<Controller<TFieldValues, TName>>) => {
+}: Controller<TFieldValues, TName>) => {
   return (
     <FormFieldContext.Provider value={{ name: props.name }}>
       <Controller {...props} />
@@ -34,20 +34,23 @@ const FormField = <
 const useFormField = () => {
   const fieldContext = React.useContext(FormFieldContext)
   const itemContext = React.useContext(FormItemContext)
-  const { getFieldState, formState } = useFormContext()
 
-  if (!fieldContext) {
-    throw new Error("`useFormField` should be used within `<FormField>`")
-  }
+  const { getFieldState, formState } = useFormContext()
 
   const fieldState = getFieldState(fieldContext.name, formState)
 
+  if (!fieldContext) {
+    throw new Error("useFormField should be used within <FormField>")
+  }
+
+  const { id } = itemContext
+
   return {
+    id,
     name: fieldContext.name,
-    id: itemContext.id,
-    formItemId: `${itemContext.id}-form-item`,
-    formDescriptionId: `${itemContext.id}-form-item-description`,
-    formMessageId: `${itemContext.id}-form-item-message`,
+    formItemId: `${id}-form-item`,
+    formDescriptionId: `${id}-form-item-description`,
+    formMessageId: `${id}-form-item-message`,
     ...fieldState,
   }
 }
@@ -56,7 +59,7 @@ type FormItemContextValue = {
   id: string
 }
 
-const FormItemContext = React.createContext<FormItemContextValue | null>(null)
+const FormItemContext = React.createContext<FormItemContextValue>({} as FormItemContextValue)
 
 const FormItem = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => {
@@ -82,17 +85,14 @@ FormLabel.displayName = "FormLabel"
 
 const FormControl = React.forwardRef<React.ElementRef<typeof Slot>, React.ComponentPropsWithoutRef<typeof Slot>>(
   ({ ...props }, ref) => {
-    const { formItemId, formDescriptionId, formMessageId } = useFormField()
+    const { error, formItemId, formDescriptionId, formMessageId } = useFormField()
 
     return (
       <Slot
         ref={ref}
         id={formItemId}
-        aria-describedby={
-          !props["aria-describedby"] && formMessageId
-            ? `${formDescriptionId} ${formMessageId}`
-            : props["aria-describedby"]
-        }
+        aria-describedby={!error ? `${formDescriptionId}` : `${formDescriptionId} ${formMessageId}`}
+        aria-invalid={!!error}
         {...props}
       />
     )

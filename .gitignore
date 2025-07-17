@@ -168,6 +168,3 @@ pnpm-lock.yaml
 
 # misc
 *.pem
-
-# local env files
-.env*.local

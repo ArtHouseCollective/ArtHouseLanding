@@ -13,266 +13,205 @@ import {
   RadialBarChart,
   Area,
   AreaChart,
-  Scatter,
-  ScatterChart,
-  XAxis,
-  YAxis,
-  type LayoutType,
-  type BarChartProps,
-  type LineChartProps,
-  type AreaChartProps,
-  type RadialBarChartProps,
-  type PieChartProps,
-  type ScatterChartProps,
 } from "recharts"
 
-import { cn } from "@/lib/utils"
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
-const ChartContext = React.createContext<ChartContextProps>({
-  data: [],
-  categories: [],
-  index: "",
-  type: "bar",
-  layout: "vertical",
-})
+// Helper to determine chart type from data keys
+function getChartType(data: any[], dataKeys: string[]) {
+  if (!data || data.length === 0 || dataKeys.length === 0) return null
 
-type ChartContextProps = {
-  data: Record<string, any>[]
-  categories: string[]
-  index: string
-  type: ChartType
-  layout: LayoutType
+  // Check for common chart patterns
+  if (dataKeys.length === 1 && typeof data[0][dataKeys[0]] === "number") {
+    // If single numeric key, could be bar or line
+    return "bar" // Default to bar for simplicity
+  }
+  if (
+    dataKeys.length > 1 &&
+    data.every((d) => typeof d[dataKeys[0]] === "string" && typeof d[dataKeys[1]] === "number")
+  ) {
+    // If first key is string (category) and second is number, could be pie or radial
+    return "pie" // Default to pie for simplicity
+  }
+  return "line" // Default to line for multi-series or time-series like data
 }
 
-type ChartProps = {
+interface ChartProps extends React.HTMLAttributes<HTMLDivElement> {
   data: Record<string, any>[]
-  categories: string[]
-  index: string
-  type?: ChartType
-  layout?: LayoutType
-} & (
-  | { type: "bar"; chartProps?: BarChartProps }
-  | { type: "line"; chartProps?: LineChartProps }
-  | { type: "area"; chartProps?: AreaChartProps }
-  | { type: "radialbar"; chartProps?: RadialBarChartProps }
-  | { type: "pie"; chartProps?: PieChartProps }
-  | { type: "scatter"; chartProps?: ScatterChartProps }
-) &
-  React.HTMLAttributes<HTMLDivElement>
+  dataKeys: string[]
+  chartType?: "line" | "bar" | "pie" | "radial" | "area"
+  categoryKey?: string
+  valueKey?: string
+  chartProps?:
+    | React.ComponentProps<typeof LineChart>
+    | React.ComponentProps<typeof BarChart>
+    | React.ComponentProps<typeof PieChart>
+    | React.ComponentProps<typeof RadialBarChart>
+    | React.ComponentProps<typeof AreaChart>
+  seriesProps?: React.ComponentProps<typeof Line> | React.ComponentProps<typeof Bar> | React.ComponentProps<typeof Area>
+  pieProps?: React.ComponentProps<typeof Pie>
+  radialBarProps?: React.ComponentProps<typeof RadialBar>
+  showGrid?: boolean
+  showTooltip?: boolean
+  showLegend?: boolean
+  showAxis?: boolean
+  aspectRatio?: number
+  height?: number
+  width?: number
+  enableSelect?: boolean
+}
 
-type ChartType = "bar" | "line" | "area" | "radialbar" | "pie" | "scatter"
+const Chart: React.FC<ChartProps> = ({
+  data,
+  dataKeys,
+  chartType: propChartType,
+  categoryKey,
+  valueKey,
+  chartProps,
+  seriesProps,
+  pieProps,
+  radialBarProps,
+  showGrid = false,
+  showTooltip = true,
+  showLegend = false,
+  showAxis = true,
+  aspectRatio = 16 / 9,
+  height = 300,
+  width = 500,
+  enableSelect = false,
+  ...props
+}) => {
+  const [chartType, setChartType] = React.useState(propChartType || getChartType(data, dataKeys) || "line")
 
-const Chart = React.forwardRef<HTMLDivElement, ChartProps>(
-  ({ data, categories, index, type = "bar", layout = "vertical", className, children, chartProps, ...props }, ref) => {
-    const ChartPrimitive = React.useMemo(() => {
-      if (type === "bar") return BarChart
-      if (type === "line") return LineChart
-      if (type === "area") return AreaChart
-      if (type === "radialbar") return RadialBarChart
-      if (type === "pie") return PieChart
-      if (type === "scatter") return ScatterChart
-      return null
-    }, [type])
-
-    if (!ChartPrimitive) {
-      return null
+  const renderChart = () => {
+    const commonProps = {
+      data,
+      aspect: aspectRatio,
+      height,
+      width,
+      ...chartProps,
     }
 
-    return (
-      <ChartContext.Provider value={{ data, categories, index, type, layout }}>
-        <div ref={ref} className={cn("w-full h-96", className)} {...props}>
-          <ChartPrimitive data={data} layout={layout} className="size-full" {...chartProps}>
-            {children}
-          </ChartPrimitive>
-        </div>
-      </ChartContext.Provider>
-    )
-  },
-)
-Chart.displayName = "Chart"
+    const renderSeries = () => {
+      if (chartType === "pie" || chartType === "radial") {
+        return null // Handled by Pie/RadialBar component directly
+      }
+      return dataKeys.map((key) => {
+        const color = `hsl(var(--chart-${dataKeys.indexOf(key) + 1}))`
+        if (chartType === "line") {
+          return <Line key={key} dataKey={key} stroke={color} {...seriesProps} />
+        }
+        if (chartType === "bar") {
+          return <Bar key={key} dataKey={key} fill={color} {...seriesProps} />
+        }
+        if (chartType === "area") {
+          return <Area key={key} dataKey={key} stroke={color} fill={color} {...seriesProps} />
+        }
+        return null
+      })
+    }
 
-const ChartCrosshair = ({ className, ...props }: React.ComponentProps<typeof CartesianGrid>) => {
+    switch (chartType) {
+      case "line":
+        return (
+          <LineChart {...commonProps}>
+            {showGrid && <CartesianGrid vertical={false} />}
+            {showTooltip && <ChartTooltip content={<ChartTooltipContent />} />}
+            {showAxis && <></>} {/* Add XAxis, YAxis if needed */}
+            {renderSeries()}
+          </LineChart>
+        )
+      case "bar":
+        return (
+          <BarChart {...commonProps}>
+            {showGrid && <CartesianGrid vertical={false} />}
+            {showTooltip && <ChartTooltip content={<ChartTooltipContent />} />}
+            {showAxis && <></>} {/* Add XAxis, YAxis if needed */}
+            {renderSeries()}
+          </BarChart>
+        )
+      case "pie":
+        if (!categoryKey || !valueKey) {
+          console.warn("Pie chart requires categoryKey and valueKey props.")
+          return null
+        }
+        return (
+          <PieChart {...commonProps}>
+            {showTooltip && <ChartTooltip content={<ChartTooltipContent />} />}
+            <Pie
+              data={data}
+              dataKey={valueKey}
+              nameKey={categoryKey}
+              cx="50%"
+              cy="50%"
+              outerRadius={80}
+              fill="#8884d8"
+              label
+              {...pieProps}
+            />
+          </PieChart>
+        )
+      case "radial":
+        if (!categoryKey || !valueKey) {
+          console.warn("RadialBar chart requires categoryKey and valueKey props.")
+          return null
+        }
+        return (
+          <RadialBarChart
+            innerRadius="10%"
+            outerRadius="80%"
+            data={data}
+            startAngle={90}
+            endAngle={-270}
+            {...commonProps}
+          >
+            {showTooltip && <ChartTooltip content={<ChartTooltipContent />} />}
+            <RadialBar
+              minAngle={15}
+              label={{ position: "insideStart", fill: "#fff" }}
+              background
+              clockWise
+              dataKey={valueKey}
+              {...radialBarProps}
+            />
+          </RadialBarChart>
+        )
+      case "area":
+        return (
+          <AreaChart {...commonProps}>
+            {showGrid && <CartesianGrid vertical={false} />}
+            {showTooltip && <ChartTooltip content={<ChartTooltipContent />} />}
+            {showAxis && <></>} {/* Add XAxis, YAxis if needed */}
+            {renderSeries()}
+          </AreaChart>
+        )
+      default:
+        return null
+    }
+  }
+
   return (
-    <CartesianGrid strokeDasharray="3 3" vertical={false} className={cn("stroke-gray-200", className)} {...props} />
+    <div {...props}>
+      {enableSelect && (
+        <Select value={chartType} onValueChange={(value) => setChartType(value as any)}>
+          <SelectTrigger className="w-[180px] mb-4">
+            <SelectValue placeholder="Select Chart Type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="line">Line Chart</SelectItem>
+            <SelectItem value="bar">Bar Chart</SelectItem>
+            <SelectItem value="pie">Pie Chart</SelectItem>
+            <SelectItem value="radial">Radial Bar Chart</SelectItem>
+            <SelectItem value="area">Area Chart</SelectItem>
+          </SelectContent>
+        </Select>
+      )}
+      <ChartContainer config={{}} className="min-h-[200px] w-full">
+        {renderChart()}
+      </ChartContainer>
+    </div>
   )
 }
-ChartCrosshair.displayName = "ChartCrosshair"
 
-const ChartAxis = React.forwardRef<SVGSVGElement, React.ComponentProps<typeof XAxis>>(
-  ({ className, ...props }, ref) => {
-    const { layout } = React.useContext(ChartContext)
-
-    return (
-      <XAxis
-        ref={ref}
-        stroke="#888888"
-        fontSize={12}
-        tickLine={false}
-        axisLine={false}
-        className={cn("text-sm", className)}
-        {...(layout === "horizontal" ? { type: "category" } : { type: "number" })}
-        {...props}
-      />
-    )
-  },
-)
-ChartAxis.displayName = "ChartAxis"
-
-const ChartYAxis = React.forwardRef<SVGSVGElement, React.ComponentProps<typeof YAxis>>(
-  ({ className, ...props }, ref) => {
-    const { layout } = React.useContext(ChartContext)
-
-    return (
-      <YAxis
-        ref={ref}
-        stroke="#888888"
-        fontSize={12}
-        tickLine={false}
-        axisLine={false}
-        className={cn("text-sm", className)}
-        {...(layout === "vertical" ? { type: "category" } : { type: "number" })}
-        {...props}
-      />
-    )
-  },
-)
-ChartYAxis.displayName = "ChartYAxis"
-
-const ChartBar = React.forwardRef<SVGSVGElement, React.ComponentProps<typeof Bar>>(({ className, ...props }, ref) => {
-  const { categories, index } = React.useContext(ChartContext)
-
-  return (
-    <>
-      {categories.map((category) => (
-        <Bar
-          ref={ref}
-          key={category}
-          dataKey={category}
-          fill="currentColor"
-          radius={[4, 4, 0, 0]}
-          className={cn("fill-primary", className)}
-          {...props}
-        />
-      ))}
-    </>
-  )
-})
-ChartBar.displayName = "ChartBar"
-
-const ChartLine = React.forwardRef<SVGSVGElement, React.ComponentProps<typeof Line>>(({ className, ...props }, ref) => {
-  const { categories, index } = React.useContext(ChartContext)
-
-  return (
-    <>
-      {categories.map((category) => (
-        <Line
-          ref={ref}
-          key={category}
-          dataKey={category}
-          stroke="currentColor"
-          className={cn("stroke-primary", className)}
-          {...props}
-        />
-      ))}
-    </>
-  )
-})
-ChartLine.displayName = "ChartLine"
-
-const ChartArea = React.forwardRef<SVGSVGElement, React.ComponentProps<typeof Area>>(({ className, ...props }, ref) => {
-  const { categories, index } = React.useContext(ChartContext)
-
-  return (
-    <>
-      {categories.map((category) => (
-        <Area
-          ref={ref}
-          key={category}
-          dataKey={category}
-          stroke="currentColor"
-          fill="currentColor"
-          className={cn("stroke-primary fill-primary", className)}
-          {...props}
-        />
-      ))}
-    </>
-  )
-})
-ChartArea.displayName = "ChartArea"
-
-const ChartRadialBar = React.forwardRef<SVGSVGElement, React.ComponentProps<typeof RadialBar>>(
-  ({ className, ...props }, ref) => {
-    const { categories, index } = React.useContext(ChartContext)
-
-    return (
-      <>
-        {categories.map((category) => (
-          <RadialBar
-            ref={ref}
-            key={category}
-            dataKey={category}
-            fill="currentColor"
-            className={cn("fill-primary", className)}
-            {...props}
-          />
-        ))}
-      </>
-    )
-  },
-)
-ChartRadialBar.displayName = "ChartRadialBar"
-
-const ChartPie = React.forwardRef<SVGSVGElement, React.ComponentProps<typeof Pie>>(({ className, ...props }, ref) => {
-  const { categories, index } = React.useContext(ChartContext)
-
-  return (
-    <>
-      {categories.map((category) => (
-        <Pie
-          ref={ref}
-          key={category}
-          dataKey={category}
-          fill="currentColor"
-          className={cn("fill-primary", className)}
-          {...props}
-        />
-      ))}
-    </>
-  )
-})
-ChartPie.displayName = "ChartPie"
-
-const ChartScatter = React.forwardRef<SVGSVGElement, React.ComponentProps<typeof Scatter>>(
-  ({ className, ...props }, ref) => {
-    const { categories, index } = React.useContext(ChartContext)
-
-    return (
-      <>
-        {categories.map((category) => (
-          <Scatter
-            ref={ref}
-            key={category}
-            dataKey={category}
-            fill="currentColor"
-            className={cn("fill-primary", className)}
-            {...props}
-          />
-        ))}
-      </>
-    )
-  },
-)
-ChartScatter.displayName = "ChartScatter"
-
-export {
-  Chart,
-  ChartCrosshair,
-  ChartAxis,
-  ChartYAxis,
-  ChartBar,
-  ChartLine,
-  ChartArea,
-  ChartRadialBar,
-  ChartPie,
-  ChartScatter,
-}
+export { Chart }

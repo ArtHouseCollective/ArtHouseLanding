@@ -1,51 +1,5 @@
 "use client"
 
-import type * as React from "react"
-import {
-  ResizablePanelGroup as ResizablePanelGroupPrimitive,
-  ResizablePanel as ResizablePanelPrimitive,
-  ResizableHandle as ResizableHandlePrimitive,
-} from "react-resizable-panels"
-
-import { cn } from "@/lib/utils"
-
-const ResizablePanelGroup = ({ className, ...props }: React.ComponentProps<typeof ResizablePanelGroupPrimitive>) => (
-  <ResizablePanelGroupPrimitive
-    className={cn("flex h-full w-full data-[panel-group-direction=vertical]:flex-col", className)}
-    {...props}
-  />
-)
-
-const ResizablePanel = ResizablePanelPrimitive
-
-const ResizableHandle = ({
-  withHandle,
-  className,
-  ...props
-}: React.ComponentProps<typeof ResizableHandlePrimitive> & {
-  withHandle?: boolean
-}) => (
-  <ResizableHandlePrimitive
-    className={cn(
-      "relative flex w-px items-center justify-center bg-border after:absolute after:inset-y-0 after:left-1/2 after:w-1 data-[panel-group-direction=vertical]:h-px data-[panel-group-direction=vertical]:w-full data-[panel-group-direction=vertical]:after:left-0 data-[panel-group-direction=vertical]:after:h-1 data-[panel-group-direction=vertical]:after:w-full data-[panel-group-direction=vertical]:after:-translate-y-1/2 after:-translate-x-1/2 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 data-[panel-group-direction=vertical]:focus-visible:ring-offset-y-1",
-      withHandle &&
-        "after:bg-background after:group-hover:bg-border after:group-data-[state=active]:bg-border group-focus-visible:after:bg-border group-data-[panel-group-direction=vertical]:after:group-hover:bg-border group-data-[panel-group-direction=vertical]:group-focus-visible:after:bg-border",
-      className,
-    )}
-    {...props}
-  >
-    {withHandle && (
-      <div className="z-10 flex h-4 w-4 items-center justify-center rounded-full border bg-background">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-2.5 w-2.5">
-          <path
-            fillRule="evenodd"
-            d="M10.293 4.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 12 10.293 7.707a1 1 0 010-1.414z"
-            clipRule="evenodd"
-          />
-        </svg>
-      </div>
-    )}
-  </ResizableHandlePrimitive>
-)
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "react-resizable-panels"
 
 export { ResizablePanelGroup, ResizablePanel, ResizableHandle }

@@ -6,12 +6,12 @@ import { type VariantProps, cva } from "class-variance-authority"
 import { PanelLeft } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { Separator } from "@/components/ui/separator"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Separator } from "@/components/ui/separator"
 import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -135,8 +135,15 @@ interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   items: {
     href: string
     title: string
-    icon: React.ElementType
+    disabled?: boolean
   }[]
+  links: {
+    title: string
+    label?: string
+    icon: React.ElementType
+    href: string
+  }[]
+  isCollapsed: boolean
 }
 
 const SidebarComponent = React.forwardRef<
@@ -149,7 +156,7 @@ const SidebarComponent = React.forwardRef<
     items?: {
       href: string
       title: string
-      icon: React.ElementType
+      disabled?: boolean
     }[]
     links?: {
       title: string
@@ -157,7 +164,6 @@ const SidebarComponent = React.forwardRef<
       icon: React.ElementType
       href: string
     }[]
-    onCollapse?: () => void
   }
 >(
   (
@@ -170,7 +176,6 @@ const SidebarComponent = React.forwardRef<
       links,
       className,
       children,
-      onCollapse,
       ...props
     },
     ref,
@@ -193,9 +198,9 @@ const SidebarComponent = React.forwardRef<
                   className={cn(
                     "flex w-full items-center rounded-md p-2 text-foreground hover:underline",
                     pathname === item.href ? "bg-muted font-medium" : "transparent",
+                    item.disabled && "cursor-not-allowed opacity-80",
                   )}
                 >
-                  <item.icon className="mr-2 h-4 w-4" />
                   {item.title}
                 </Link>
               ))
@@ -270,9 +275,9 @@ const SidebarComponent = React.forwardRef<
                       className={cn(
                         "flex w-full items-center rounded-md p-2 text-foreground hover:underline",
                         pathname === item.href ? "bg-muted font-medium" : "transparent",
+                        item.disabled && "cursor-not-allowed opacity-80",
                       )}
                     >
-                      <item.icon className="mr-2 h-4 w-4" />
                       {item.title}
                     </Link>
                   ))
@@ -377,9 +382,9 @@ const SidebarComponent = React.forwardRef<
                       className={cn(
                         "flex w-full items-center rounded-md p-2 text-foreground hover:underline",
                         pathname === item.href ? "bg-muted font-medium" : "transparent",
+                        item.disabled && "cursor-not-allowed opacity-80",
                       )}
                     >
-                      <item.icon className="mr-2 h-4 w-4" />
                       {item.title}
                     </Link>
                   ))
