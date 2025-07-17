@@ -228,7 +228,7 @@ export default function Page() {
       <div className="py-20 px-4 overflow-hidden">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-2xl md:text-3xl font-bold text-center mb-12 text-zinc-200">
-            Creators Already On ArtHouse
+            Creators in the Founder's Circle
           </h2>
 
           <div className="relative">
@@ -469,8 +469,8 @@ export default function Page() {
       {/* Final CTA Section */}
       <div className="py-20 px-4">
         <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">This only works if it's ours.</h2>
-          <p className="text-xl text-zinc-400 mb-8">Invite 3 creatives to skip the wait.</p>
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Sign up to join the growing community.</h2>
+          <p className="text-xl text-zinc-400 mb-8">Refer friends for rewards...</p>
           <Button className="bg-white text-black hover:bg-zinc-200 px-8 py-3 text-lg font-semibold rounded-lg transition-all duration-300 transform hover:scale-105">
             Invite Friends →
           </Button>
