@@ -313,18 +313,17 @@ export default function Page() {
                 {/* Light blue glow background */}
                 <div className="absolute inset-0 bg-gradient-to-r from-cobalt-600/20 via-cobalt-700/30 to-cobalt-600/20 rounded-lg blur-xl scale-105"></div>
                 <div className="relative flex flex-col items-center justify-center bg-zinc-950/70 rounded-lg border border-zinc-700/50 backdrop-blur-sm mx-auto w-[70vw] max-w-[256px] h-[276px] overflow-hidden">
-                  <div className="flex-1 flex items-center justify-center p-4">
+                  <div className="relative w-full h-1/2 flex items-center justify-center overflow-hidden p-4">
                     <Image
                       src="/assets/icons/cards 2.png"
                       alt="Curated Onboarding"
-                      width={96}
-                      height={96}
-                      objectFit="contain"
+                      layout="fill"
+                      objectFit="cover"
                       className="opacity-80"
                     />
                   </div>
-                  <div className="flex-none p-6 flex items-center justify-center text-center bg-zinc-900/70 border-t border-zinc-700 w-full">
-                    <p className="text-white text-center">
+                  <div className="flex-none p-6 flex items-center justify-center text-center bg-zinc-900/70 border-t border-zinc-700 w-full h-1/2">
+                    <p className="text-white text-center font-light tracking-wide">
                       Every member is handpicked and verified. No followers. Just professional collaborators.
                     </p>
                   </div>
@@ -338,18 +337,17 @@ export default function Page() {
                 {/* Light blue glow background */}
                 <div className="absolute inset-0 bg-gradient-to-r from-cobalt-600/20 via-cobalt-700/30 to-cobalt-600/20 rounded-lg blur-xl scale-105"></div>
                 <div className="relative flex flex-col items-center justify-center bg-zinc-950/70 rounded-lg border border-zinc-700/50 backdrop-blur-sm mx-auto w-[70vw] max-w-[256px] h-[276px] overflow-hidden">
-                  <div className="flex-1 flex items-center justify-center p-4">
+                  <div className="relative w-full h-1/2 flex items-center justify-center overflow-hidden p-4">
                     <Image
                       src="/assets/icons/resonance.png"
                       alt="Swipe by Style"
-                      width={96}
-                      height={96}
-                      objectFit="contain"
+                      layout="fill"
+                      objectFit="cover"
                       className="opacity-80"
                     />
                   </div>
-                  <div className="flex-none p-6 flex items-center justify-center text-center bg-zinc-900/70 border-t border-zinc-700 w-full">
-                    <p className="text-white text-center">
+                  <div className="flex-none p-6 flex items-center justify-center text-center bg-zinc-900/70 border-t border-zinc-700 w-full h-1/2">
+                    <p className="text-white text-center font-light tracking-wide">
                       Match with artists based on genre, portfolio, and vibe.
                     </p>
                   </div>
@@ -363,18 +361,17 @@ export default function Page() {
                 {/* Light blue glow background */}
                 <div className="absolute inset-0 bg-gradient-to-r from-cobalt-600/20 via-cobalt-700/30 to-cobalt-600/20 rounded-lg blur-xl scale-105"></div>
                 <div className="relative flex flex-col items-center justify-center bg-zinc-950/70 rounded-lg border border-zinc-700/50 backdrop-blur-sm mx-auto w-[70vw] max-w-[256px] h-[276px] overflow-hidden">
-                  <div className="flex-1 flex items-center justify-center p-4">
+                  <div className="relative w-full h-1/2 flex items-center justify-center overflow-hidden p-4">
                     <Image
                       src="/assets/icons/collective.png"
                       alt="Join Collectives"
-                      width={96}
-                      height={96}
-                      objectFit="contain"
+                      layout="fill"
+                      objectFit="cover"
                       className="opacity-80"
                     />
                   </div>
-                  <div className="flex-none p-6 flex items-center justify-center text-center bg-zinc-900/70 border-t border-zinc-700 w-full">
-                    <p className="text-white text-center">
+                  <div className="flex-none p-6 flex items-center justify-center text-center bg-zinc-900/70 border-t border-zinc-700 w-full h-1/2">
+                    <p className="text-white text-center font-light tracking-wide">
                       Join collectives based on shared interests. Create your own communities to build.
                     </p>
                   </div>
