@@ -1,6 +1,8 @@
 import { FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY } from "@/lib/constants"
 import { initializeApp, getApps, cert } from "firebase-admin/app"
 import { getFirestore } from "firebase-admin/firestore"
+import { NextResponse } from "next/server"
+import { getReferralStats } from "@/lib/referral"
 
 // Initialize Firebase Admin SDK if not already initialized
 if (!getApps().length) {
@@ -67,5 +69,23 @@ export async function POST(req: Request) {
       status: 500,
       headers: { "Content-Type": "application/json" },
     })
+  }
+}
+
+export async function GET(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url)
+    const referralCode = searchParams.get("code")
+
+    if (!referralCode) {
+      return NextResponse.json({ error: "Referral code is required" }, { status: 400 })
+    }
+
+    const stats = await getReferralStats(referralCode)
+
+    return NextResponse.json(stats, { status: 200 })
+  } catch (error) {
+    console.error("Error fetching referral stats:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

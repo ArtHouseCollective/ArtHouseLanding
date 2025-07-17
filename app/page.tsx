@@ -177,8 +177,6 @@ export default function Page() {
           <div className="w-full max-w-md mx-auto">
             {!isSubmitted ? (
               <form onSubmit={handleSubmit} className="space-y-4">
-                {" "}
-                {/* Reduced space-y-6 to space-y-4 */}
                 <div className="relative">
                   <Input
                     type="email"
@@ -218,20 +216,14 @@ export default function Page() {
 
       {/* Continuously Scrolling Creators Carousel */}
       <div className="py-12 px-4 overflow-hidden">
-        {" "}
-        {/* Reduced py-16 to py-12 */}
         <div className="max-w-6xl mx-auto">
           <h2 className="text-2xl md:text-3xl font-bold text-center mb-8 text-zinc-200">
-            {" "}
-            {/* Reduced mb-10 to mb-8 */}
             Creators in the Founder's Circle
           </h2>
 
           <div className="relative">
             {/* Continuous scrolling animation */}
             <div className="flex animate-scroll space-x-4 md:space-x-8">
-              {" "}
-              {/* Reduced space-x-8 to space-x-4 for mobile */}
               {/* First set of creators */}
               {creators.map((creator, index) => (
                 <div key={`first-${index}`} className="flex-shrink-0 relative">
@@ -240,14 +232,8 @@ export default function Page() {
 
                   {/* Profile card */}
                   <div className="relative bg-zinc-950/80 border border-zinc-700/50 rounded-2xl p-6 md:p-8 w-[70vw] max-w-[256px] h-[104vw] max-h-[416px] md:w-80 md:h-[480px] backdrop-blur-sm">
-                    {" "}
-                    {/* Adjusted card size and padding, deeper color */}
                     <div className="flex flex-col items-center text-center h-full space-y-2">
-                      {" "}
-                      {/* Changed space-y-4 to space-y-2 */}
                       <div className="w-28 h-36 md:w-32 md:h-40 mb-4 rounded-2xl overflow-hidden">
-                        {" "}
-                        {/* Adjusted image size and margin */}
                         <img
                           src={creator.image || "/placeholder.png"}
                           alt={creator.name}
@@ -258,14 +244,14 @@ export default function Page() {
                           }}
                         />
                       </div>
-                      <h3 className="text-base md:text-lg font-bold text-white">{creator.name}</h3>{" "}
-                      {/* Adjusted font size */}
-                      <p className="text-sm md:text-base text-yellow-400 font-medium">{creator.title}</p>{" "}
-                      {/* Adjusted font size */}
+                      <h3 className="text-base md:text-lg font-bold text-white leading-tight">
+                        {/* Adjusted font size and added leading-tight */}
+                        {creator.name}
+                      </h3>
+                      <p className="text-sm md:text-base text-yellow-400 font-medium">{creator.title}</p>
                       <p className="text-xs leading-tight tracking-wide uppercase font-semibold text-zinc-300">
                         {creator.genre}
-                      </p>{" "}
-                      {/* Added leading-tight */}
+                      </p>
                       <p className="text-sm leading-snug text-zinc-400">{creator.specialty}</p>
                     </div>
                   </div>
@@ -279,14 +265,8 @@ export default function Page() {
 
                   {/* Profile card */}
                   <div className="relative bg-zinc-950/80 border border-zinc-700/50 rounded-2xl p-6 md:p-8 w-[70vw] max-w-[256px] h-[104vw] max-h-[416px] md:w-80 md:h-[480px] backdrop-blur-sm">
-                    {" "}
-                    {/* Adjusted card size and padding, deeper color */}
                     <div className="flex flex-col items-center text-center h-full space-y-2">
-                      {" "}
-                      {/* Changed space-y-4 to space-y-2 */}
                       <div className="w-28 h-36 md:w-32 md:h-40 mb-4 rounded-2xl overflow-hidden">
-                        {" "}
-                        {/* Adjusted image size and margin */}
                         <img
                           src={creator.image || "/placeholder.png"}
                           alt={creator.name}
@@ -297,14 +277,14 @@ export default function Page() {
                           }}
                         />
                       </div>
-                      <h3 className="text-base md:text-lg font-bold text-white">{creator.name}</h3>{" "}
-                      {/* Adjusted font size */}
-                      <p className="text-sm md:text-base text-yellow-400 font-medium">{creator.title}</p>{" "}
-                      {/* Adjusted font size */}
+                      <h3 className="text-base md:text-lg font-bold text-white leading-tight">
+                        {/* Adjusted font size and added leading-tight */}
+                        {creator.name}
+                      </h3>
+                      <p className="text-sm md:text-base text-yellow-400 font-medium">{creator.title}</p>
                       <p className="text-xs leading-tight tracking-wide uppercase font-semibold text-zinc-300">
                         {creator.genre}
-                      </p>{" "}
-                      {/* Added leading-tight */}
+                      </p>
                       <p className="text-sm leading-snug text-zinc-400">{creator.specialty}</p>
                     </div>
                   </div>
@@ -314,8 +294,6 @@ export default function Page() {
           </div>
 
           <div className="text-center mt-10">
-            {" "}
-            {/* Reduced mt-12 to mt-10 */}
             <p className="text-zinc-500 text-lg">Founding Creator Spots Limited</p>
           </div>
         </div>
@@ -323,8 +301,6 @@ export default function Page() {
 
       {/* Final CTA Section (Updated) */}
       <div className="text-center py-12">
-        {" "}
-        {/* Reduced py-16 to py-12 */}
         <h2 className="text-2xl md:text-3xl font-semibold text-white mb-4">Ready to Join ArtHouse?</h2>
         <p className="text-zinc-400 mb-6">
           Early access is invite-only — we’re curating the future of creative connection.
@@ -375,7 +351,7 @@ export default function Page() {
         }
         
         .animate-scroll {
-          animation: scroll 25s linear infinite; /* Adjusted speed for smoother loop */
+          animation: scroll 18s linear infinite; /* Speed up from 25s to 18s (approx 25% faster) */
         }
         
         @keyframes fade-in-up {

@@ -4,6 +4,8 @@ import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { type VariantProps, cva } from "class-variance-authority"
 import { PanelLeft } from "lucide-react"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
@@ -136,6 +138,10 @@ const Sidebar = React.forwardRef<
     variant?: "sidebar" | "floating" | "inset"
     collapsible?: "offcanvas" | "icon" | "none"
     isCollapsed?: boolean
+    items?: {
+      href: string
+      title: string
+    }[]
   }
 >(
   (
@@ -144,6 +150,7 @@ const Sidebar = React.forwardRef<
       variant = "sidebar",
       collapsible = "offcanvas",
       isCollapsed = false,
+      items,
       className,
       children,
       ...props
@@ -151,6 +158,7 @@ const Sidebar = React.forwardRef<
     ref,
   ) => {
     const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
+    const pathname = usePathname()
 
     if (collapsible === "none") {
       return (
@@ -159,7 +167,20 @@ const Sidebar = React.forwardRef<
           ref={ref}
           {...props}
         >
-          {children}
+          {items?.length
+            ? items.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "flex w-full items-center rounded-md p-2 text-foreground hover:underline",
+                    pathname === item.href ? "bg-muted font-medium" : "transparent",
+                  )}
+                >
+                  {item.title}
+                </Link>
+              ))
+            : children}
         </div>
       )
     }
@@ -178,7 +199,22 @@ const Sidebar = React.forwardRef<
             }
             side={side}
           >
-            <div className="flex h-full w-full flex-col">{children}</div>
+            <div className="flex h-full w-full flex-col">
+              {items?.length
+                ? items.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={cn(
+                        "flex w-full items-center rounded-md p-2 text-foreground hover:underline",
+                        pathname === item.href ? "bg-muted font-medium" : "transparent",
+                      )}
+                    >
+                      {item.title}
+                    </Link>
+                  ))
+                : children}
+            </div>
           </SheetContent>
         </Sheet>
       )
@@ -227,7 +263,20 @@ const Sidebar = React.forwardRef<
             )}
           >
             <nav className="grid gap-1 px-2 group-[[data-collapsed=true]]:justify-center group-[[data-collapsed=true]]:px-2">
-              {children}
+              {items?.length
+                ? items.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={cn(
+                        "flex w-full items-center rounded-md p-2 text-foreground hover:underline",
+                        pathname === item.href ? "bg-muted font-medium" : "transparent",
+                      )}
+                    >
+                      {item.title}
+                    </Link>
+                  ))
+                : children}
             </nav>
           </div>
         </div>

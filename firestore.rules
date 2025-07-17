@@ -4,16 +4,5 @@ service cloud.firestore {
     match /{document=**} {
       allow read, write: if false;
     }
-
-    // Allow read access to referralStats for everyone
-    match /referralStats/{document} {
-      allow read: if true;
-      allow write: if false; // Only server can write
-    }
-
-    // Allow read/write access to referrals for server only
-    match /referrals/{document} {
-      allow read, write: if false; // Only server can read/write
-    }
   }
 }

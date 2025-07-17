@@ -46,10 +46,11 @@ export function EmailDialog({ isOpen, onClose }: EmailDialogProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] bg-zinc-900 text-white border-zinc-700">
+      <DialogContent className="sm:max-w-[425px] bg-zinc-900 text-white border-zinc-700 rounded-xl">
+        {/* Added rounded-xl for more sleekness */}
         <DialogHeader>
-          <DialogTitle className="text-white">Join the ArtHouse Circle</DialogTitle>
-          <DialogDescription className="text-zinc-400">
+          <DialogTitle className="text-center text-2xl font-bold text-white">Join the ArtHouse Circle</DialogTitle>
+          <DialogDescription className="text-center text-zinc-400">
             Enter your email for early access and exclusive updates.
           </DialogDescription>
         </DialogHeader>
@@ -68,7 +69,7 @@ export function EmailDialog({ isOpen, onClose }: EmailDialogProps) {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full py-2 text-base font-semibold bg-gradient-to-r from-yellow-500 to-yellow-600 text-black hover:from-yellow-600 hover:to-yellow-700 transition-all duration-300 rounded-md shadow-lg disabled:opacity-50"
+              className="w-full py-2 text-base font-semibold bg-gradient-to-r from-zinc-700 to-zinc-800 hover:from-zinc-600 hover:to-zinc-700 text-white transition-all duration-300 rounded-md shadow-lg disabled:opacity-50"
             >
               {isLoading ? "Submitting..." : "Request Invite"}
             </Button>
@@ -84,6 +85,9 @@ export function EmailDialog({ isOpen, onClose }: EmailDialogProps) {
               <h3 className="text-xl font-semibold text-white mb-1">Thanks for signing up!</h3>
               <p className="text-zinc-400">{"Welcome to ArtHouse. Check your inbox for more info."}</p>
             </div>
+            <Button onClick={onClose} className="w-full bg-zinc-700 text-white hover:bg-zinc-600 transition-colors">
+              Close
+            </Button>
           </div>
         )}
       </DialogContent>

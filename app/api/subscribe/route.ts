@@ -1,3 +1,4 @@
+import { NextResponse } from "next/server"
 import { BEEHIIV_API_KEY, BEEHIIV_PUBLICATION_ID } from "@/lib/constants"
 
 export async function POST(req: Request) {
@@ -5,18 +6,12 @@ export async function POST(req: Request) {
     const { email } = await req.json()
 
     if (!email) {
-      return new Response(JSON.stringify({ error: "Email is required." }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      })
+      return NextResponse.json({ error: "Email is required" }, { status: 400 })
     }
 
     if (!BEEHIIV_API_KEY || !BEEHIIV_PUBLICATION_ID) {
-      console.error("Beehiiv API key or Publication ID is not set.")
-      return new Response(JSON.stringify({ error: "Server configuration error. Please try again later." }), {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      })
+      console.error("Beehiiv API keys are not configured.")
+      return NextResponse.json({ error: "Server configuration error" }, { status: 500 })
     }
 
     const response = await fetch(`https://api.beehiiv.com/v2/publications/${BEEHIIV_PUBLICATION_ID}/subscriptions`, {
@@ -28,8 +23,6 @@ export async function POST(req: Request) {
       body: JSON.stringify({
         email,
         send_welcome_email: true,
-        utm_source: "ArtHouse_Landing_Page",
-        utm_campaign: "Early_Access",
       }),
     })
 
@@ -37,28 +30,12 @@ export async function POST(req: Request) {
 
     if (!response.ok) {
       console.error("Beehiiv API error:", data)
-      // Check for specific Beehiiv error messages
-      if (data.message && data.message.includes("already subscribed")) {
-        return new Response(JSON.stringify({ error: "You are already subscribed!" }), {
-          status: 409, // Conflict
-          headers: { "Content-Type": "application/json" },
-        })
-      }
-      return new Response(JSON.stringify({ error: data.message || "Failed to subscribe. Please try again." }), {
-        status: response.status,
-        headers: { "Content-Type": "application/json" },
-      })
+      return NextResponse.json({ error: data.message || "Failed to subscribe" }, { status: response.status })
     }
 
-    return new Response(JSON.stringify({ message: "Subscription successful!" }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    })
+    return NextResponse.json({ message: "Subscription successful", data }, { status: 200 })
   } catch (error) {
-    console.error("Subscription endpoint error:", error)
-    return new Response(JSON.stringify({ error: "Internal server error." }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    })
+    console.error("Error in subscribe API route:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

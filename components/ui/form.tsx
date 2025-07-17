@@ -8,15 +8,16 @@ import { Controller, type ControllerProps, type FieldPath, type FieldValues, use
 import { cn } from "@/lib/utils"
 import { Label } from "@/components/ui/label"
 
-const Form = <TFieldValues extends FieldValues = FieldValues>(
-  props: React.ComponentProps<typeof FormProvider<TFieldValues>>,
+const Form = <
+  TFieldValues extends FieldValues = FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
+>(
+  props: ControllerProps<TFieldValues, TName>,
 ) => {
-  return <FormProvider {...props} />
+  return <Controller {...props} />
 }
 
-const FormProvider = <TFieldValues extends FieldValues = FieldValues>(
-  props: React.ComponentProps<typeof useFormContext<TFieldValues>>,
-) => {
+const FormProvider = ({ ...props }) => {
   return <form {...props} />
 }
 
@@ -32,9 +33,9 @@ const FormFieldContext = React.createContext<FormFieldContextValue>({} as FormFi
 const FormField = <
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
->(
-  props: ControllerProps<TFieldValues, TName>,
-) => {
+>({
+  ...props
+}: ControllerProps<TFieldValues, TName>) => {
   return (
     <FormFieldContext.Provider value={{ name: props.name }}>
       <Controller {...props} />
@@ -145,4 +146,4 @@ const FormMessage = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<
 )
 FormMessage.displayName = "FormMessage"
 
-export { useFormField, Form, FormItem, FormLabel, FormControl, FormDescription, FormMessage }
+export { useFormField, Form, FormItem, FormLabel, FormControl, FormDescription, FormMessage, FormProvider, FormField }
