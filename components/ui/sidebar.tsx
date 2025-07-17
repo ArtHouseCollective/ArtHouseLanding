@@ -135,15 +135,8 @@ interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   items: {
     href: string
     title: string
-    icon: React.ReactNode
-  }[]
-  links: {
-    title: string
-    label?: string
     icon: React.ElementType
-    href: string
   }[]
-  isCollapsed: boolean
 }
 
 const SidebarComponent = React.forwardRef<
@@ -156,7 +149,7 @@ const SidebarComponent = React.forwardRef<
     items?: {
       href: string
       title: string
-      icon: React.ReactNode
+      icon: React.ElementType
     }[]
     links?: {
       title: string
@@ -164,6 +157,7 @@ const SidebarComponent = React.forwardRef<
       icon: React.ElementType
       href: string
     }[]
+    onCollapse?: () => void
   }
 >(
   (
@@ -176,6 +170,7 @@ const SidebarComponent = React.forwardRef<
       links,
       className,
       children,
+      onCollapse,
       ...props
     },
     ref,
@@ -200,8 +195,8 @@ const SidebarComponent = React.forwardRef<
                     pathname === item.href ? "bg-muted font-medium" : "transparent",
                   )}
                 >
-                  {item.icon}
-                  <span className="ml-3">{item.title}</span>
+                  <item.icon className="mr-2 h-4 w-4" />
+                  {item.title}
                 </Link>
               ))
             : links?.map((link, index) =>
@@ -277,8 +272,8 @@ const SidebarComponent = React.forwardRef<
                         pathname === item.href ? "bg-muted font-medium" : "transparent",
                       )}
                     >
-                      {item.icon}
-                      <span className="ml-3">{item.title}</span>
+                      <item.icon className="mr-2 h-4 w-4" />
+                      {item.title}
                     </Link>
                   ))
                 : links?.map((link, index) =>
@@ -384,8 +379,8 @@ const SidebarComponent = React.forwardRef<
                         pathname === item.href ? "bg-muted font-medium" : "transparent",
                       )}
                     >
-                      {item.icon}
-                      <span className="ml-3">{item.title}</span>
+                      <item.icon className="mr-2 h-4 w-4" />
+                      {item.title}
                     </Link>
                   ))
                 : links?.map((link, index) =>

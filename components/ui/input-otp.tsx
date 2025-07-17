@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { OTPInput, Slot, type OTPInputProps } from "input-otp"
-import { Minus } from "lucide-react"
+import { MinusIcon } from "@radix-ui/react-icons"
 
 import { cn } from "@/lib/utils"
 
@@ -18,7 +18,7 @@ const InputOTP = React.forwardRef<React.ElementRef<typeof OTPInput>, OTPInputPro
 )
 InputOTP.displayName = "InputOTP"
 
-const InputOTPGroup = React.forwardRef<React.ElementRef<typeof Slot>, React.ComponentPropsWithoutRef<typeof Slot>>(
+const InputOTPGroup = React.forwardRef<React.ElementRef<"div">, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => <div ref={ref} className={cn("flex items-center", className)} {...props} />,
 )
 InputOTPGroup.displayName = "InputOTPGroup"
@@ -26,30 +26,28 @@ InputOTPGroup.displayName = "InputOTPGroup"
 const InputOTPSlot = React.forwardRef<
   React.ElementRef<typeof Slot>,
   React.ComponentPropsWithoutRef<typeof Slot> & { index: number }
->(({ index, className, children }, ref) => (
+>(({ index, className, ...props }, ref) => (
   <Slot
     ref={ref}
     index={index}
     className={cn(
-      "relative flex h-9 w-9 items-center justify-center border-y border-r border-input text-sm shadow-sm transition-all first:rounded-l-md first:border-l last:rounded-r-md",
-      "focus:z-10 focus:border-ring focus:ring-offset-background",
+      "relative flex h-9 w-9 items-center justify-center border border-input text-sm shadow-sm transition-all focus:z-10 group-data-[focus]:border-accent-foreground group-data-[hover]:border-accent-foreground group-first:rounded-l-md group-last:rounded-r-md",
       className,
     )}
     {...props}
   >
-    {children}
+    {props.children}
   </Slot>
 ))
 InputOTPSlot.displayName = "InputOTPSlot"
 
-const InputOTPSeparator = React.forwardRef<
-  React.ElementRef<typeof Minus>,
-  React.ComponentPropsWithoutRef<typeof Minus>
->(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("flex items-center justify-center", className)} {...props}>
-    <Minus />
-  </div>
-))
+const InputOTPSeparator = React.forwardRef<React.ElementRef<"div">, React.HTMLAttributes<HTMLDivElement>>(
+  ({ ...props }, ref) => (
+    <div ref={ref} role="separator" {...props}>
+      <MinusIcon />
+    </div>
+  ),
+)
 InputOTPSeparator.displayName = "InputOTPSeparator"
 
 export { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator }

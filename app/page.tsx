@@ -1,167 +1,28 @@
 "use client"
 
-import { useState, useEffect, useRef, type FormEvent } from "react"
+import type React from "react"
+
+import { useState } from "react"
+import Image from "next/image"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { EmailDialog } from "@/components/email-dialog" // Import the new dialog component
+import { Card, CardContent } from "@/components/ui/card"
+import { EmailDialog } from "@/components/email-dialog"
+import { FOUNDERS_CIRCLE_CAP, FOUNDERS_CIRCLE_FILLED } from "@/lib/constants"
+import { useToast } from "@/components/ui/use-toast"
 
-/* -------------------------------------------------------------------------- */
-/*                               Creator Stubs                                */
-/* -------------------------------------------------------------------------- */
-
-const creators = [
-  {
-    name: "Jadon Cal",
-    title: "Director",
-    image: "/images/creators/JadonCal.jpg",
-    genre: "Drama / Surreal",
-    specialty: "Off Rip, Skippin' Town",
-  },
-  {
-    name: "Avi Youabian",
-    title: "Director",
-    image: "/images/creators/AviYouabian.jpeg",
-    genre: "Action / Drama",
-    specialty: "Countdown, FBI International",
-  },
-  {
-    name: "Meghan Carrasquillo",
-    title: "Actress",
-    image: "/images/creators/meghancarrasquillo2.jpg",
-    genre: "Thriller / Horror",
-    specialty: "Stiletto, FOUR",
-  },
-  {
-    name: "Ethan Zeitman",
-    title: "Sound Department",
-    image: "/images/creators/ethanz.jpeg",
-    genre: "Action, Horror",
-    specialty: "Fall Guy, Bot or Not",
-  },
-  {
-    name: "Jake Jalbert",
-    title: "Cinematographer",
-    image: "/images/creators/jakejalbert.jpeg",
-    genre: "Action, Drama",
-    specialty: "DC Down, Off Rip",
-  },
-  {
-    name: "John Demari",
-    title: "Singer / Actor",
-    image: "/images/creators/beachfly.jpeg",
-    genre: "Reggae, Drama",
-    specialty: "Beachfly, Florida Wild",
-  },
-  {
-    name: "Lauren Elyse Buckley",
-    title: "Actress",
-    image: "/images/creators/laurenelyse.jpeg",
-    genre: "Comedy",
-    specialty: "Magnum P.I., Foursome",
-  },
-  {
-    name: "Rhondda Stark Atlas",
-    title: "Producer",
-    image: "/images/creators/rhondda.jpg",
-    genre: "Comedy, Action",
-    specialty: "Hacked",
-  },
-] as const
-
-interface Creator {
-  name: string
-  title: string
-  image: string
-  genre: string
-  specialty: string
-}
-
-function CreatorCard({ creator }: { creator: Creator }) {
-  return (
-    <div className="flex-shrink-0 relative">
-      {/* Golden glow background */}
-      <div className="absolute inset-0 bg-gradient-to-r from-cobalt-600/20 via-cobalt-700/30 to-cobalt-600/20 rounded-2xl blur-xl scale-110"></div>
-
-      {/* Profile card */}
-      <div className="relative bg-zinc-950/80 border border-zinc-700/50 rounded-2xl p-6 md:p-8 w-[70vw] max-w-[256px] h-[104vw] max-h-[416px] backdrop-blur-sm">
-        <div className="flex flex-col items-center text-center h-full space-y-2">
-          <div className="w-28 h-36 md:w-32 md:h-40 mb-4 rounded-2xl overflow-hidden">
-            <img
-              src={creator.image || "/placeholder.png"}
-              alt={creator.name}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement
-                target.src = "/placeholder.png?height=128&width=128"
-              }}
-            />
-          </div>
-          <div className="flex flex-col items-center text-center flex-grow justify-evenly">
-            <h3 className="text-base md:text-lg font-bold text-white leading-tight">{creator.name}</h3>
-            <p className="text-sm md:text-base text-cobalt-400 font-medium">{creator.title}</p>
-            <p className="text-xs leading-tight tracking-wide uppercase font-semibold text-zinc-300">{creator.genre}</p>
-            <p className="text-sm leading-snug text-zinc-400">{creator.specialty}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-/* -------------------------------------------------------------------------- */
-/*                                Page Component                              */
-/* -------------------------------------------------------------------------- */
-
-export default function Page() {
+export default function Home() {
   const [email, setEmail] = useState("")
-  const [isSubmitted, setIsSubmitted] = useState(false)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState("")
-  const [referralCode, setReferralCode] = useState<string | null>(null) // Keep for display if user landed via ref
-  const [foundersCount] = useState(33)
-  const appMockupsRef = useRef<HTMLDivElement>(null) // Renamed ref for new section
-  const [isAppMockupsVisible, setIsAppMockupsVisible] = useState(false) // State for new section
-  const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false) // State for the new dialog
+  const { toast } = useToast()
 
-  // Capture referral code from URL and store in localStorage (for initial landing)
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search)
-    const refParam = urlParams.get("ref")
+  const foundersCircleProgress = (FOUNDERS_CIRCLE_FILLED / FOUNDERS_CIRCLE_CAP) * 100
 
-    if (refParam) {
-      localStorage.setItem("referralCode", refParam)
-      setReferralCode(refParam)
-    } else {
-      const storedReferralCode = localStorage.getItem("referralCode")
-      if (storedReferralCode) {
-        setReferralCode(storedReferralCode)
-      }
-    }
-  }, [])
-
-  // Scroll reveal for app mockups
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsAppMockupsVisible(true)
-        }
-      },
-      { threshold: 0.3 },
-    )
-
-    if (appMockupsRef.current) {
-      observer.observe(appMockupsRef.current)
-    }
-
-    return () => observer.disconnect()
-  }, [])
-
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    setError("")
-
     try {
       const response = await fetch("/api/subscribe", {
         method: "POST",
@@ -169,298 +30,223 @@ export default function Page() {
         body: JSON.stringify({ email }),
       })
 
-      const data = await response.json()
-
-      if (response.ok) {
-        setIsSubmitted(true)
-        // No longer need to remove referralCode from localStorage here,
-        // as Beehiiv handles the referral logic internally after subscription.
-      } else {
-        setError(data.error || "Something went wrong. Please try again.")
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || "Failed to subscribe.")
       }
-    } catch (err) {
-      setError("Network error. Please try again.")
+
+      toast({
+        title: "Success!",
+        description: "You've been added to the waitlist. Check your email for updates!",
+        className: "bg-green-500 text-white",
+      })
+      setIsDialogOpen(true)
+    } catch (error: any) {
+      console.error("Error subscribing:", error)
+      toast({
+        title: "Error",
+        description: error.message || "Something went wrong. Please try again.",
+        variant: "destructive",
+      })
     } finally {
       setIsLoading(false)
     }
   }
 
-  const creatorsRow1 = creators.slice(0, 4)
-  const creatorsRow2 = creators.slice(4, 8)
+  const creators = [
+    { name: "Avi Youabian", role: "Filmmaker", image: "/images/creators/AviYouabian.jpeg" },
+    { name: "Jadon Cal", role: "Actor", image: "/images/creators/JadonCal.jpg" },
+    { name: "Ava Williams", role: "Writer", image: "/images/creators/ava-williams.jpg" },
+    { name: "Beachfly", role: "Musician", image: "/images/creators/beachfly.jpeg" },
+    { name: "Ethan Z", role: "Photographer", image: "/images/creators/ethanz.jpeg" },
+    { name: "Jake Jalbert", role: "Designer", image: "/images/creators/jakejalbert.jpeg" },
+    { name: "Lauren Elyse", role: "Dancer", image: "/images/creators/laurenelyse.jpeg" },
+    { name: "Meghan Carrasquillo", role: "Painter", image: "/images/creators/meghancarrasquillo.jpeg" },
+    { name: "Rhondda", role: "Sculptor", image: "/images/creators/rhondda.jpg" },
+  ]
+
+  const features = [
+    {
+      title: "Curated Onboarding",
+      description: "Every profile is reviewed by a human. No bots, no spam, no noise. Just real creatives.",
+      image: "/assets/icons/icon cards ppl.png",
+      type: "logo",
+    },
+    {
+      title: "Style-based Matching",
+      description: "Our algorithm connects you with collaborators based on creative style, not followers.",
+      image: "/assets/icons/resonance.png",
+      type: "logo",
+    },
+    {
+      title: "Built for Craft, Not Clout",
+      description:
+        "ArtHouse gives creatives a place to be seen — not scrolled past. We focus on your work, not your follower count.",
+      type: "text",
+    },
+    {
+      title: "A Collective, Not a Network",
+      description: "Find your next collaborator, mentor, or creative partner. Build meaningful relationships.",
+      type: "text",
+    },
+  ]
 
   return (
-    <div className="min-h-screen bg-black text-white relative">
-      {/* Hero Section */}
-      <div className="min-h-screen flex flex-col items-center justify-center px-4 relative">
-        {/* Background gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-zinc-900 via-black to-zinc-900" />
-        <div className="absolute inset-0 bg-gradient-radial from-zinc-800/20 via-transparent to-black/40" />
-
-        <div className="relative z-10 flex flex-col items-center justify-center">
-          {/* Logo */}
-          <div className="mb-6 text-center">
-            <h1 className="text-6xl md:text-8xl font-bold tracking-tight mb-4 relative">
-              <span className="bg-gradient-to-r from-white via-zinc-200 to-white bg-clip-text text-transparent drop-shadow-2xl flex items-start">
+    <div className="flex flex-col min-h-[100dvh] bg-black text-white">
+      <header className="px-4 lg:px-6 h-14 flex items-center justify-between">
+        <Link href="#" className="flex items-center justify-center" prefetch={false}>
+          <Image src="/placeholder-logo.png" alt="ArtHouse Logo" width={120} height={40} />
+          <span className="sr-only">ArtHouse</span>
+        </Link>
+        <nav className="flex gap-4 sm:gap-6">
+          <Link href="#" className="text-sm font-medium hover:underline underline-offset-4" prefetch={false}>
+            About
+          </Link>
+          <Link href="#" className="text-sm font-medium hover:underline underline-offset-4" prefetch={false}>
+            Features
+          </Link>
+          <Link href="#" className="text-sm font-medium hover:underline underline-offset-4" prefetch={false}>
+            Contact
+          </Link>
+        </nav>
+      </header>
+      <main className="flex-1">
+        <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48 flex flex-col items-center justify-center text-center bg-gradient-to-b from-black to-gray-900 relative overflow-hidden">
+          <div className="container px-4 md:px-6 z-10">
+            <div className="flex flex-col items-center space-y-4">
+              <h1 className="text-5xl font-bold tracking-tighter sm:text-6xl md:text-7xl lg:text-8xl/none text-yellow-400 drop-shadow-lg">
                 ArtHouse
-                <span className="text-sm md:text-base ml-1 mt-1 text-white/60">™</span>
-              </span>
-              <div className="absolute inset-0 text-6xl md:text-8xl font-bold tracking-tight blur-xl opacity-30 bg-gradient-to-r from-white via-zinc-200 to-white bg-clip-text text-transparent">
-                ArtHouse
-              </div>
-            </h1>
-          </div>
-
-          {/* Tagline */}
-          <div className="mb-6 text-center">
-            <p className="text-xl md:text-2xl text-zinc-300 font-light tracking-wide animate-fade-in-up">
-              Where bold creatives meet.
-            </p>
-            {referralCode && (
-              <p className="text-sm text-zinc-500 mt-2">
-                Referred by <span className="text-zinc-300 font-medium">{referralCode}</span>
+              </h1>
+              <p className="mx-auto max-w-[700px] text-gray-300 md:text-xl">
+                Where bold creatives meet. Enter your email to request early access.
               </p>
-            )}
-          </div>
-
-          {/* Email Form (Main) */}
-          <div className="w-full max-w-md mx-auto">
-            {!isSubmitted ? (
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="relative">
-                  <Input
-                    type="email"
-                    placeholder="Enter your email..."
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    disabled={isLoading}
-                    className="w-full px-6 py-4 text-lg bg-zinc-900/50 border-zinc-700 rounded-lg backdrop-blur-sm focus:border-white focus:ring-1 focus:ring-white transition-all duration-300 placeholder:text-zinc-500 disabled:opacity-50"
-                  />
-                </div>
-                {error && <p className="text-red-400 text-sm text-center">{error}</p>}
+              <form onSubmit={handleEmailSubmit} className="flex flex-col sm:flex-row gap-2 w-full max-w-sm">
+                <Input
+                  type="email"
+                  placeholder="Enter your email"
+                  className="max-w-lg flex-1 bg-gray-800 text-white border-gray-700 focus:border-yellow-400"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
                 <Button
                   type="submit"
+                  className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold"
                   disabled={isLoading}
-                  className="w-full py-4 text-lg font-semibold bg-white text-black hover:bg-zinc-200 transition-all duration-300 rounded-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] disabled:opacity-50 disabled:transform-none"
                 >
-                  {isLoading ? "Joining..." : "Request Invite"}
+                  {isLoading ? "Requesting..." : "Request Invite"}
                 </Button>
               </form>
-            ) : (
-              <div className="text-center space-y-6 animate-fade-in">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-500/20 flex items-center justify-center">
-                  <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold text-white mb-2">Thanks for signing up!</h3>
-                  <p className="text-zinc-400">{"Welcome to ArtHouse. Check your inbox for more info."}</p>
-                </div>
-              </div>
-            )}
+            </div>
           </div>
-        </div>
-      </div>
+          <div className="absolute bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg">
+            {FOUNDERS_CIRCLE_FILLED} / {FOUNDERS_CIRCLE_CAP} Founders Circle Spots Filled
+          </div>
+        </section>
 
-      {/* Continuously Scrolling Creators Carousel */}
-      <div className="py-12 px-4 overflow-hidden">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-2xl md:text-3xl font-bold text-center mb-8 text-zinc-200">
-            Creators in the Founder's Circle
-          </h2>
+        <section className="w-full py-12 md:py-24 lg:py-32 bg-gray-950 text-white overflow-hidden">
+          <div className="container px-4 md:px-6">
+            <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl text-center mb-12 text-yellow-400">
+              Creators Already On ArtHouse
+            </h2>
+            <div className="relative w-full overflow-hidden">
+              <div className="flex whitespace-nowrap scrolling-carousel">
+                {Array(2)
+                  .fill(null)
+                  .map((_, carouselIndex) => (
+                    <div key={carouselIndex} className="flex">
+                      {creators.map((creator, index) => (
+                        <Card
+                          key={index}
+                          className="inline-block w-[200px] h-[250px] mx-4 bg-gray-900 text-white rounded-lg overflow-hidden shadow-lg flex-shrink-0"
+                        >
+                          <CardContent className="p-0 h-full flex flex-col items-center justify-center">
+                            <div className="relative w-full h-3/4">
+                              <Image
+                                src={creator.image || "/placeholder.svg"}
+                                alt={creator.name}
+                                layout="fill"
+                                objectFit="cover"
+                                className="rounded-t-lg"
+                              />
+                            </div>
+                            <div className="p-4 text-center w-full">
+                              <h3 className="text-lg font-semibold">{creator.name}</h3>
+                              <p className="text-sm text-gray-400">{creator.role}</p>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  ))}
+              </div>
+            </div>
+            <p className="text-center text-gray-400 mt-8 text-sm">Scroll the Circle</p>
+          </div>
+        </section>
 
-          <div className="relative space-y-4">
-            {/* Row 1 */}
-            <div className="flex animate-scroll-row1 space-x-4 md:space-x-8">
-              {[...creatorsRow1, ...creatorsRow1, ...creatorsRow1].map((creator, index) => (
-                <CreatorCard key={`row1-${index}`} creator={creator} />
+        <section className="w-full py-12 md:py-24 lg:py-32 bg-black text-white">
+          <div className="container px-4 md:px-6">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+              {features.map((feature, index) => (
+                <div key={index} className="flex flex-col items-center text-center">
+                  <h3 className="text-xl font-bold mb-4 text-yellow-400">{feature.title}</h3>
+                  <Card className="w-full h-[230px] relative overflow-hidden rounded-lg shadow-lg bg-zinc-950 border border-zinc-600">
+                    <CardContent className="relative z-10 flex flex-col h-full p-0">
+                      {feature.type === "logo" && feature.image ? (
+                        <div className="flex-grow flex items-center justify-center p-4">
+                          <Image
+                            src={feature.image || "/placeholder.svg"}
+                            alt={feature.title}
+                            width={96} // Increased size
+                            height={96} // Increased size
+                            objectFit="contain"
+                            className="opacity-80" // Increased opacity
+                          />
+                        </div>
+                      ) : (
+                        <div className="flex-grow flex items-center justify-center p-4">
+                          <span className="sr-only">{feature.description}</span>
+                        </div>
+                      )}
+                      <div className="flex-shrink-0 p-6 flex items-center justify-center text-center bg-zinc-900/70 border-t border-zinc-700">
+                        <p className="text-white text-base">{feature.description}</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
               ))}
             </div>
-            {/* Row 2 */}
-            <div className="flex animate-scroll-row2 space-x-4 md:space-x-8">
-              {[...creatorsRow2, ...creatorsRow2, ...creatorsRow2].map((creator, index) => (
-                <CreatorCard key={`row2-${index}`} creator={creator} />
-              ))}
-            </div>
           </div>
+        </section>
 
-          <div className="text-center mt-10">
-            <p className="text-zinc-500 text-lg">Founding Creator Spots Limited</p>
+        <section className="w-full py-12 md:py-24 lg:py-32 bg-gray-950 text-white flex flex-col items-center justify-center text-center">
+          <div className="container px-4 md:px-6">
+            <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl text-yellow-400 mb-6">
+              This only works if it's ours.
+            </h2>
+            <p className="mx-auto max-w-[700px] text-gray-300 md:text-xl mb-8">Invite 3 creatives to skip the wait.</p>
+            <Button
+              className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold"
+              onClick={() => setIsDialogOpen(true)}
+            >
+              Invite Friends
+            </Button>
           </div>
-        </div>
-      </div>
-
-      {/* New Feature Board Section */}
-      <div className="py-20 px-4">
-        <div className="max-w-6xl mx-auto text-center">
-          <h2 className="text-2xl md:text-3xl font-bold text-center mb-12 text-zinc-200">
-            BUILT FOR CREATIVES. BY CREATIVES.
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Feature 1: Curated Onboarding */}
-            <div className="flex flex-col items-center">
-              {" "}
-              {/* Add a wrapper div for title and card */}
-              <h3 className="text-xl font-semibold text-white mb-4">Curated Onboarding</h3> {/* Moved title */}
-              <div className="relative flex flex-col items-center justify-center p-6 bg-zinc-950/70 rounded-lg border border-zinc-700/50 backdrop-blur-sm mx-auto w-[70vw] max-w-[256px] h-[70vw] max-h-[256px] overflow-hidden">
-                <img
-                  src="/assets/icons/cards 2.png"
-                  alt="Curated Onboarding"
-                  className="absolute inset-0 w-full h-full object-cover opacity-40"
-                />
-                <div className="relative z-10 flex flex-col items-center text-center">
-                  <p className="text-white text-center">
-                    {" "}
-                    {/* Changed text color */}
-                    Every member is handpicked or verified. No followers. Just professional collaborators.
-                  </p>
-                </div>
-              </div>
-            </div>
-            {/* Feature 2: Swipe by Style */}
-            <div className="flex flex-col items-center">
-              {" "}
-              {/* Add a wrapper div for title and card */}
-              <h3 className="text-xl font-semibold text-white mb-4">Swipe by Style</h3> {/* Moved title */}
-              <div className="relative flex flex-col items-center justify-center p-6 bg-zinc-950/70 rounded-lg border border-zinc-700/50 backdrop-blur-sm mx-auto w-[70vw] max-w-[256px] h-[70vw] max-h-[256px] overflow-hidden">
-                <img
-                  src="/assets/icons/resonance.png"
-                  alt="Swipe by Style"
-                  className="absolute inset-0 w-full h-full object-cover opacity-40"
-                />
-                <div className="relative z-10 flex flex-col items-center text-center">
-                  <p className="text-white text-center">
-                    {" "}
-                    {/* Changed text color */}
-                    Match with actors, directors, writers, musicians based on genre, portfolio, and vibe.
-                  </p>
-                </div>
-              </div>
-            </div>
-            {/* Feature 3: Join Collectives */}
-            <div className="flex flex-col items-center">
-              {" "}
-              {/* Add a wrapper div for title and card */}
-              <h3 className="text-xl font-semibold text-white mb-4">Join Collectives</h3> {/* Moved title */}
-              <div className="relative flex flex-col items-center justify-center p-6 bg-zinc-950/70 rounded-lg border border-zinc-700/50 backdrop-blur-sm mx-auto w-[70vw] max-w-[256px] h-[70vw] max-h-[256px] overflow-hidden">
-                <img
-                  src="/assets/icons/collective.png"
-                  alt="Join Collectives"
-                  className="absolute inset-0 w-full h-full object-cover opacity-40"
-                />
-                <div className="relative z-10 flex flex-col items-center text-center">
-                  <p className="text-white text-center">
-                    {" "}
-                    {/* Changed text color */}
-                    Join local or international groups based on shared interests. Create your own communities to build
-                    your creative network.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Final CTA Section (Updated) */}
-      <div className="text-center py-12">
-        <h2 className="text-2xl md:text-3xl font-semibold text-white mb-4">Ready to Join ArtHouse?</h2>
-        <p className="text-zinc-400 mb-6">
-          Early access is invite-only — we’re curating the future of creative connection.
-        </p>
-        <a
-          onClick={() => setIsEmailDialogOpen(true)} // Open the dialog
-          className="inline-block bg-gradient-to-r from-cobalt-700 to-cobalt-800 hover:from-cobalt-600 hover:to-cobalt-700 text-white font-medium py-3 px-6 rounded-full transition cursor-pointer shadow-lg hover:shadow-xl"
-        >
-          Apply Now
-        </a>
-      </div>
-
-      {/* Floating Founders Circle Badge */}
-      <div className="fixed bottom-6 right-6 z-50">
-        <div className="bg-black border border-zinc-700 rounded-full px-4 py-2 shadow-lg backdrop-blur-sm">
-          <div className="flex items-center space-x-2">
-            <span className="text-lg">🪩</span>
-            <span className="text-white text-sm font-medium">{foundersCount} / 150 Founders Circle Spots Filled</span>
-          </div>
-          <div className="absolute inset-0 rounded-full bg-gradient-to-r from-cobalt-600/20 to-cobalt-800/20 blur-sm -z-10"></div>
-        </div>
-      </div>
-
-      {/* Footer (Simplified) */}
-      <footer className="py-8 px-4">
-        <div className="flex justify-center space-x-6 text-sm text-zinc-500">
-          <a href="#" className="hover:text-white transition-colors duration-300">
+        </section>
+      </main>
+      <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t border-gray-800 bg-black text-gray-400">
+        <p className="text-xs">&copy; 2024 ArtHouse. All rights reserved.</p>
+        <nav className="sm:ml-auto flex gap-4 sm:gap-6">
+          <Link href="#" className="text-xs hover:underline underline-offset-4" prefetch={false}>
+            Terms of Service
+          </Link>
+          <Link href="#" className="text-xs hover:underline underline-offset-4" prefetch={false}>
             Privacy
-          </a>
-          <span>·</span>
-          <a href="#" className="hover:text-white transition-colors duration-300">
-            Contact
-          </a>
-        </div>
+          </Link>
+        </nav>
       </footer>
-
-      {/* Email Dialog Component */}
-      <EmailDialog isOpen={isEmailDialogOpen} onClose={() => setIsEmailDialogOpen(false)} />
-
-      <style jsx>{`
-        @keyframes scroll-row1 {
-          0% {
-            transform: translateX(0);
-          }
-          100% {
-            transform: translateX(-100%); /* Adjusted to cover full width of duplicated content */
-          }
-        }
-        @keyframes scroll-row2 {
-          0% {
-            transform: translateX(-100%); /* Start from the end to create opposite direction */
-          }
-          100% {
-            transform: translateX(0);
-          }
-        }
-        
-        .animate-scroll-row1 {
-          animation: scroll-row1 30s linear infinite; /* Adjusted speed for more items */
-        }
-        .animate-scroll-row2 {
-          animation: scroll-row2 32s linear infinite; /* Slightly different speed for visual interest */
-        }
-        
-        @keyframes fade-in-up {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        
-        @keyframes fade-in {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-        
-        .animate-fade-in-up {
-          animation: fade-in-up 1s ease-out 0.5s both;
-        }
-        
-        .animate-fade-in {
-          animation: fade-in 0.5s ease-out;
-        }
-
-        .bg-gradient-radial {
-          background-image: radial-gradient(50% 50% at 50% 50%, rgba(30, 41, 59, 0.2) 0%, rgba(0, 0, 0, 0.3) 100%);
-        }
-      `}</style>
+      <EmailDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} initialEmail={email} />
     </div>
   )
 }

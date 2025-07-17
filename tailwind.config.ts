@@ -53,20 +53,10 @@ const config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // Custom cobalt color palette
-        cobalt: {
-          DEFAULT: "#1e40af", // A deep blue
-          50: "#e0f2fe",
-          100: "#bfdbfe",
-          200: "#93c5fd",
-          300: "#60a5fa",
-          400: "#3b82f6",
-          500: "#2563eb",
-          600: "#1d4ed8",
-          700: "#1e40af",
-          800: "#1e3a8a",
-          900: "#1e306e",
-          950: "#172554",
+        yellow: {
+          400: "#FACC15",
+          500: "#EAB308",
+          600: "#CA8A04",
         },
       },
       borderRadius: {

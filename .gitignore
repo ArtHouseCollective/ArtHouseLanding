@@ -155,3 +155,19 @@ pnpm-lock.yaml
 .terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/terraform.rc
 .vercel/
 .turbo/
+
+# dependencies
+.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# production
+/build
+
+# misc
+*.pem
+
+# local env files
+.env*.local

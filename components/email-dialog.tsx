@@ -1,94 +1,111 @@
 "use client"
 
-import { useState, type FormEvent } from "react"
+import type React from "react"
+
+import { useState } from "react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { useToast } from "@/components/ui/use-toast"
 
 interface EmailDialogProps {
   isOpen: boolean
   onClose: () => void
+  initialEmail: string
 }
 
-export function EmailDialog({ isOpen, onClose }: EmailDialogProps) {
-  const [email, setEmail] = useState("")
-  const [isSubmitted, setIsSubmitted] = useState(false)
+export function EmailDialog({ isOpen, onClose, initialEmail }: EmailDialogProps) {
+  const [email, setEmail] = useState(initialEmail)
+  const [referralEmail, setReferralEmail] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState("")
+  const [isSubmitted, setIsSubmitted] = useState(false)
+  const { toast } = useToast()
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const handleReferralSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    setError("")
-
     try {
-      const response = await fetch("/api/subscribe", {
+      const response = await fetch("/api/referralSignup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ referrerCode: localStorage.getItem("referralCode"), referredEmail: referralEmail }),
       })
 
-      const data = await response.json()
-
-      if (response.ok) {
-        setIsSubmitted(true)
-      } else {
-        setError(data.error || "Something went wrong. Please try again.")
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to send referral.")
       }
-    } catch (err) {
-      setError("Network error. Please try again.")
+
+      toast({
+        title: "Referral Sent!",
+        description: "Your friend has been invited to skip the waitlist.",
+        className: "bg-green-500 text-white",
+      })
+      setIsSubmitted(true)
+    } catch (error: any) {
+      console.error("Error sending referral:", error)
+      toast({
+        title: "Error",
+        description: error.message || "Something went wrong. Please try again.",
+        variant: "destructive",
+      })
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleCloseDialog = () => {
-    setEmail("")
-    setIsSubmitted(false)
-    setError("")
-    onClose()
-  }
-
   return (
-    <Dialog open={isOpen} onOpenChange={handleCloseDialog}>
-      <DialogContent className="sm:max-w-[425px] bg-zinc-950 text-white border-zinc-700">
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[425px] bg-gray-900 text-white border-gray-700">
         <DialogHeader>
-          <DialogTitle className="text-center text-2xl font-bold text-white">Request Early Access</DialogTitle>
-          <DialogDescription className="text-center text-zinc-400">
-            Enter your email to join the waitlist for ArtHouse.
+          <DialogTitle className="text-yellow-400">Join the ArtHouse Founders Circle</DialogTitle>
+          <DialogDescription className="text-gray-400">
+            Invite 3 creatives to skip the waitlist and secure your spot.
           </DialogDescription>
         </DialogHeader>
         {!isSubmitted ? (
-          <form onSubmit={handleSubmit} className="grid gap-4 py-4">
-            <Input
-              id="email"
-              type="email"
-              placeholder="your@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              disabled={isLoading}
-              className="col-span-3 bg-zinc-900 border-zinc-700 text-white placeholder:text-zinc-500 focus:border-white focus:ring-1 focus:ring-white"
-            />
-            {error && <p className="text-red-400 text-sm text-center">{error}</p>}
+          <form onSubmit={handleReferralSubmit} className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="email" className="text-right text-gray-300">
+                Your Email
+              </label>
+              <Input
+                id="email"
+                value={email}
+                readOnly
+                className="col-span-3 bg-gray-800 text-gray-300 border-gray-700"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="referral-email" className="text-right text-gray-300">
+                Friend's Email
+              </label>
+              <Input
+                id="referral-email"
+                type="email"
+                placeholder="friend@example.com"
+                value={referralEmail}
+                onChange={(e) => setReferralEmail(e.target.value)}
+                required
+                className="col-span-3 bg-gray-800 text-white border-gray-700 focus:border-yellow-400"
+              />
+            </div>
             <Button
               type="submit"
+              className="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-bold"
               disabled={isLoading}
-              className="w-full bg-white text-black hover:bg-zinc-200 transition-all duration-300"
             >
-              {isLoading ? "Submitting..." : "Join Waitlist"}
+              {isLoading ? "Sending Invite..." : "Send Invite"}
             </Button>
           </form>
         ) : (
-          <div className="text-center space-y-4 py-4">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-500/20 flex items-center justify-center">
-              <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <h3 className="text-xl font-semibold text-white mb-2">You're on the list!</h3>
-            <p className="text-zinc-400">{"We'll notify you when early access is available."}</p>
-            <Button onClick={handleCloseDialog} className="w-full bg-white text-black hover:bg-zinc-200">
+          <div className="text-center py-8">
+            <p className="text-lg text-green-400 font-semibold mb-4">Invite Sent Successfully!</p>
+            <p className="text-gray-300">
+              Your friend has been invited. Share your unique referral link to invite more!
+            </p>
+            {/* You can add the referral link display here if you have it */}
+            <Button onClick={onClose} className="mt-6 bg-yellow-500 hover:bg-yellow-600 text-black font-bold">
               Close
             </Button>
           </div>

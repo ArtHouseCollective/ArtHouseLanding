@@ -1,34 +1,19 @@
 import { NextResponse } from "next/server"
-import { getFirestore } from "firebase-admin/firestore"
-import { initializeApp, cert, getApps } from "firebase-admin/app"
+import { getReferralCount } from "@/lib/referral"
 
-const serviceAccount = {
-  projectId: process.env.FIREBASE_PROJECT_ID,
-  clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-  privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
-}
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url)
+  const referralCode = searchParams.get("code")
 
-if (!getApps().length) {
-  initializeApp({
-    credential: cert(serviceAccount),
-  })
-}
+  if (!referralCode) {
+    return NextResponse.json({ error: "Referral code is required" }, { status: 400 })
+  }
 
-const db = getFirestore()
-
-export async function GET() {
   try {
-    const usersRef = db.collection("users")
-    const snapshot = await usersRef.get()
-    let totalReferrals = 0
-    snapshot.forEach((doc) => {
-      const userData = doc.data()
-      totalReferrals += userData.referralCount || 0
-    })
-
-    return NextResponse.json({ totalReferrals })
+    const count = await getReferralCount(referralCode)
+    return NextResponse.json({ referralCode, count })
   } catch (error) {
-    console.error("Error fetching referral stats:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    console.error("Error fetching referral count:", error)
+    return NextResponse.json({ error: "Failed to fetch referral count" }, { status: 500 })
   }
 }

@@ -15,40 +15,43 @@ if (!getApps().length) {
 
 const db = getFirestore()
 
-export async function getReferralCount(email: string): Promise<number> {
-  try {
-    const userRef = db.collection("users").doc(email)
-    const doc = await userRef.get()
-    if (doc.exists) {
-      const userData = doc.data()
-      return userData?.referralCount || 0
-    }
-    return 0
-  } catch (error) {
-    console.error("Error fetching referral count:", error)
-    return 0
+export async function generateReferralCode(email: string): Promise<string> {
+  const emailPrefix = email.split("@")[0]
+  let referralCode = `${emailPrefix}-${Math.random().toString(36).substring(2, 8)}`
+  let docRef = db.collection("referrals").doc(referralCode)
+  let doc = await docRef.get()
+
+  // Ensure the generated code is unique
+  while (doc.exists) {
+    referralCode = `${emailPrefix}-${Math.random().toString(36).substring(2, 8)}`
+    docRef = db.collection("referrals").doc(referralCode)
+    doc = await docRef.get()
   }
+
+  await docRef.set({
+    email,
+    createdAt: new Date(),
+  })
+
+  return referralCode
 }
 
-export async function incrementReferralCount(email: string): Promise<void> {
-  try {
-    const userRef = db.collection("users").doc(email)
-    await userRef.update({
-      referralCount: getFirestore.FieldValue.increment(1),
-    })
-  } catch (error) {
-    console.error("Error incrementing referral count:", error)
+export async function trackReferral(referrerCode: string, referredEmail: string): Promise<void> {
+  const referrerDocRef = db.collection("referrals").doc(referrerCode)
+  const referrerDoc = await referrerDocRef.get()
+
+  if (!referrerDoc.exists) {
+    console.warn(`Referrer code ${referrerCode} not found. Cannot track referral.`)
+    return
   }
+
+  await referrerDocRef.collection("referredUsers").add({
+    email: referredEmail,
+    timestamp: new Date(),
+  })
 }
 
-export async function recordReferral(referrerEmail: string, referredEmail: string): Promise<void> {
-  try {
-    const referralRef = db.collection("referrals").add({
-      referrer: referrerEmail,
-      referred: referredEmail,
-      timestamp: new Date(),
-    })
-  } catch (error) {
-    console.error("Error recording referral:", error)
-  }
+export async function getReferralCount(referralCode: string): Promise<number> {
+  const referredUsersSnapshot = await db.collection("referrals").doc(referralCode).collection("referredUsers").get()
+  return referredUsersSnapshot.size
 }

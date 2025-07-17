@@ -1,28 +1,9 @@
 {
-  "rewrites": [
-    {
-      "source": "/:path*",
-      "destination": "/:path*"
-    },
-    {
-      "source": "/api/subscribe",
-      "destination": "/api/subscribe"
-    },
-    {
-      "source": "/api/referral",
-      "destination": "/api/referral"
-    },
-    {
-      "source": "/api/referral/stats",
-      "destination": "/api/referral/stats"
-    },
-    {
-      "source": "/api/referralSignup",
-      "destination": "/api/referralSignup"
-    },
-    {
-      "source": "/api/trackReferral",
-      "destination": "/api/trackReferral"
-    }
-  ]
+  "env": {
+    "FIREBASE_PROJECT_ID": "@firebase_project_id",
+    "FIREBASE_CLIENT_EMAIL": "@firebase_client_email",
+    "FIREBASE_PRIVATE_KEY": "@firebase_private_key",
+    "BEEHIIV_API_KEY": "@beehiiv_api_key",
+    "BEEHIIV_PUBLICATION_ID": "@beehiiv_publication_id"
+  }
 }

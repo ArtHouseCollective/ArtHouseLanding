@@ -18,12 +18,11 @@ const nextConfig = {
       },
       {
         protocol: "https",
-        hostname: "res.cloudinary.com",
+        hostname: "cdn.discordapp.com",
       },
     ],
     unoptimized: true,
   },
-  // Additional configurations can be added here
 }
 
 export default nextConfig
