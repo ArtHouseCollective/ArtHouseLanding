@@ -1,8 +1,5 @@
 {
-  // Allow pnpm to update the lock-file during CI builds
   "installCommand": "pnpm install --no-frozen-lockfile",
-
-  // Everything below is optional – keep or tweak as you wish
   "outputDirectory": ".next",
   "functions": {
     "api/**/*.ts": {
