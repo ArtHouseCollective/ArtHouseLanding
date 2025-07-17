@@ -1,11 +1,10 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
+import { useState, type FormEvent } from "react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { CheckCircle2 } from "lucide-react"
 
 interface EmailDialogProps {
   isOpen: boolean
@@ -14,11 +13,11 @@ interface EmailDialogProps {
 
 export function EmailDialog({ isOpen, onClose }: EmailDialogProps) {
   const [email, setEmail] = useState("")
-  const [isSubmitted, setIsSubmitted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [isSubmitted, setIsSubmitted] = useState(false)
   const [error, setError] = useState("")
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
     setError("")
@@ -44,48 +43,51 @@ export function EmailDialog({ isOpen, onClose }: EmailDialogProps) {
     }
   }
 
+  const handleCloseDialog = () => {
+    setEmail("")
+    setIsSubmitted(false)
+    setError("")
+    onClose()
+  }
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] bg-zinc-900 text-white border-zinc-700 rounded-xl">
-        {/* Added rounded-xl for more sleekness */}
+    <Dialog open={isOpen} onOpenChange={handleCloseDialog}>
+      <DialogContent className="sm:max-w-[425px] bg-zinc-950 border border-zinc-700 text-white">
         <DialogHeader>
-          <DialogTitle className="text-center text-2xl font-bold text-white">Join the ArtHouse Circle</DialogTitle>
-          <DialogDescription className="text-center text-zinc-400">
-            Enter your email for early access and exclusive updates.
+          <DialogTitle className="text-cobalt-400">Join the ArtHouse Waitlist</DialogTitle>
+          <DialogDescription className="text-zinc-400">
+            Enter your email to request early access and be notified when we launch.
           </DialogDescription>
         </DialogHeader>
         {!isSubmitted ? (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <Input
-              type="email"
-              placeholder="Your email address"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              disabled={isLoading}
-              className="w-full px-4 py-2 text-base bg-zinc-800 border-zinc-700 rounded-md focus:border-white focus:ring-1 focus:ring-white placeholder:text-zinc-500 disabled:opacity-50"
-            />
+          <form onSubmit={handleSubmit} className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Input
+                id="email"
+                type="email"
+                placeholder="your@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={isLoading}
+                className="col-span-3 bg-zinc-900/50 border-zinc-700 text-white focus:border-cobalt-400 focus:ring-cobalt-400"
+              />
+            </div>
             {error && <p className="text-red-400 text-sm text-center">{error}</p>}
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full py-2 text-base font-semibold bg-gradient-to-r from-zinc-700 to-zinc-800 hover:from-zinc-600 hover:to-zinc-700 text-white transition-all duration-300 rounded-md shadow-lg disabled:opacity-50"
+              className="w-full bg-cobalt-600 hover:bg-cobalt-700 text-white font-semibold"
             >
-              {isLoading ? "Submitting..." : "Request Invite"}
+              {isLoading ? "Submitting..." : "Request Early Access"}
             </Button>
           </form>
         ) : (
-          <div className="text-center space-y-4 animate-fade-in">
-            <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-green-500/20 flex items-center justify-center">
-              <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <div>
-              <h3 className="text-xl font-semibold text-white mb-1">Thanks for signing up!</h3>
-              <p className="text-zinc-400">{"Welcome to ArtHouse. Check your inbox for more info."}</p>
-            </div>
-            <Button onClick={onClose} className="w-full bg-zinc-700 text-white hover:bg-zinc-600 transition-colors">
+          <div className="text-center py-8">
+            <CheckCircle2 className="w-16 h-16 text-cobalt-400 mx-auto mb-4" />
+            <h4 className="text-xl font-semibold text-white mb-2">You're on the list!</h4>
+            <p className="text-zinc-400">Thanks for your interest in ArtHouse. We'll notify you when we're ready.</p>
+            <Button onClick={handleCloseDialog} className="mt-6 bg-cobalt-600 hover:bg-cobalt-700 text-white">
               Close
             </Button>
           </div>

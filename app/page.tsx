@@ -4,7 +4,6 @@ import { useState, useEffect, useRef, type FormEvent } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { EmailDialog } from "@/components/email-dialog" // Import the new dialog component
-import { UserCheck, Hand, Users } from "lucide-react" // Import Lucide icons
 
 /* -------------------------------------------------------------------------- */
 /*                               Creator Stubs                                */
@@ -300,9 +299,9 @@ export default function Page() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Feature 1: Curated Onboarding */}
-            <div className="flex flex-col items-center p-6 bg-zinc-900/50 rounded-lg border border-zinc-700/50 backdrop-blur-sm mx-auto w-[70vw] max-w-[256px] h-[83vw] max-h-[333px]">
+            <div className="flex flex-col items-center p-6 bg-zinc-900/50 rounded-lg border border-zinc-700/50 backdrop-blur-sm mx-auto w-[70vw] max-w-[256px] h-[66.4vw] max-h-[266px]">
               <div className="mb-4 p-3 rounded-full bg-zinc-800/70 border border-zinc-700/50 flex items-center justify-center">
-                <UserCheck className="w-10 h-10 bg-gradient-to-r from-cobalt-600 to-cobalt-800 bg-clip-text text-transparent" />
+                <img src="/assets/icons/cards 2.png" alt="Curated Onboarding" className="w-10 h-10 object-contain" />
               </div>
               <div className="flex flex-col items-center">
                 <h3 className="text-xl font-semibold text-white mb-2">Curated Onboarding</h3>
@@ -312,9 +311,9 @@ export default function Page() {
               </div>
             </div>
             {/* Feature 2: Swipe by Style */}
-            <div className="flex flex-col items-center p-6 bg-zinc-900/50 rounded-lg border border-zinc-700/50 backdrop-blur-sm mx-auto w-[70vw] max-w-[256px] h-[83vw] max-h-[333px]">
+            <div className="flex flex-col items-center p-6 bg-zinc-900/50 rounded-lg border border-zinc-700/50 backdrop-blur-sm mx-auto w-[70vw] max-w-[256px] h-[66.4vw] max-h-[266px]">
               <div className="mb-4 p-3 rounded-full bg-zinc-800/70 border border-zinc-700/50 flex items-center justify-center">
-                <Hand className="w-10 h-10 bg-gradient-to-r from-cobalt-600 to-cobalt-800 bg-clip-text text-transparent" />
+                <img src="/assets/icons/resonance.png" alt="Swipe by Style" className="w-10 h-10 object-contain" />
               </div>
               <div className="flex flex-col items-center">
                 <h3 className="text-xl font-semibold text-white mb-2">Swipe by Style</h3>
@@ -324,9 +323,9 @@ export default function Page() {
               </div>
             </div>
             {/* Feature 3: Join Collectives */}
-            <div className="flex flex-col items-center p-6 bg-zinc-900/50 rounded-lg border border-zinc-700/50 backdrop-blur-sm mx-auto w-[70vw] max-w-[256px] h-[83vw] max-h-[333px]">
+            <div className="flex flex-col items-center p-6 bg-zinc-900/50 rounded-lg border border-zinc-700/50 backdrop-blur-sm mx-auto w-[70vw] max-w-[256px] h-[66.4vw] max-h-[266px]">
               <div className="mb-4 p-3 rounded-full bg-zinc-800/70 border border-zinc-700/50 flex items-center justify-center">
-                <Users className="w-10 h-10 bg-gradient-to-r from-cobalt-600 to-cobalt-800 bg-clip-text text-transparent" />
+                <img src="/assets/icons/collective.png" alt="Join Collectives" className="w-10 h-10 object-contain" />
               </div>
               <div className="flex flex-col items-center">
                 <h3 className="text-xl font-semibold text-white mb-2">Join Collectives</h3>

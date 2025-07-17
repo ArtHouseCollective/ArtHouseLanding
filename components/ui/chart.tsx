@@ -1,91 +1,59 @@
 "use client"
 
 import * as React from "react"
-import {
-  CartesianGrid,
-  Line,
-  LineChart,
-  Bar,
-  BarChart,
-  Pie,
-  PieChart,
-  RadialBar,
-  RadialBarChart,
-  Area,
-  AreaChart,
-} from "recharts"
+import { Label, PolarGrid, PolarRadiusAxis, RadialBar, RadialBarChart } from "recharts"
+import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
+import { cn } from "@/lib/utils"
 
-import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart"
+// Define the ChartConfig type for the chart
+const chartConfig = {
+  progress: {
+    label: "Progress",
+    color: "hsl(var(--chart-1))",
+  },
+} satisfies ChartConfig
 
-const Chart = ({
-  type,
-  data,
-  config,
-  className,
-}: {
-  type: "line" | "bar" | "pie" | "radial" | "area"
-  data: Record<string, string | number>[]
-  config: ChartConfig
-  className?: string
-}) => {
-  const ChartComponent = React.useMemo(() => {
-    switch (type) {
-      case "line":
-        return LineChart
-      case "bar":
-        return BarChart
-      case "pie":
-        return PieChart
-      case "radial":
-        return RadialBarChart
-      case "area":
-        return AreaChart
-      default:
-        return LineChart
-    }
-  }, [type])
-
-  const renderChartElements = React.useCallback(() => {
-    switch (type) {
-      case "line":
-        return Object.entries(config).map(([key, { color, type }]) => {
-          if (type === "value") {
-            return <Line key={key} dataKey={key} stroke={`hsl(${color})`} />
-          }
-          return null
-        })
-      case "bar":
-        return Object.entries(config).map(([key, { color, type }]) => {
-          if (type === "value") {
-            return <Bar key={key} dataKey={key} fill={`hsl(${color})`} />
-          }
-          return null
-        })
-      case "area":
-        return Object.entries(config).map(([key, { color, type }]) => {
-          if (type === "value") {
-            return <Area key={key} dataKey={key} fill={`hsl(${color})`} stroke={`hsl(${color})`} />
-          }
-          return null
-        })
-      case "pie":
-        return <Pie dataKey="value" nameKey="name" data={data} outerRadius={80} label />
-      case "radial":
-        return <RadialBar dataKey="value" nameKey="name" data={data} background clockWise dataMax={100} />
-      default:
-        return null
-    }
-  }, [type, data, config])
-
-  return (
-    <ChartContainer config={config} className={className}>
-      <ChartComponent data={data}>
-        {type !== "pie" && type !== "radial" && <CartesianGrid vertical={false} />}
-        <ChartTooltip content={<ChartTooltipContent />} />
-        {renderChartElements()}
-      </ChartComponent>
-    </ChartContainer>
-  )
+// Define the props for the CircularProgress component
+interface CircularProgressProps extends React.HTMLAttributes<HTMLDivElement> {
+  value: number
+  size?: number
+  strokeWidth?: number
+  showLabel?: boolean
 }
 
-export { Chart }
+const CircularProgress = React.forwardRef<HTMLDivElement, CircularProgressProps>(
+  ({ value, size = 120, strokeWidth = 10, showLabel = true, className, ...props }, ref) => {
+    const chartData = [{ browser: "progress", progress: value }]
+
+    return (
+      <div
+        ref={ref}
+        className={cn("flex items-center justify-center", className)}
+        style={{ width: size, height: size }}
+        {...props}
+      >
+        <ChartContainer config={chartConfig} className="h-full w-full">
+          <RadialBarChart
+            data={chartData}
+            cx="50%"
+            cy="50%"
+            innerRadius={size / 2 - strokeWidth}
+            outerRadius={size / 2}
+            startAngle={90}
+            endAngle={90 + (value / 100) * 360}
+          >
+            <PolarGrid gridType="circle" radius={[size / 2 - strokeWidth, size / 2]} polarAngles={[0]}>
+              <PolarRadiusAxis axisLine={false} tick={false} />
+            </PolarGrid>
+            <RadialBar dataKey="progress" cornerRadius={strokeWidth / 2} />
+            <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+            {showLabel && <Label value={`${value}%`} position="center" className="fill-foreground text-lg font-bold" />}
+          </RadialBarChart>
+        </ChartContainer>
+      </div>
+    )
+  },
+)
+CircularProgress.displayName = "CircularProgress"
+
+export { CircularProgress }
