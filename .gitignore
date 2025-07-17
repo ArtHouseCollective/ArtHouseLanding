@@ -1,27 +1,214 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Next.js
+.next/
+out/
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.staging.local
 
-# dependencies
-/node_modules
-
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# debug
+# Node.js
+node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+.pnpm-store/
 
-# env files
-.env*
+# TypeScript
+*.tsbuildinfo
+
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store
+
+# npm package manager
+package-lock.json
+
+# yarn package manager
+yarn.lock
+
+# pnpm package manager
+pnpm-lock.yaml
+
+# Log files
+*.log
+
+# Misc
+.env
+.env.*
+.DS_Store
+.idea/
+.vscode/
+*.tgz
+*.zip
+.tool-versions
+.nvmrc
+.npmrc
+.yarnrc
+.editorconfig
+.prettierrc
+.prettierignore
+.eslintignore
+.gitattributes
+.gitkeep
+.gitmodules
+.npmignore
+.dockerignore
+.terraformignore
+.terraform/
+.terraform.lock.hcl
+.terraform.tfstate
+.terraform.tfstate.backup
+.terraform.tfvars
+.terraform.tfvars.json
+.terraform.rc
+.terraform.d/
+.terraform.plugin-cache/
+.terraform.d/plugins/
+.terraform.d/modules/
+.terraform.d/providers/
+.terraform.d/data/
+.terraform.d/state/
+.terraform.d/state.backup/
+.terraform.d/state.d/
+.terraform.d/state.d/terraform.tfstate
+.terraform.d/state.d/terraform.tfstate.backup
+.terraform.d/state.d/terraform.tfvars
+.terraform.d/state.d/terraform.tfvars.json
+.terraform.d/state.d/terraform.rc
+.terraform.d/state.d/terraform.d/
+.terraform.d/state.d/terraform.d/plugins/
+.terraform.d/state.d/terraform.d/modules/
+.terraform.d/state.d/terraform.d/providers/
+.terraform.d/state.d/terraform.d/data/
+.terraform.d/state.d/terraform.d/state/
+.terraform.d/state.d/terraform.d/state.backup/
+.terraform.d/state.d/terraform.d/state.d/
+.terraform.d/state.d/terraform.d/state.d/terraform.tfstate
+.terraform.d/state.d/terraform.d/state.d/terraform.tfstate.backup
+.terraform.d/state.d/terraform.d/state.d/terraform.tfvars
+.terraform.d/state.d/terraform.d/state.d/terraform.tfvars.json
+.terraform.d/state.d/terraform.d/state.d/terraform.rc
+.terraform.d/state.d/terraform.d/state.d/terraform.d/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/plugins/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/modules/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/providers/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/data/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.backup/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/terraform.tfstate
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/terraform.tfstate.backup
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/terraform.tfvars
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/terraform.tfvars.json
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/terraform.rc
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/terraform.d/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/terraform.d/plugins/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/terraform.d/modules/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/terraform.d/providers/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/data/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.backup/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/terraform.tfstate
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/terraform.tfstate.backup
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/terraform.tfvars
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/terraform.tfvars.json
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/terraform.rc
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/terraform.d/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/terraform.d/plugins/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/terraform.d/modules/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/terraform.d/providers/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/data/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.backup/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/terraform.tfstate
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/terraform.tfstate.backup
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/terraform.tfvars
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/terraform.tfvars.json
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/terraform.rc
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/plugins/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/modules/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/providers/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/data/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.backup/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/terraform.tfstate
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/terraform.tfstate.backup
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/terraform.tfvars
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/terraform.tfvars.json
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/terraform.rc
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/plugins/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/modules/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/providers/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/data/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.backup/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/terraform.tfstate
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/terraform.tfstate.backup
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/terraform.tfvars
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/terraform.tfvars.json
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/terraform.rc
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/plugins/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/modules/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/providers/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/data/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.backup/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/terraform.tfstate
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/terraform.tfstate.backup
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/terraform.tfvars
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/terraform.tfvars.json
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/terraform.rc
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/plugins/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/modules/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/providers/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/data/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.backup/
+.terraform.d/state.d/terraform.d/state.d/terraform.d/state.d/
+
+# Next.js
+.next/
+out/
+
+# node_modules
+node_modules/
+
+# Environment variables
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# npm
+npm-debug.log*
+.npm/
+
+# yarn
+yarn-debug.log*
+.yarn/
 
 # vercel
-.vercel
+.vercel/
 
-# typescript
+# firebase
+firebase-debug.log
+firebase-debug.*.log
+.firebase/
+
+# misc
+*.log
 *.tsbuildinfo
-next-env.d.ts
+.DS_Store

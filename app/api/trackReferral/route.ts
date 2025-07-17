@@ -1,7 +1,6 @@
-import type { NextRequest } from "next"
-import { NextResponse } from "next/server"
-import { initializeApp, cert, getApps } from "firebase-admin/app"
-import { getFirestore, FieldValue } from "firebase-admin/firestore"
+import { type NextRequest, NextResponse } from "next/server"
+import { FieldValue, getApps, initializeApp, cert } from "firebase-admin/app"
+import { getFirestore as getAdminFirestore } from "firebase-admin/firestore"
 
 if (!getApps().length) {
   initializeApp({
@@ -13,60 +12,30 @@ if (!getApps().length) {
   })
 }
 
-const db = getFirestore()
+const db = getAdminFirestore()
 
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const { email, ref } = await req.json()
+    const { referralCode } = await request.json()
 
-    if (!email || !ref) {
-      return NextResponse.json({ error: "Missing email or ref" }, { status: 400 })
+    if (!referralCode) {
+      return NextResponse.json({ error: "Referral code is required" }, { status: 400 })
     }
 
-    // First, validate that the referral code exists in the users collection
-    const usersSnapshot = await db.collection("users").where("referralCode", "==", ref).limit(1).get()
+    const referralDoc = await db.collection("referrals").where("referralCode", "==", referralCode).limit(1).get()
 
-    if (usersSnapshot.empty) {
-      return NextResponse.json({ error: "Invalid referral code" }, { status: 400 })
+    if (referralDoc.empty) {
+      return NextResponse.json({ error: "Referral code not found" }, { status: 404 })
     }
 
-    // Get the user who owns this referral code
-    const referrerDoc = usersSnapshot.docs[0]
-    const referrerId = referrerDoc.id
-    const referrerData = referrerDoc.data()
-
-    console.log(`Valid referral code ${ref} found for user ${referrerId}`)
-
-    // Save referral record
-    await db
-      .collection("referrals")
-      .doc(email)
-      .set({
-        referrer: ref,
-        referrerId: referrerId, // Store the actual user ID for reference
-        referrerEmail: referrerData.email || null, // Store referrer's email if available
-        createdAt: new Date(),
-      })
-
-    // Increment referrer's count
-    const refCountRef = db.collection("referralCounts").doc(ref)
-    await refCountRef.set(
-      {
-        count: FieldValue.increment(1),
-        lastReferral: new Date(),
-        referrerId: referrerId, // Store the user ID who owns this code
-      },
-      { merge: true },
-    )
-
-    return NextResponse.json({
-      success: true,
-      message: "Referral tracked successfully",
-      referrer: ref,
-      referrerId: referrerId,
+    const docRef = referralDoc.docs[0].ref
+    await docRef.update({
+      clicks: FieldValue.increment(1),
     })
-  } catch (err) {
-    console.error("[Referral Error]", err)
-    return NextResponse.json({ error: "Server error" }, { status: 500 })
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error("Error tracking referral:", error)
+    return NextResponse.json({ error: "Failed to track referral" }, { status: 500 })
   }
 }

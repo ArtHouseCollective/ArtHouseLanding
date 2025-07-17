@@ -1,68 +1,44 @@
-import { type NextRequest, NextResponse } from "next/server"
+import { FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY } from "@/lib/constants"
 import { initializeApp, getApps, cert } from "firebase-admin/app"
 import { getFirestore } from "firebase-admin/firestore"
 
-// Initialize Firebase Admin (only once)
+// Initialize Firebase Admin SDK if not already initialized
 if (!getApps().length) {
   initializeApp({
     credential: cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+      projectId: FIREBASE_PROJECT_ID,
+      clientEmail: FIREBASE_CLIENT_EMAIL,
+      privateKey: FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"), // Handle private key newlines
     }),
   })
 }
 
 const db = getFirestore()
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const { searchParams } = new URL(request.url)
-    const referrer = searchParams.get("referrer")
+    const statsRef = db.collection("referralStats").doc("current")
+    const doc = await statsRef.get()
 
-    if (!referrer) {
-      return NextResponse.json({ error: "Referrer parameter is required" }, { status: 400 })
-    }
-
-    // Get referral count for specific referrer
-    const countDoc = await db.collection("referralCounts").doc(referrer).get()
-
-    if (!countDoc.exists) {
-      return NextResponse.json({
-        referrer,
-        count: 0,
-        referrals: [],
+    if (!doc.exists) {
+      return new Response(JSON.stringify({ count: 0 }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
       })
     }
 
-    const countData = countDoc.data()
+    const data = doc.data()
+    const count = data?.signups || 0
 
-    // Get all referrals made by this referrer
-    const referralsSnapshot = await db
-      .collection("referrals")
-      .where("referrer", "==", referrer)
-      .orderBy("createdAt", "desc")
-      .get()
-
-    const referrals = referralsSnapshot.docs.map((doc) => ({
-      email: doc.id,
-      ...doc.data(),
-      createdAt: doc.data().createdAt?.toDate?.()?.toISOString() || null,
-    }))
-
-    return NextResponse.json({
-      referrer,
-      count: countData?.count || 0,
-      lastReferral: countData?.lastReferral?.toDate?.()?.toISOString() || null,
-      referrals,
+    return new Response(JSON.stringify({ count }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
     })
   } catch (error) {
-    console.error("Stats retrieval error:", error)
-    return NextResponse.json(
-      {
-        error: "Failed to get referral stats",
-      },
-      { status: 500 },
-    )
+    console.error("Error fetching referral stats:", error)
+    return new Response(JSON.stringify({ error: "Internal server error." }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    })
   }
 }

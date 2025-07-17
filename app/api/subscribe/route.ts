@@ -1,93 +1,64 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { getFirestore, FieldValue, getApps, initializeApp, cert } from "firebase-admin/app"
-import { getFirestore as getAdminFirestore } from "firebase-admin/firestore"
+import { BEEHIIV_API_KEY, BEEHIIV_PUBLICATION_ID } from "@/lib/constants"
 
-if (!getApps().length) {
-  initializeApp({
-    credential: cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
-    }),
-  })
-}
-
-const db = getAdminFirestore()
-
-export async function POST(request: NextRequest) {
+export async function POST(req: Request) {
   try {
-    const { email } = await request.json()
+    const { email } = await req.json()
 
     if (!email) {
-      return NextResponse.json({ error: "Email is required" }, { status: 400 })
+      return new Response(JSON.stringify({ error: "Email is required." }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      })
     }
-
-    const BEEHIIV_API_KEY = process.env.BEEHIIV_API_KEY
-    const BEEHIIV_PUBLICATION_ID = process.env.BEEHIIV_PUBLICATION_ID
 
     if (!BEEHIIV_API_KEY || !BEEHIIV_PUBLICATION_ID) {
-      console.error("Missing Beehiiv environment variables")
-      return NextResponse.json({ error: "Server misconfigured" }, { status: 500 })
+      console.error("Beehiiv API key or Publication ID is not set.")
+      return new Response(JSON.stringify({ error: "Server configuration error. Please try again later." }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      })
     }
 
-    const response = await fetch(
-      `https://api.beehiiv.com/v2/publications/${BEEHIIV_PUBLICATION_ID}/subscriptions`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${BEEHIIV_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          reactivate_existing: false,
-          send_welcome_email: true,
-          utm_source: "arthouse_landing",
-          utm_medium: "website",
-          utm_campaign: "early_access",
-          publication_id: BEEHIIV_PUBLICATION_ID,
-        }),
-      }
-    )
+    const response = await fetch(`https://api.beehiiv.com/v2/publications/${BEEHIIV_PUBLICATION_ID}/subscriptions`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${BEEHIIV_API_KEY}`,
+      },
+      body: JSON.stringify({
+        email,
+        send_welcome_email: true,
+        utm_source: "ArtHouse_Landing_Page",
+        utm_campaign: "Early_Access",
+      }),
+    })
 
     const data = await response.json()
 
-    if (response.ok) {
-      // ✅ Optionally log to Firestore
-      await db.collection("waitlistSignups").add({
-        email,
-        source: "landing",
-        subscribedAt: FieldValue.serverTimestamp(),
-      })
-
-      return NextResponse.json({
-        success: true,
-        subscribed: true,
-        email,
-      })
-    } else {
+    if (!response.ok) {
       console.error("Beehiiv API error:", data)
-
-      if (
-        data.errors &&
-        data.errors.some((error: any) => error.code === "email_already_exists")
-      ) {
-        return NextResponse.json(
-          { error: "This email is already subscribed!" },
-          { status: 400 }
-        )
+      // Check for specific Beehiiv error messages
+      if (data.message && data.message.includes("already subscribed")) {
+        return new Response(JSON.stringify({ error: "You are already subscribed!" }), {
+          status: 409, // Conflict
+          headers: { "Content-Type": "application/json" },
+        })
       }
-
-      return NextResponse.json(
-        { error: "Failed to subscribe. Please try again." },
-        { status: 400 }
-      )
+      return new Response(JSON.stringify({ error: data.message || "Failed to subscribe. Please try again." }), {
+        status: response.status,
+        headers: { "Content-Type": "application/json" },
+      })
     }
+
+    return new Response(JSON.stringify({ message: "Subscription successful!" }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    })
   } catch (error) {
-    console.error("Subscription error:", error)
-    return NextResponse.json(
-      { error: "Something went wrong. Please try again." },
-      { status: 500 }
-    )
+    console.error("Subscription endpoint error:", error)
+    return new Response(JSON.stringify({ error: "Internal server error." }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    })
   }
 }
