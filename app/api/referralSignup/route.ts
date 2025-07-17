@@ -16,27 +16,27 @@ if (!getApps().length) {
 
 const db = getFirestore()
 
-export async function POST(request: Request) {
-  const { email, referralCode } = await request.json()
-
-  if (!email) {
-    return NextResponse.json({ error: "Email is required" }, { status: 400 })
-  }
-
+export async function POST(req: Request) {
   try {
-    const userRef = db.collection("users").doc(email)
-    await userRef.set({ email, referralCode, createdAt: new Date() })
+    const { email } = await req.json()
 
-    if (referralCode) {
-      const referrerRef = db.collection("users").doc(referralCode)
-      await referrerRef.update({
-        referralCount: getFirestore.FieldValue.increment(1),
-      })
+    if (!email) {
+      return NextResponse.json({ error: "Email is required" }, { status: 400 })
     }
 
-    return NextResponse.json({ message: "Signed up successfully!" })
+    // Generate a simple referral code (e.g., first part of email + random string)
+    const emailPrefix = email.split("@")[0]
+    const referralCode = `${emailPrefix}-${Math.random().toString(36).substring(2, 8)}`
+
+    // Store the new user and their referral code
+    await db.collection("referrals").doc(referralCode).set({
+      email,
+      createdAt: new Date(),
+    })
+
+    return NextResponse.json({ referralCode }, { status: 200 })
   } catch (error) {
-    console.error("Error signing up with referral:", error)
+    console.error("Error signing up for referral:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

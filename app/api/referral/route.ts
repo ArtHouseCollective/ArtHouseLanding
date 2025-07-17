@@ -39,3 +39,31 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
+
+export async function POST(req: Request) {
+  try {
+    const { email, referralCode } = await req.json()
+
+    if (!email || !referralCode) {
+      return NextResponse.json({ error: "Email and referral code are required" }, { status: 400 })
+    }
+
+    // Check if the referral code exists and is valid
+    const referrerDoc = await db.collection("referrals").doc(referralCode).get()
+
+    if (!referrerDoc.exists) {
+      return NextResponse.json({ error: "Invalid referral code" }, { status: 404 })
+    }
+
+    // Add the new referral to the 'referrals' subcollection of the referrer
+    await db.collection("referrals").doc(referralCode).collection("referredUsers").add({
+      email,
+      timestamp: new Date(),
+    })
+
+    return NextResponse.json({ message: "Referral recorded successfully" }, { status: 200 })
+  } catch (error) {
+    console.error("Error recording referral:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  }
+}

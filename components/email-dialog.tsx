@@ -1,9 +1,9 @@
 "use client"
 
 import { useState, type FormEvent } from "react"
+import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
 
 interface EmailDialogProps {
   isOpen: boolean
@@ -42,53 +42,50 @@ export function EmailDialog({ isOpen, onClose }: EmailDialogProps) {
     }
   }
 
-  const handleCloseDialog = () => {
-    setEmail("")
-    setIsSubmitted(false)
-    setError("")
-    onClose()
-  }
-
   return (
-    <Dialog open={isOpen} onOpenChange={handleCloseDialog}>
-      <DialogContent className="sm:max-w-[425px] bg-zinc-950 text-white border-zinc-700">
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[425px] bg-zinc-900 text-white border-zinc-700">
         <DialogHeader>
-          <DialogTitle className="text-center text-2xl font-bold text-white">Request Early Access</DialogTitle>
-          <DialogDescription className="text-center text-zinc-400">
-            Enter your email to join the waitlist for ArtHouse.
+          <DialogTitle className="text-white">Apply for Early Access</DialogTitle>
+          <DialogDescription className="text-zinc-400">
+            Enter your email to request an invite to ArtHouse.
           </DialogDescription>
         </DialogHeader>
         {!isSubmitted ? (
-          <form onSubmit={handleSubmit} className="grid gap-4 py-4">
+          <form onSubmit={handleSubmit} className="space-y-4 py-4">
             <Input
-              id="email"
               type="email"
-              placeholder="your@email.com"
+              placeholder="Your email address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
               disabled={isLoading}
-              className="col-span-3 bg-zinc-900 border-zinc-700 text-white placeholder:text-zinc-500 focus:border-white focus:ring-1 focus:ring-white"
+              className="w-full px-4 py-2 text-lg bg-zinc-800 border-zinc-700 rounded-md focus:border-white focus:ring-1 focus:ring-white transition-all duration-300 placeholder:text-zinc-500 disabled:opacity-50"
             />
             {error && <p className="text-red-400 text-sm text-center">{error}</p>}
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-white text-black hover:bg-zinc-200 transition-all duration-300"
+              className="w-full py-2 text-lg font-semibold bg-white text-black hover:bg-zinc-200 transition-all duration-300 rounded-md shadow-lg hover:shadow-xl transform hover:scale-[1.02] disabled:opacity-50 disabled:transform-none"
             >
-              {isLoading ? "Submitting..." : "Join Waitlist"}
+              {isLoading ? "Submitting..." : "Request Invite"}
             </Button>
           </form>
         ) : (
-          <div className="text-center space-y-4 py-4">
+          <div className="text-center space-y-6 py-4 animate-fade-in">
             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-500/20 flex items-center justify-center">
               <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h3 className="text-xl font-semibold text-white mb-2">You're on the list!</h3>
-            <p className="text-zinc-400">{"We'll notify you when early access is available."}</p>
-            <Button onClick={handleCloseDialog} className="w-full bg-white text-black hover:bg-zinc-200">
+            <div>
+              <h3 className="text-xl font-semibold text-white mb-2">Thanks for signing up!</h3>
+              <p className="text-zinc-400">{"Welcome to ArtHouse. Check your inbox for more info."}</p>
+            </div>
+            <Button
+              onClick={onClose}
+              className="w-full py-2 text-lg font-semibold bg-white text-black hover:bg-zinc-200 transition-all duration-300 rounded-md shadow-lg hover:shadow-xl"
+            >
               Close
             </Button>
           </div>

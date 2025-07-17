@@ -16,24 +16,29 @@ if (!getApps().length) {
 
 const db = getFirestore()
 
-export async function POST(request: Request) {
-  const { referrerEmail, referredEmail } = await request.json()
-
-  if (!referrerEmail || !referredEmail) {
-    return NextResponse.json({ error: "Referrer and referred emails are required" }, { status: 400 })
-  }
-
+export async function POST(req: Request) {
   try {
-    const referrerRef = db.collection("users").doc(referrerEmail)
-    await referrerRef.update({
-      referralCount: getFirestore.FieldValue.increment(1),
+    const { referrerCode, referredEmail } = await req.json()
+
+    if (!referrerCode || !referredEmail) {
+      return NextResponse.json({ error: "Referrer code and referred email are required" }, { status: 400 })
+    }
+
+    // Check if the referrer code exists
+    const referrerDocRef = db.collection("referrals").doc(referrerCode)
+    const referrerDoc = await referrerDocRef.get()
+
+    if (!referrerDoc.exists) {
+      return NextResponse.json({ error: "Invalid referrer code" }, { status: 404 })
+    }
+
+    // Add the referred user to a subcollection under the referrer
+    await referrerDocRef.collection("referredUsers").add({
+      email: referredEmail,
+      timestamp: new Date(),
     })
 
-    // Optionally, mark the referred user as having been referred
-    const referredUserRef = db.collection("users").doc(referredEmail)
-    await referredUserRef.set({ referredBy: referrerEmail }, { merge: true })
-
-    return NextResponse.json({ message: "Referral tracked successfully!" })
+    return NextResponse.json({ message: "Referral tracked successfully" }, { status: 200 })
   } catch (error) {
     console.error("Error tracking referral:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })

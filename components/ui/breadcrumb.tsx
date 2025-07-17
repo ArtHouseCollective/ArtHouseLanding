@@ -1,5 +1,6 @@
 import * as React from "react"
-import { ChevronRight, MoreHorizontal } from "lucide-react"
+import { ChevronRightIcon, DotsHorizontalIcon } from "@radix-ui/react-icons"
+import { Link } from "react-router-dom" // Assuming Link is used for routing
 
 import { cn } from "@/lib/utils"
 
@@ -32,15 +33,16 @@ const BreadcrumbLink = React.forwardRef<
   React.ComponentPropsWithoutRef<"a"> & {
     asChild?: boolean
   }
->(({ asChild, className, ...props }, ref) => (
-  <a ref={ref} className={cn("transition-colors hover:text-foreground", className)} {...props} />
-))
+>(({ asChild, className, ...props }, ref) => {
+  const Comp = asChild ? React.Fragment : Link
+  return <Comp ref={ref} className={cn("transition-colors hover:text-foreground", className)} {...props} />
+})
 BreadcrumbLink.displayName = "BreadcrumbLink"
 
 const BreadcrumbSeparator = React.forwardRef<HTMLLIElement, React.ComponentPropsWithoutRef<"li">>(
   ({ className, children, ...props }, ref) => (
     <li ref={ref} role="presentation" aria-hidden="true" className={cn("[&>svg]:size-3.5", className)} {...props}>
-      {children ?? <ChevronRight />}
+      {children ?? <ChevronRightIcon />}
     </li>
   ),
 )
@@ -60,18 +62,17 @@ const BreadcrumbPage = React.forwardRef<HTMLSpanElement, React.ComponentPropsWit
 )
 BreadcrumbPage.displayName = "BreadcrumbPage"
 
-const BreadcrumbEllipsis = ({ className, ...props }: React.ComponentPropsWithoutRef<typeof MoreHorizontal>) => (
-  <li
+const BreadcrumbEllipsis = ({ className, ...props }: React.ComponentPropsWithoutRef<"span">) => (
+  <span
     role="presentation"
     aria-hidden="true"
     className={cn("flex h-9 w-9 items-center justify-center", className)}
     {...props}
   >
-    <MoreHorizontal className="h-4 w-4" />
-    <span className="sr-only">More</span>
-  </li>
+    <DotsHorizontalIcon className="h-4 w-4" />
+    <span className="sr-only">More pages</span>
+  </span>
 )
-
 BreadcrumbEllipsis.displayName = "BreadcrumbEllipsis"
 
 export {

@@ -144,6 +144,7 @@ interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
     href: string
   }[]
   isCollapsed: boolean
+  onCollapse: () => void
 }
 
 const SidebarComponent = React.forwardRef<
@@ -164,6 +165,7 @@ const SidebarComponent = React.forwardRef<
       icon: React.ElementType
       href: string
     }[]
+    onCollapse?: () => void
   }
 >(
   (
@@ -176,6 +178,7 @@ const SidebarComponent = React.forwardRef<
       links,
       className,
       children,
+      onCollapse,
       ...props
     },
     ref,

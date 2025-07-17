@@ -16,17 +16,26 @@ if (!getApps().length) {
 
 const db = getFirestore()
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const usersRef = db.collection("users")
-    const snapshot = await usersRef.get()
-    let totalReferrals = 0
-    snapshot.forEach((doc) => {
-      const userData = doc.data()
-      totalReferrals += userData.referralCount || 0
-    })
+    const url = new URL(req.url)
+    const referralCode = url.searchParams.get("code")
 
-    return NextResponse.json({ totalReferrals })
+    if (!referralCode) {
+      return NextResponse.json({ error: "Referral code is required" }, { status: 400 })
+    }
+
+    const referrerDoc = await db.collection("referrals").doc(referralCode).get()
+
+    if (!referrerDoc.exists) {
+      return NextResponse.json({ error: "Invalid referral code" }, { status: 404 })
+    }
+
+    const referredUsersSnapshot = await db.collection("referrals").doc(referralCode).collection("referredUsers").get()
+
+    const referralCount = referredUsersSnapshot.size
+
+    return NextResponse.json({ referralCount }, { status: 200 })
   } catch (error) {
     console.error("Error fetching referral stats:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
