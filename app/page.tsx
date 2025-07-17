@@ -1,32 +1,35 @@
 "use client"
 
-import type React from "react"
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, type FormEvent } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { EmailDialog } from "@/components/email-dialog" // Import the new dialog component
+import { UserCheck, Hand, Users } from "lucide-react" // Import Lucide icons
 
-// Updated creator data with real photos
+/* -------------------------------------------------------------------------- */
+/*                               Creator Stubs                                */
+/* -------------------------------------------------------------------------- */
+
 const creators = [
   {
     name: "Jadon Cal",
     title: "Director",
     image: "/images/creators/JadonCal.jpg",
-    genre: "Drama/Surreal",
+    genre: "Drama / Surreal",
     specialty: "Off Rip, Skippin' Town",
   },
   {
     name: "Avi Youabian",
     title: "Director",
     image: "/images/creators/AviYouabian.jpeg",
-    genre: "Action/Drama",
+    genre: "Action / Drama",
     specialty: "Countdown, FBI International",
   },
   {
     name: "Meghan Carrasquillo",
     title: "Actress",
     image: "/images/creators/meghancarrasquillo2.jpg",
-    genre: "Thriller/Horror",
+    genre: "Thriller / Horror",
     specialty: "Stiletto, FOUR",
   },
   {
@@ -45,7 +48,7 @@ const creators = [
   },
   {
     name: "John Demari",
-    title: "Singer, Actor",
+    title: "Singer / Actor",
     image: "/images/creators/beachfly.jpeg",
     genre: "Reggae, Drama",
     specialty: "Beachfly, Florida Wild",
@@ -55,7 +58,7 @@ const creators = [
     title: "Actress",
     image: "/images/creators/laurenelyse.jpeg",
     genre: "Comedy",
-    specialty: "Known for: Magnum P.I., Foursome",
+    specialty: "Magnum P.I., Foursome",
   },
   {
     name: "Rhondda Stark Atlas",
@@ -64,7 +67,49 @@ const creators = [
     genre: "Comedy, Action",
     specialty: "Hacked: A Double Entendre of Rage-Fueled Karma",
   },
-]
+] as const
+
+interface Creator {
+  name: string
+  title: string
+  image: string
+  genre: string
+  specialty: string
+}
+
+function CreatorCard({ creator }: { creator: Creator }) {
+  return (
+    <div className="flex-shrink-0 relative">
+      {/* Golden glow background */}
+      <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 via-yellow-500/30 to-yellow-400/20 rounded-2xl blur-xl scale-110"></div>
+
+      {/* Profile card */}
+      <div className="relative bg-zinc-950/80 border border-zinc-700/50 rounded-2xl p-6 md:p-8 w-[70vw] max-w-[256px] h-[104vw] max-h-[416px] md:w-80 md:h-[480px] backdrop-blur-sm">
+        <div className="flex flex-col items-center text-center h-full space-y-2">
+          <div className="w-28 h-36 md:w-32 md:h-40 mb-4 rounded-2xl overflow-hidden">
+            <img
+              src={creator.image || "/placeholder.png"}
+              alt={creator.name}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement
+                target.src = "/placeholder.png?height=128&width=128"
+              }}
+            />
+          </div>
+          <h3 className="text-base md:text-lg font-bold text-white leading-tight">{creator.name}</h3>
+          <p className="text-sm md:text-base text-yellow-400 font-medium">{creator.title}</p>
+          <p className="text-xs leading-tight tracking-wide uppercase font-semibold text-zinc-300">{creator.genre}</p>
+          <p className="text-sm leading-snug text-zinc-400">{creator.specialty}</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                Page Component                              */
+/* -------------------------------------------------------------------------- */
 
 export default function Page() {
   const [email, setEmail] = useState("")
@@ -73,8 +118,8 @@ export default function Page() {
   const [error, setError] = useState("")
   const [referralCode, setReferralCode] = useState<string | null>(null) // Keep for display if user landed via ref
   const [foundersCount] = useState(33)
-  const phonePreviewRef = useRef<HTMLDivElement>(null)
-  const [isPhoneVisible, setIsPhoneVisible] = useState(false)
+  const appMockupsRef = useRef<HTMLDivElement>(null) // Renamed ref for new section
+  const [isAppMockupsVisible, setIsAppMockupsVisible] = useState(false) // State for new section
   const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false) // State for the new dialog
 
   // Capture referral code from URL and store in localStorage (for initial landing)
@@ -93,25 +138,25 @@ export default function Page() {
     }
   }, [])
 
-  // Scroll reveal for phone mockups
+  // Scroll reveal for app mockups
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setIsPhoneVisible(true)
+          setIsAppMockupsVisible(true)
         }
       },
       { threshold: 0.3 },
     )
 
-    if (phonePreviewRef.current) {
-      observer.observe(phonePreviewRef.current)
+    if (appMockupsRef.current) {
+      observer.observe(appMockupsRef.current)
     }
 
     return () => observer.disconnect()
   }, [])
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
     setError("")
@@ -138,6 +183,9 @@ export default function Page() {
       setIsLoading(false)
     }
   }
+
+  const creatorsRow1 = creators.slice(0, 4)
+  const creatorsRow2 = creators.slice(4, 8)
 
   return (
     <div className="min-h-screen bg-black text-white relative">
@@ -221,80 +269,59 @@ export default function Page() {
             Creators in the Founder's Circle
           </h2>
 
-          <div className="relative">
-            {/* Continuous scrolling animation */}
-            <div className="flex animate-scroll space-x-4 md:space-x-8">
-              {/* First set of creators */}
-              {creators.map((creator, index) => (
-                <div key={`first-${index}`} className="flex-shrink-0 relative">
-                  {/* Golden glow background */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 via-yellow-500/30 to-yellow-400/20 rounded-2xl blur-xl scale-110"></div>
-
-                  {/* Profile card */}
-                  <div className="relative bg-zinc-950/80 border border-zinc-700/50 rounded-2xl p-6 md:p-8 w-[70vw] max-w-[256px] h-[104vw] max-h-[416px] md:w-80 md:h-[480px] backdrop-blur-sm">
-                    <div className="flex flex-col items-center text-center h-full space-y-2">
-                      <div className="w-28 h-36 md:w-32 md:h-40 mb-4 rounded-2xl overflow-hidden">
-                        <img
-                          src={creator.image || "/placeholder.png"}
-                          alt={creator.name}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement
-                            target.src = "/placeholder.png?height=128&width=128"
-                          }}
-                        />
-                      </div>
-                      <h3 className="text-base md:text-lg font-bold text-white leading-tight">
-                        {/* Adjusted font size and added leading-tight */}
-                        {creator.name}
-                      </h3>
-                      <p className="text-sm md:text-base text-yellow-400 font-medium">{creator.title}</p>
-                      <p className="text-xs leading-tight tracking-wide uppercase font-semibold text-zinc-300">
-                        {creator.genre}
-                      </p>
-                      <p className="text-sm leading-snug text-zinc-400">{creator.specialty}</p>
-                    </div>
-                  </div>
-                </div>
+          <div className="relative space-y-4">
+            {/* Row 1 */}
+            <div className="flex animate-scroll-row1 space-x-4 md:space-x-8">
+              {[...creatorsRow1, ...creatorsRow1, ...creatorsRow1].map((creator, index) => (
+                <CreatorCard key={`row1-${index}`} creator={creator} />
               ))}
-              {/* Duplicate set for seamless loop */}
-              {creators.map((creator, index) => (
-                <div key={`second-${index}`} className="flex-shrink-0 relative">
-                  {/* Golden glow background */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 via-yellow-500/30 to-yellow-400/20 rounded-2xl blur-xl scale-110"></div>
-
-                  {/* Profile card */}
-                  <div className="relative bg-zinc-950/80 border border-zinc-700/50 rounded-2xl p-6 md:p-8 w-[70vw] max-w-[256px] h-[104vw] max-h-[416px] md:w-80 md:h-[480px] backdrop-blur-sm">
-                    <div className="flex flex-col items-center text-center h-full space-y-2">
-                      <div className="w-28 h-36 md:w-32 md:h-40 mb-4 rounded-2xl overflow-hidden">
-                        <img
-                          src={creator.image || "/placeholder.png"}
-                          alt={creator.name}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement
-                            target.src = "/placeholder.png?height=128&width=128"
-                          }}
-                        />
-                      </div>
-                      <h3 className="text-base md:text-lg font-bold text-white leading-tight">
-                        {/* Adjusted font size and added leading-tight */}
-                        {creator.name}
-                      </h3>
-                      <p className="text-sm md:text-base text-yellow-400 font-medium">{creator.title}</p>
-                      <p className="text-xs leading-tight tracking-wide uppercase font-semibold text-zinc-300">
-                        {creator.genre}
-                      </p>
-                      <p className="text-sm leading-snug text-zinc-400">{creator.specialty}</p>
-                    </div>
-                  </div>
-                </div>
+            </div>
+            {/* Row 2 */}
+            <div className="flex animate-scroll-row2 space-x-4 md:space-x-8">
+              {[...creatorsRow2, ...creatorsRow2, ...creatorsRow2].map((creator, index) => (
+                <CreatorCard key={`row2-${index}`} creator={creator} />
               ))}
             </div>
           </div>
 
           <div className="text-center mt-10">
             <p className="text-zinc-500 text-lg">Founding Creator Spots Limited</p>
+          </div>
+        </div>
+      </div>
+
+      {/* New Feature Board Section */}
+      <div className="py-20 px-4">
+        <div className="max-w-6xl mx-auto text-center">
+          <h2 className="text-2xl md:text-3xl font-bold text-center mb-12 text-zinc-200">
+            Built for creatives. By creatives.
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Feature 1: Curated Onboarding */}
+            <div className="flex flex-col items-center p-6 bg-zinc-900/50 rounded-lg border border-zinc-700/50 backdrop-blur-sm">
+              <UserCheck className="w-16 h-16 text-yellow-400 mb-4" />
+              <h3 className="text-xl font-semibold text-white mb-2">Curated Onboarding</h3>
+              <p className="text-zinc-400 text-center">
+                Every member is handpicked or verified. No followers. Just professional collaborators.
+              </p>
+            </div>
+            {/* Feature 2: Swipe by Style */}
+            <div className="flex flex-col items-center p-6 bg-zinc-900/50 rounded-lg border border-zinc-700/50 backdrop-blur-sm">
+              <Hand className="w-16 h-16 text-yellow-400 mb-4" />
+              <h3 className="text-xl font-semibold text-white mb-2">Swipe by Style</h3>
+              <p className="text-zinc-400 text-center">
+                Match with actors, directors, writers, musicians based on genre, portfolio, and vibe.
+              </p>
+            </div>
+            {/* Feature 3: Join Collectives */}
+            <div className="flex flex-col items-center p-6 bg-zinc-900/50 rounded-lg border border-zinc-700/50 backdrop-blur-sm">
+              <Users className="w-16 h-16 text-yellow-400 mb-4" />
+              <h3 className="text-xl font-semibold text-white mb-2">Join Collectives</h3>
+              <p className="text-zinc-400 text-center">
+                Join local or international groups based on shared interests. Create your own communities to
+                build your creative network.
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -341,17 +368,28 @@ export default function Page() {
       <EmailDialog isOpen={isEmailDialogOpen} onClose={() => setIsEmailDialogOpen(false)} />
 
       <style jsx>{`
-        @keyframes scroll {
+        @keyframes scroll-row1 {
           0% {
             transform: translateX(0);
           }
           100% {
-            transform: translateX(-50%);
+            transform: translateX(-100%); /* Adjusted to cover full width of duplicated content */
+          }
+        }
+        @keyframes scroll-row2 {
+          0% {
+            transform: translateX(-100%); /* Start from the end to create opposite direction */
+          }
+          100% {
+            transform: translateX(0);
           }
         }
         
-        .animate-scroll {
-          animation: scroll 18s linear infinite; /* Speed up from 25s to 18s (approx 25% faster) */
+        .animate-scroll-row1 {
+          animation: scroll-row1 30s linear infinite; /* Adjusted speed for more items */
+        }
+        .animate-scroll-row2 {
+          animation: scroll-row2 32s linear infinite; /* Slightly different speed for visual interest */
         }
         
         @keyframes fade-in-up {
@@ -369,7 +407,7 @@ export default function Page() {
           from {
             opacity: 0;
           }
-            to {
+          to {
             opacity: 1;
           }
         }
