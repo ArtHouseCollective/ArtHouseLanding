@@ -81,10 +81,10 @@ function CreatorCard({ creator }: { creator: Creator }) {
   return (
     <div className="flex-shrink-0 relative">
       {/* Golden glow background */}
-      <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 via-yellow-500/30 to-yellow-400/20 rounded-2xl blur-xl scale-110"></div>
+      <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 via-blue-500/30 to-blue-400/20 rounded-2xl blur-xl scale-110"></div>
 
       {/* Profile card */}
-      <div className="relative bg-zinc-950/80 border border-zinc-700/50 rounded-2xl p-6 md:p-8 w-[70vw] max-w-[256px] h-[104vw] max-h-[416px] md:w-80 md:h-[480px] backdrop-blur-sm">
+      <div className="relative bg-zinc-950/80 border border-zinc-700/50 rounded-2xl p-6 md:p-8 w-[63vw] max-w-[230px] h-[125vw] max-h-[500px] md:w-80 md:h-[480px] backdrop-blur-sm">
         <div className="flex flex-col items-center text-center h-full space-y-2">
           <div className="w-28 h-36 md:w-32 md:h-40 mb-4 rounded-2xl overflow-hidden">
             <img
@@ -98,7 +98,7 @@ function CreatorCard({ creator }: { creator: Creator }) {
             />
           </div>
           <h3 className="text-base md:text-lg font-bold text-white leading-tight">{creator.name}</h3>
-          <p className="text-sm md:text-base text-yellow-400 font-medium">{creator.title}</p>
+          <p className="text-sm md:text-base text-blue-400 font-medium">{creator.title}</p>
           <p className="text-xs leading-tight tracking-wide uppercase font-semibold text-zinc-300">{creator.genre}</p>
           <p className="text-sm leading-snug text-zinc-400">{creator.specialty}</p>
         </div>
@@ -299,7 +299,7 @@ export default function Page() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Feature 1: Curated Onboarding */}
             <div className="flex flex-col items-center p-6 bg-zinc-900/50 rounded-lg border border-zinc-700/50 backdrop-blur-sm">
-              <UserCheck className="w-16 h-16 text-yellow-400 mb-4" />
+              <UserCheck className="w-16 h-16 mb-4 bg-gradient-to-r from-blue-300 to-purple-400 bg-clip-text text-transparent" />
               <h3 className="text-xl font-semibold text-white mb-2">Curated Onboarding</h3>
               <p className="text-zinc-400 text-center">
                 Every member is handpicked or verified. No followers. Just professional collaborators.
@@ -307,7 +307,7 @@ export default function Page() {
             </div>
             {/* Feature 2: Swipe by Style */}
             <div className="flex flex-col items-center p-6 bg-zinc-900/50 rounded-lg border border-zinc-700/50 backdrop-blur-sm">
-              <Hand className="w-16 h-16 text-yellow-400 mb-4" />
+              <Hand className="w-16 h-16 mb-4 bg-gradient-to-r from-blue-300 to-purple-400 bg-clip-text text-transparent" />
               <h3 className="text-xl font-semibold text-white mb-2">Swipe by Style</h3>
               <p className="text-zinc-400 text-center">
                 Match with actors, directors, writers, musicians based on genre, portfolio, and vibe.
@@ -315,11 +315,11 @@ export default function Page() {
             </div>
             {/* Feature 3: Join Collectives */}
             <div className="flex flex-col items-center p-6 bg-zinc-900/50 rounded-lg border border-zinc-700/50 backdrop-blur-sm">
-              <Users className="w-16 h-16 text-yellow-400 mb-4" />
+              <Users className="w-16 h-16 mb-4 bg-gradient-to-r from-blue-300 to-purple-400 bg-clip-text text-transparent" />
               <h3 className="text-xl font-semibold text-white mb-2">Join Collectives</h3>
               <p className="text-zinc-400 text-center">
-                Join local or international groups based on shared interests. Create your own communities to
-                build your creative network.
+                Join local or international groups based on shared interests. Create your own communities to build your
+                creative network.
               </p>
             </div>
           </div>
