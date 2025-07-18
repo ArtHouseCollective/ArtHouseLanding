@@ -66,7 +66,7 @@ export function EmailDialog({ isOpen, onClose, initialEmail = "" }: EmailDialogP
               <Input
                 id="email"
                 type="email"
-                placeholder="Enter your friend's email"
+                placeholder="Enter your email"
                 className="col-span-4 bg-zinc-800 border-zinc-700 text-white focus:border-cobalt-500"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
