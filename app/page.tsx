@@ -309,10 +309,11 @@ export default function Page() {
       {/* New Feature Board Section */}
       <div className="py-20 px-4">
         <div className="max-w-6xl mx-auto text-center">
-          <h2 className="text-2xl md:text-3xl font-bold text-center mb-12 text-zinc-200">
-            BUILT FOR CREATIVES.<br />
-            BY CREATIVES.
+          <h2 className="text-2xl md:text-3xl font-bold text-center mb-12 text-zinc-200 leading-tight md:leading-snug whitespace-normal">
+          BUILT FOR CREATIVES.<br />
+          BY CREATIVES.
           </h2>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Feature 1: Curated Onboarding */}
             <div className="flex flex-col items-center">
