@@ -1,20 +1,12 @@
 import { NextResponse } from "next/server"
 import { getReferralStats } from "@/lib/referral"
 
-export async function GET(req: Request) {
+export async function GET() {
   try {
-    const { searchParams } = new URL(req.url)
-    const referralCode = searchParams.get("code")
-
-    if (!referralCode) {
-      return NextResponse.json({ error: "Referral code is required" }, { status: 400 })
-    }
-
-    const stats = await getReferralStats(referralCode)
-
-    return NextResponse.json(stats, { status: 200 })
+    const stats = await getReferralStats()
+    return NextResponse.json(stats)
   } catch (error) {
     console.error("Error fetching referral stats:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json({ error: "Failed to fetch referral stats" }, { status: 500 })
   }
 }

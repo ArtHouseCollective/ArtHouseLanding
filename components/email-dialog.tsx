@@ -1,28 +1,26 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
+import { useState, type FormEvent } from "react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { useToast } from "@/components/ui/use-toast"
 
 interface EmailDialogProps {
   isOpen: boolean
   onClose: () => void
+  initialEmail?: string
 }
 
-export function EmailDialog({ isOpen, onClose }: EmailDialogProps) {
-  const [email, setEmail] = useState("")
-  const [isSubmitted, setIsSubmitted] = useState(false)
+export function EmailDialog({ isOpen, onClose, initialEmail = "" }: EmailDialogProps) {
+  const [email, setEmail] = useState(initialEmail)
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState("")
+  const [isSubmitted, setIsSubmitted] = useState(false)
+  const { toast } = useToast()
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleInviteSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    setError("")
-
     try {
       const response = await fetch("/api/subscribe", {
         method: "POST",
@@ -30,15 +28,24 @@ export function EmailDialog({ isOpen, onClose }: EmailDialogProps) {
         body: JSON.stringify({ email }),
       })
 
-      const data = await response.json()
-
-      if (response.ok) {
-        setIsSubmitted(true)
-      } else {
-        setError(data.error || "Something went wrong. Please try again.")
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || "Failed to subscribe.")
       }
-    } catch (err) {
-      setError("Network error. Please try again.")
+
+      setIsSubmitted(true)
+      toast({
+        title: "Success!",
+        description: "Your invite request has been sent. Check your email for updates!",
+        className: "bg-green-500 text-white",
+      })
+    } catch (error: any) {
+      console.error("Error inviting:", error)
+      toast({
+        title: "Error",
+        description: error.message || "Something went wrong. Please try again.",
+        variant: "destructive",
+      })
     } finally {
       setIsLoading(false)
     }
@@ -46,46 +53,41 @@ export function EmailDialog({ isOpen, onClose }: EmailDialogProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] bg-zinc-900 text-white border-zinc-700 rounded-xl">
-        {/* Added rounded-xl for more sleekness */}
+      <DialogContent className="sm:max-w-[425px] bg-zinc-900 text-white border-zinc-700">
         <DialogHeader>
-          <DialogTitle className="text-center text-2xl font-bold text-white">Join the ArtHouse Circle</DialogTitle>
-          <DialogDescription className="text-center text-zinc-400">
-            Enter your email for early access and exclusive updates.
+          <DialogTitle className="text-white">Interested in ArtHouse?</DialogTitle>
+          <DialogDescription className="text-zinc-400">
+            Enter your email for updates and potential early access!
           </DialogDescription>
         </DialogHeader>
         {!isSubmitted ? (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <Input
-              type="email"
-              placeholder="Your email address"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              disabled={isLoading}
-              className="w-full px-4 py-2 text-base bg-zinc-800 border-zinc-700 rounded-md focus:border-white focus:ring-1 focus:ring-white placeholder:text-zinc-500 disabled:opacity-50"
-            />
-            {error && <p className="text-red-400 text-sm text-center">{error}</p>}
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="w-full py-2 text-base font-semibold bg-gradient-to-r from-zinc-700 to-zinc-800 hover:from-zinc-600 hover:to-zinc-700 text-white transition-all duration-300 rounded-md shadow-lg disabled:opacity-50"
-            >
-              {isLoading ? "Submitting..." : "Request Invite"}
+          <form onSubmit={handleInviteSubmit} className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Input
+                id="email"
+                type="email"
+                placeholder="Enter your email"
+                className="col-span-4 bg-zinc-800 border-zinc-700 text-white focus:border-cobalt-500"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={isLoading}
+              />
+            </div>
+            <Button type="submit" className="bg-cobalt-600 hover:bg-cobalt-700 text-white" disabled={isLoading}>
+              {isLoading ? "Sending Invite..." : "Request Invite"}
             </Button>
           </form>
         ) : (
-          <div className="text-center space-y-4 animate-fade-in">
-            <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-green-500/20 flex items-center justify-center">
+          <div className="text-center py-8">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-500/20 flex items-center justify-center">
               <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <div>
-              <h3 className="text-xl font-semibold text-white mb-1">Thanks for signing up!</h3>
-              <p className="text-zinc-400">{"Welcome to ArtHouse. Check your inbox for more info."}</p>
-            </div>
-            <Button onClick={onClose} className="w-full bg-zinc-700 text-white hover:bg-zinc-600 transition-colors">
+            <h3 className="text-xl font-semibold text-white mb-2">Email Received!</h3>
+            <p className="text-zinc-400">Check your inbox to confirm your subscription.</p>
+            <Button onClick={onClose} className="mt-6 bg-cobalt-600 hover:bg-cobalt-700 text-white">
               Close
             </Button>
           </div>
