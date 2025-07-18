@@ -1,7 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
-  swcMinify: true,
+  webpack: (config) => {
+    config.externals.push({
+      "firebase-admin": "commonjs firebase-admin",
+    })
+    return config
+  },
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -9,14 +13,6 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'hebbkx1anhila5yf.public.blob.vercel-storage.com',
-        port: '',
-        pathname: '/git-blob/**',
-      },
-    ],
     unoptimized: true,
   },
 }

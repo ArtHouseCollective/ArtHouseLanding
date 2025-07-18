@@ -1,300 +1,485 @@
 "use client"
 
-import type React from "react"
-
-import { useState, useEffect, useRef } from "react"
-import Image from "next/image"
+import { useState, useEffect, useRef, type FormEvent } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { EmailDialog } from "@/components/email-dialog"
-import { cn } from "@/lib/utils"
-import { FOUNDERS_CIRCLE_CAP, FOUNDERS_CIRCLE_FILLED } from "@/lib/constants"
-import { trackReferral } from "@/lib/referral"
-import { useSearchParams } from "next/navigation"
+import { EmailDialog } from "@/components/email-dialog" // Import the new dialog component
+import Image from "next/image"
 
-interface Creator {
-  name: string
-  role: string
-  image: string
-  genres: string[]
-}
+/* -------------------------------------------------------------------------- */
+/*                               Creator Stubs                                */
+/* -------------------------------------------------------------------------- */
 
-const creators: Creator[] = [
-  {
-    name: "Emma Wilson",
-    role: "Filmmaker",
-    image: "/images/creators/emilyzercher.jpg",
-    genres: ["Thriller", "Narrative"],
-  },
-  {
-    name: "Ian Chen",
-    role: "Singer",
-    image: "/images/creators/ethanz.jpeg",
-    genres: ["Indie", "Alternative"],
-  },
-  {
-    name: "Jacob Murray",
-    role: "Writer",
-    image: "/images/creators/jakejalbert.jpeg",
-    genres: ["Drama", "Comedy"],
-  },
-  {
-    name: "Rita Cole",
-    role: "Actor",
-    image: "/images/creators/rhondda.jpg",
-    genres: ["Thriller", "Improvisational"],
-  },
-  {
-    name: "Ava Williams",
-    role: "Photographer",
-    image: "/images/creators/ava-williams.jpg",
-    genres: ["Portrait", "Fashion"],
-  },
-  {
-    name: "Mario Garcia",
-    role: "Musician",
-    image: "/images/creators/MarioGarcia.jpg",
-    genres: ["Electronic", "Ambient"],
-  },
+const creators = [
   {
     name: "Jadon Cal",
-    role: "Designer",
+    title: "Director",
     image: "/images/creators/JadonCal.jpg",
-    genres: ["UI/UX", "Graphic"],
-  },
-  {
-    name: "Meghan Carrasquillo",
-    role: "Dancer",
-    image: "/images/creators/meghancarrasquillo.jpeg",
-    genres: ["Contemporary", "Hip-Hop"],
+    genre: "Drama / Surreal",
+    specialty: "Off Rip, Skippin' Town",
   },
   {
     name: "Avi Youabian",
-    role: "Painter",
+    title: "Director",
     image: "/images/creators/AviYouabian.jpeg",
-    genres: ["Abstract", "Surrealism"],
+    genre: "Action / Drama",
+    specialty: "Countdown, FBI International",
   },
   {
-    name: "Lauren Elyse",
-    role: "Sculptor",
-    image: "/images/creators/laurenelyse.jpeg",
-    genres: ["Bronze", "Mixed Media"],
+    name: "Meghan Carrasquillo",
+    title: "Actress",
+    image: "/images/creators/meghancarrasquillo2.jpg",
+    genre: "Thriller / Horror",
+    specialty: "Stiletto, FOUR",
   },
-]
+  {
+    name: "Ethan Zeitman",
+    title: "Sound Department",
+    image: "/images/creators/ethanz.jpeg",
+    genre: "Action, Horror",
+    specialty: "Fall Guy, Bot or Not",
+  },
+  {
+    name: "Jake Jalbert",
+    title: "Cinematographer",
+    image: "/images/creators/jakejalbert.jpeg",
+    genre: "Action, Drama",
+    specialty: "DC Down, Off Rip",
+  },
+  {
+    name: "John Demari",
+    title: "Singer / Actor",
+    image: "/images/creators/beachfly.jpeg",
+    genre: "Reggae, Drama",
+    specialty: "Beachfly, Florida Wild",
+  },
+  {
+    name: "Lauren Elyse Buckley",
+    title: "Actress",
+    image: "/images/creators/laurenelyse.jpeg",
+    genre: "Comedy",
+    specialty: "Magnum P.I., Foursome",
+  },
+  {
+    name: "Mario Garcia",
+    title: "Writer",
+    image: "/images/creators/MarioGarcia.jpg",
+    genre: "Comedy",
+    specialty: "The Throwback",
+  },
+  {
+    name: "Rhondda Stark Atlas",
+    title: "Producer",
+    image: "/images/creators/rhondda.jpg",
+    genre: "Comedy, Action",
+    specialty: "Hacked",
+  },
+] as const
 
-export default function LandingPage() {
+interface Creator {
+  name: string
+  title: string
+  image: string
+  genre: string
+  specialty: string
+}
+
+function CreatorCard({ creator }: { creator: Creator }) {
+  return (
+    <div className="flex-shrink-0 relative">
+      {/* Golden glow background */}
+      <div className="absolute inset-0 bg-gradient-to-r from-cobalt-600/20 via-cobalt-700/30 to-cobalt-600/20 rounded-2xl blur-xl scale-110"></div>
+
+      {/* Profile card */}
+      <div className="relative bg-zinc-950/80 border border-zinc-700/50 rounded-2xl p-6 md:p-8 w-[70vw] max-w-[256px] h-[104vw] max-h-[416px] backdrop-blur-sm">
+        <div className="flex flex-col items-center text-center h-full space-y-2">
+          <div className="w-28 h-36 md:w-32 md:h-40 mb-4 rounded-2xl overflow-hidden">
+            <img
+              src={creator.image || "/placeholder.png"}
+              alt={creator.name}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement
+                target.src = "/placeholder.png?height=128&width=128"
+              }}
+            />
+          </div>
+          <div className="flex flex-col items-center text-center flex-grow justify-evenly">
+            <h3 className="text-base md:text-lg font-bold text-white leading-tight">{creator.name}</h3>
+            <p className="text-sm md:text-base text-cobalt-400 font-medium">{creator.title}</p>
+            <p className="text-xs leading-tight tracking-wide uppercase font-semibold text-zinc-300">{creator.genre}</p>
+            <p className="text-sm leading-snug text-zinc-400">{creator.specialty}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                Page Component                              */
+/* -------------------------------------------------------------------------- */
+
+export default function Page() {
   const [email, setEmail] = useState("")
-  const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false)
-  const [foundersCircleStats, setFoundersCircleStats] = useState({
-    filled: FOUNDERS_CIRCLE_FILLED,
-    cap: FOUNDERS_CIRCLE_CAP,
-  })
-  const searchParams = useSearchParams()
-  const referralCode = searchParams.get("ref")
+  const [isSubmitted, setIsSubmitted] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
+  const [referralCode, setReferralCode] = useState<string | null>(null) // Keep for display if user landed via ref
+  const [foundersCount] = useState(33)
+  const appMockupsRef = useRef<HTMLDivElement>(null) // Renamed ref for new section
+  const [isAppMockupsVisible, setIsAppMockupsVisible] = useState(false) // State for new section
+  const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false) // State for the new dialog
 
-  const featureBoardRef = useRef<HTMLDivElement>(null)
-  const [isFeatureBoardVisible, setIsFeatureBoardVisible] = useState(false)
-
+  // Capture referral code from URL and store in localStorage (for initial landing)
   useEffect(() => {
-    if (referralCode) {
-      trackReferral(referralCode)
-    }
+    const urlParams = new URLSearchParams(window.location.search)
+    const refParam = urlParams.get("ref")
 
-    const fetchFoundersCircleStats = async () => {
-      try {
-        const response = await fetch("/api/referral/stats")
-        if (response.ok) {
-          const data = await response.json()
-          setFoundersCircleStats(data)
-        }
-      } catch (error) {
-        console.error("Failed to fetch founders circle stats:", error)
+    if (refParam) {
+      localStorage.setItem("referralCode", refParam)
+      setReferralCode(refParam)
+    } else {
+      const storedReferralCode = localStorage.getItem("referralCode")
+      if (storedReferralCode) {
+        setReferralCode(storedReferralCode)
       }
     }
-    fetchFoundersCircleStats()
+  }, [])
 
+  // Scroll reveal for app mockups
+  useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setIsFeatureBoardVisible(true)
-          observer.disconnect() // Disconnect after it's visible
+          setIsAppMockupsVisible(true)
         }
       },
-      { threshold: 0.1 }, // Trigger when 10% of the element is visible
+      { threshold: 0.3 },
     )
 
-    if (featureBoardRef.current) {
-      observer.observe(featureBoardRef.current)
+    if (appMockupsRef.current) {
+      observer.observe(appMockupsRef.current)
     }
 
-    return () => {
-      if (featureBoardRef.current) {
-        observer.unobserve(featureBoardRef.current)
-      }
-    }
-  }, [referralCode])
+    return () => observer.disconnect()
+  }, [])
 
-  const handleEmailSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    setIsEmailDialogOpen(true)
+    setIsLoading(true)
+    setError("")
+
+    try {
+      const response = await fetch("/api/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setIsSubmitted(true)
+        // No longer need to remove referralCode from localStorage here,
+        // as Beehiiv handles the referral logic internally after subscription.
+      } else {
+        setError(data.error || "Something went wrong. Please try again.")
+      }
+    } catch (err) {
+      setError("Network error. Please try again.")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
+  const creatorsRow1 = creators.slice(0, 4)
+  const creatorsRow2 = creators.slice(4, 8)
+
   return (
-    <div className="min-h-screen bg-black text-white font-sans relative overflow-hidden">
-      {/* Founders Circle Badge */}
-      <div className="fixed bottom-4 right-4 z-50 bg-yellow-500 text-black px-4 py-2 rounded-full text-sm font-bold shadow-lg">
-        {foundersCircleStats.filled} / {foundersCircleStats.cap} Founders Circle Spots Filled
+    <div className="min-h-screen bg-black text-white relative">
+      {/* Hero Section */}
+      <div className="min-h-screen flex flex-col items-center justify-center px-4 relative">
+        {/* Background gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-zinc-900 via-black to-zinc-900" />
+        <div className="absolute inset-0 bg-gradient-radial from-zinc-800/20 via-transparent to-black/40" />
+
+        <div className="relative z-10 flex flex-col items-center justify-center">
+          {/* Logo */}
+          <div className="mb-6 text-center">
+            <h1 className="text-6xl md:text-8xl font-bold tracking-tight mb-4 relative">
+              <span className="bg-gradient-to-r from-white via-zinc-200 to-white bg-clip-text text-transparent drop-shadow-2xl flex items-start">
+                ArtHouse
+                <span className="text-sm md:text-base ml-1 mt-1 text-white/60">™</span>
+              </span>
+              <div className="absolute inset-0 text-6xl md:text-8xl font-bold tracking-tight blur-xl opacity-30 bg-gradient-to-r from-white via-zinc-200 to-white bg-clip-text text-transparent">
+                ArtHouse
+              </div>
+            </h1>
+          </div>
+
+          {/* Tagline */}
+          <div className="mb-6 text-center">
+            <p className="text-xl md:text-2xl text-zinc-300 font-light tracking-wide animate-fade-in-up">
+              Where bold creatives meet.
+            </p>
+            {referralCode && (
+              <p className="text-sm text-zinc-500 mt-2">
+                Referred by <span className="text-zinc-300 font-medium">{referralCode}</span>
+              </p>
+            )}
+          </div>
+
+          {/* Email Form (Main) */}
+          <div className="w-full max-w-md mx-auto">
+            {!isSubmitted ? (
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="relative">
+                  <Input
+                    type="email"
+                    placeholder="Enter your email..."
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    disabled={isLoading}
+                    className="w-full px-6 py-4 text-lg bg-zinc-900/50 border-zinc-700 rounded-lg backdrop-blur-sm focus:border-white focus:ring-1 focus:ring-white transition-all duration-300 placeholder:text-zinc-500 disabled:opacity-50"
+                  />
+                </div>
+                {error && <p className="text-red-400 text-sm text-center">{error}</p>}
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full py-4 text-lg font-semibold bg-white text-black hover:bg-zinc-200 transition-all duration-300 rounded-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] disabled:opacity-50 disabled:transform-none"
+                >
+                  {isLoading ? "Joining..." : "Request Invite"}
+                </Button>
+              </form>
+            ) : (
+              <div className="text-center space-y-6 animate-fade-in">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-500/20 flex items-center justify-center">
+                  <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold text-white mb-2">Thanks for signing up!</h3>
+                  <p className="text-zinc-400">{"Welcome to ArtHouse. Check your inbox for more info."}</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
-      {/* Hero Section */}
-      <section className="relative h-screen flex items-center justify-center text-center p-4">
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 to-black opacity-70 z-0"></div>
-        <div className="relative z-10 flex flex-col items-center space-y-6 animate-fade-in-up">
-          <Image src="/placeholder-logo.svg" alt="ArtHouse Logo" width={150} height={150} className="mb-4" />
-          <h1 className="text-5xl md:text-7xl font-bold leading-tight">ArtHouse</h1>
-          <p className="text-xl md:text-2xl text-gray-300 max-w-2xl">Where bold creatives meet.</p>
-          <form onSubmit={handleEmailSubmit} className="flex flex-col sm:flex-row gap-3 w-full max-w-md">
-            <Input
-              type="email"
-              placeholder="Enter your email to request early access..."
-              className="flex-grow bg-gray-800 border border-gray-700 text-white placeholder-gray-400 px-4 py-2 rounded-md focus:ring-2 focus:ring-yellow-500"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-            <Button
-              type="submit"
-              className="bg-yellow-500 text-black font-bold px-6 py-2 rounded-md hover:bg-yellow-600 transition-colors"
-            >
-              Request Invite
-            </Button>
-          </form>
-        </div>
-      </section>
+      {/* Continuously Scrolling Creators Carousel */}
+      <div className="py-12 px-4 overflow-hidden">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-2xl md:text-3xl font-bold text-center mb-8 text-zinc-200">
+            Creators in the Founder's Circle
+          </h2>
 
-      {/* Creators Carousel Section */}
-      <section className="py-16 bg-black text-center">
-        <h2 className="text-4xl font-bold mb-12 text-yellow-500">Creators Already On ArtHouse</h2>
-        <div className="relative w-full overflow-hidden py-4">
-          <div className="flex animate-marquee whitespace-nowrap">
-            {creators.concat(creators).map((creator, index) => (
-              <div key={index} className="inline-block mx-4">
-                <div className="flex flex-col items-center">
-                  <Image
-                    src={creator.image || "/placeholder.svg"}
-                    alt={creator.name}
-                    width={120}
-                    height={120}
-                    className="rounded-full object-cover w-32 h-32 border-2 border-yellow-500"
-                  />
-                  <p className="mt-2 text-lg font-semibold">{creator.name}</p>
-                  <p className="text-sm text-gray-400">{creator.role}</p>
-                  <div className="flex flex-wrap justify-center gap-1 mt-1">
-                    {creator.genres.map((genre, i) => (
-                      <span key={i} className="bg-gray-800 text-xs px-2 py-1 rounded-full text-gray-300">
-                        {genre}
-                      </span>
-                    ))}
+          <div className="relative space-y-4">
+            {/* Row 1 */}
+            <div className="flex animate-scroll-row1 space-x-4 md:space-x-8">
+              {[...creatorsRow1, ...creatorsRow1, ...creatorsRow1].map((creator, index) => (
+                <CreatorCard key={`row1-${index}`} creator={creator} />
+              ))}
+            </div>
+            {/* Row 2 */}
+            <div className="flex animate-scroll-row2 space-x-4 md:space-x-8">
+              {[...creatorsRow2, ...creatorsRow2, ...creatorsRow2].map((creator, index) => (
+                <CreatorCard key={`row2-${index}`} creator={creator} />
+              ))}
+            </div>
+          </div>
+
+          <div className="text-center mt-10">
+            <p className="text-zinc-500 text-lg">Founding Creator Spots Limited</p>
+          </div>
+        </div>
+      </div>
+
+      {/* New Feature Board Section */}
+      <div className="py-20 px-4">
+        <div className="max-w-6xl mx-auto text-center">
+          <h2 className="text-2xl md:text-3xl font-bold text-center mb-12 text-zinc-200">
+            BUILT FOR CREATIVES. BY CREATIVES.
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Feature 1: Curated Onboarding */}
+            <div className="flex flex-col items-center">
+              <h3 className="text-xl font-semibold text-white mb-4">Curated Onboarding</h3>
+              <div className="relative flex-shrink-0">
+                {/* Light blue glow background */}
+                <div className="absolute inset-0 bg-gradient-to-r from-cobalt-600/20 via-cobalt-700/30 to-cobalt-600/20 rounded-lg blur-xl scale-105"></div>
+                <div className="relative flex flex-col items-center justify-center bg-zinc-950/70 rounded-lg border border-zinc-700/50 backdrop-blur-sm mx-auto w-[70vw] max-w-[256px] h-[276px] overflow-hidden">
+                  <div className="relative w-full h-1/2 flex items-center justify-center overflow-hidden p-4">
+                    <Image
+                      src="/assets/icons/cards 2.png"
+                      alt="Curated Onboarding"
+                      layout="fill"
+                      objectFit="cover"
+                      className="opacity-80"
+                    />
+                  </div>
+                  <div className="flex-none p-6 flex items-center justify-center text-center bg-zinc-900/70 border-t border-zinc-700 w-full h-1/2">
+                    <p className="text-white text-center font-light tracking-wide">
+                      Every member is verified. Professional collaborators only.
+                    </p>
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
-        <p className="mt-8 text-gray-400 text-lg">Scroll the Circle</p>
-      </section>
-
-      {/* Feature Board Section */}
-      <section
-        ref={featureBoardRef}
-        className={cn(
-          "py-20 bg-black transition-all duration-1000 ease-out",
-          isFeatureBoardVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10",
-        )}
-      >
-        <div className="container mx-auto px-4">
-          <h2 className="text-5xl font-bold text-center mb-16 text-yellow-500">BUILT FOR CREATIVES. BY CREATIVES.</h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            {/* Feature 1: Curated Onboarding */}
-            <div className="relative group overflow-hidden rounded-lg shadow-lg">
-              <Image
-                src="/images/features/curated-onboarding.png"
-                alt="Curated Onboarding"
-                width={600}
-                height={400}
-                className="w-full h-full object-cover absolute inset-0 transition-transform duration-500 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-80"></div>
-              <div className="relative p-8 flex flex-col justify-end h-full">
-                <Image src="/public/assets/icons/collective.png" alt="Icon" width={60} height={60} className="mb-4" />
-                <h3 className="text-3xl font-bold mb-2">Curated Onboarding</h3>
-                <p className="text-gray-300">ArtHouse gives creatives a place to be seen — not scrolled past.</p>
+            </div>
+            {/* Feature 2: Swipe by Style */}
+            <div className="flex flex-col items-center">
+              <h3 className="text-xl font-semibold text-white mb-4">Swipe by Style</h3>
+              <div className="relative flex-shrink-0">
+                {/* Light blue glow background */}
+                <div className="absolute inset-0 bg-gradient-to-r from-cobalt-600/20 via-cobalt-700/30 to-cobalt-600/20 rounded-lg blur-xl scale-105"></div>
+                <div className="relative flex flex-col items-center justify-center bg-zinc-950/70 rounded-lg border border-zinc-700/50 backdrop-blur-sm mx-auto w-[70vw] max-w-[256px] h-[276px] overflow-hidden">
+                  <div className="relative w-full h-1/2 flex items-center justify-center overflow-hidden p-4">
+                    <Image
+                      src="/assets/icons/resonance.png"
+                      alt="Swipe by Style"
+                      layout="fill"
+                      objectFit="cover"
+                      className="opacity-80"
+                    />
+                  </div>
+                  <div className="flex-none p-6 flex items-center justify-center text-center bg-zinc-900/70 border-t border-zinc-700 w-full h-1/2">
+                    <p className="text-white text-center font-light tracking-wide">
+                      Match with artists based on genre, portfolio, and vibe.
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
-
-            {/* Feature 2: Style-Based Matching */}
-            <div className="relative group overflow-hidden rounded-lg shadow-lg">
-              <Image
-                src="/images/app-mockups/creative-collaboration-in-progress.png"
-                alt="Style-Based Matching"
-                width={600}
-                height={400}
-                className="w-full h-full object-cover absolute inset-0 transition-transform duration-500 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-80"></div>
-              <div className="relative p-8 flex flex-col justify-end h-full">
-                <Image src="/public/assets/icons/resonance.png" alt="Icon" width={60} height={60} className="mb-4" />
-                <h3 className="text-3xl font-bold mb-2">Style-Based Matching</h3>
-                <p className="text-gray-300">
-                  A swipe-based network – curated, verified, human. Where matches are based on creative style, not
-                  followers.
-                </p>
-              </div>
-            </div>
-
-            {/* Feature 3: Join a Collective */}
-            <div className="relative group overflow-hidden rounded-lg shadow-lg">
-              <Image
-                src="/public/images/creators/meghancarrasquillo2.jpg"
-                alt="Join a Collective"
-                width={600}
-                height={400}
-                className="w-full h-full object-cover absolute inset-0 transition-transform duration-500 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-80"></div>
-              <div className="relative p-8 flex flex-col justify-end h-full">
-                <Image src="/public/assets/icons/cards 2.png" alt="Icon" width={60} height={60} className="mb-4" />
-                <h3 className="text-3xl font-bold mb-2">Join a Collective</h3>
-                <p className="text-gray-300">For filmmakers, actors, and visionaries. Built for craft, not clout.</p>
+            {/* Feature 3: Join Collectives */}
+            <div className="flex flex-col items-center">
+              <h3 className="text-xl font-semibold text-white mb-4">Join Collectives</h3>
+              <div className="relative flex-shrink-0">
+                {/* Light blue glow background */}
+                <div className="absolute inset-0 bg-gradient-to-r from-cobalt-600/20 via-cobalt-700/30 to-cobalt-600/20 rounded-lg blur-xl scale-105"></div>
+                <div className="relative flex flex-col items-center justify-center bg-zinc-950/70 rounded-lg border border-zinc-700/50 backdrop-blur-sm mx-auto w-[70vw] max-w-[256px] h-[276px] overflow-hidden">
+                  <div className="relative w-full h-1/2 flex items-center justify-center overflow-hidden p-4">
+                    <Image
+                      src="/assets/icons/collective.png"
+                      alt="Join Collectives"
+                      layout="fill"
+                      objectFit="cover"
+                      className="opacity-80"
+                    />
+                  </div>
+                  <div className="flex-none p-6 flex items-center justify-center text-center bg-zinc-900/70 border-t border-zinc-700 w-full h-1/2">
+                    <p className="text-white text-center font-light tracking-wide">
+                      Join collectives based on shared interests. Create your own communities to build.
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* Call to Action Section */}
-      <section className="py-20 bg-gray-900 text-center">
-        <h2 className="text-4xl md:text-5xl font-bold mb-6 text-yellow-500">This only works if it&apos;s ours.</h2>
-        <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-2xl mx-auto">Invite 3 creatives to skip the wait.</p>
-        <Button
-          onClick={() => setIsEmailDialogOpen(true)}
-          className="bg-yellow-500 text-black font-bold px-8 py-4 rounded-md text-lg hover:bg-yellow-600 transition-colors"
+      {/* Final CTA Section (Updated) */}
+      <div className="text-center py-12">
+        <h2 className="text-2xl md:text-3xl font-semibold text-white mb-4">Ready to Join ArtHouse?</h2>
+        <p className="text-zinc-400 mb-6">
+          Early access is invite-only. We’re curating the future of creative connection.
+        </p>
+        <a
+          onClick={() => setIsEmailDialogOpen(true)} // Open the dialog
+          className="inline-block bg-gradient-to-r from-cobalt-700 to-cobalt-800 hover:from-cobalt-600 hover:to-cobalt-700 text-white font-medium py-3 px-6 rounded-full transition cursor-pointer shadow-lg hover:shadow-xl"
         >
           Apply Now
-        </Button>
-      </section>
+        </a>
+      </div>
 
-      {/* Footer */}
-      <footer className="bg-black py-8 text-center text-gray-500 text-sm">
-        <p>&copy; {new Date().getFullYear()} ArtHouse. All rights reserved.</p>
+      {/* Floating Founders Circle Badge */}
+      <div className="fixed bottom-6 right-6 z-50">
+        <div className="bg-black border border-zinc-700 rounded-full px-4 py-2 shadow-lg backdrop-blur-sm">
+          <div className="flex items-center space-x-2">
+            <span className="text-lg">🪩</span>
+            <span className="text-white text-sm font-medium">{foundersCount} / 150 Founders Circle Spots Filled</span>
+          </div>
+          <div className="absolute inset-0 rounded-full bg-gradient-to-r from-cobalt-600/20 to-cobalt-800/20 blur-sm -z-10"></div>
+        </div>
+      </div>
+
+      {/* Footer (Simplified) */}
+      <footer className="py-8 px-4">
+        <div className="flex justify-center space-x-6 text-sm text-zinc-500">
+          <a href="#" className="hover:text-white transition-colors duration-300">
+            Privacy
+          </a>
+          <span>·</span>
+          <a href="#" className="hover:text-white transition-colors duration-300">
+            Contact
+          </a>
+        </div>
       </footer>
 
-      <EmailDialog
-        isOpen={isEmailDialogOpen}
-        onClose={() => setIsEmailDialogOpen(false)}
-        initialEmail={email}
-        referralCode={referralCode}
-      />
+      {/* Email Dialog Component */}
+      <EmailDialog isOpen={isEmailDialogOpen} onClose={() => setIsEmailDialogOpen(false)} />
+
+      <style jsx>{`
+        @keyframes scroll-row1 {
+          0% {
+            transform: translateX(0);
+          }
+          100% {
+            transform: translateX(-100%); /* Adjusted to cover full width of duplicated content */
+          }
+        }
+        @keyframes scroll-row2 {
+          0% {
+            transform: translateX(-100%); /* Start from the end to create opposite direction */
+          }
+          100% {
+            transform: translateX(0);
+          }
+        }
+        
+        .animate-scroll-row1 {
+          animation: scroll-row1 30s linear infinite; /* Adjusted speed for more items */
+        }
+        .animate-scroll-row2 {
+          animation: scroll-row2 32s linear infinite; /* Slightly different speed for visual interest */
+        }
+        
+        @keyframes fade-in-up {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+        
+        .animate-fade-in-up {
+          animation: fade-in-up 1s ease-out 0.5s both;
+        }
+        
+        .animate-fade-in {
+          animation: fade-in 0.5s ease-out;
+        }
+
+        .bg-gradient-radial {
+          background-image: radial-gradient(50% 50% at 50% 50%, rgba(30, 41, 59, 0.2) 0%, rgba(0, 0, 0, 0.3) 100%);
+        }
+      `}</style>
     </div>
   )
 }

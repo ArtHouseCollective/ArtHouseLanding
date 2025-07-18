@@ -132,15 +132,18 @@ const SidebarProvider = React.forwardRef<
 SidebarProvider.displayName = "SidebarProvider"
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
-  children?: React.ReactNode
-}
-
-export function Sidebar({ className, children, ...props }: SidebarProps) {
-  return (
-    <div className={cn("flex h-full flex-col", className)} {...props}>
-      {children}
-    </div>
-  )
+  items: {
+    href: string
+    title: string
+    disabled?: boolean
+  }[]
+  links: {
+    title: string
+    label?: string
+    icon: React.ElementType
+    href: string
+  }[]
+  isCollapsed: boolean
 }
 
 const SidebarComponent = React.forwardRef<
@@ -153,7 +156,7 @@ const SidebarComponent = React.forwardRef<
     items?: {
       href: string
       title: string
-      icon: React.ReactNode
+      disabled?: boolean
     }[]
     links?: {
       title: string
@@ -195,9 +198,9 @@ const SidebarComponent = React.forwardRef<
                   className={cn(
                     "flex w-full items-center rounded-md p-2 text-foreground hover:underline",
                     pathname === item.href ? "bg-muted font-medium" : "transparent",
+                    item.disabled && "cursor-not-allowed opacity-80",
                   )}
                 >
-                  {item.icon}
                   {item.title}
                 </Link>
               ))
@@ -272,9 +275,9 @@ const SidebarComponent = React.forwardRef<
                       className={cn(
                         "flex w-full items-center rounded-md p-2 text-foreground hover:underline",
                         pathname === item.href ? "bg-muted font-medium" : "transparent",
+                        item.disabled && "cursor-not-allowed opacity-80",
                       )}
                     >
-                      {item.icon}
                       {item.title}
                     </Link>
                   ))
@@ -379,9 +382,9 @@ const SidebarComponent = React.forwardRef<
                       className={cn(
                         "flex w-full items-center rounded-md p-2 text-foreground hover:underline",
                         pathname === item.href ? "bg-muted font-medium" : "transparent",
+                        item.disabled && "cursor-not-allowed opacity-80",
                       )}
                     >
-                      {item.icon}
                       {item.title}
                     </Link>
                   ))

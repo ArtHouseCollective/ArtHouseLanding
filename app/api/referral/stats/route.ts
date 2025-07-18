@@ -1,29 +1,12 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { getFirestore } from "firebase-admin/firestore"
-import { initializeFirebaseAdmin } from "@/lib/firebase-admin"
-import { FOUNDERS_CIRCLE_CAP, FOUNDERS_CIRCLE_FILLED } from "@/lib/constants"
+import { NextResponse } from "next/server"
+import { getReferralStats } from "@/lib/referral"
 
-initializeFirebaseAdmin()
-
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
-    const db = getFirestore()
-    const statsDoc = await db.collection("stats").doc("foundersCircle").get()
-
-    if (!statsDoc.exists) {
-      return NextResponse.json({
-        foundersCircleFilled: FOUNDERS_CIRCLE_FILLED,
-        foundersCircleCap: FOUNDERS_CIRCLE_CAP,
-      })
-    }
-
-    const data = statsDoc.data()
-    return NextResponse.json({
-      foundersCircleFilled: data?.filled || FOUNDERS_CIRCLE_FILLED,
-      foundersCircleCap: data?.cap || FOUNDERS_CIRCLE_CAP,
-    })
+    const stats = await getReferralStats()
+    return NextResponse.json(stats)
   } catch (error) {
-    console.error("Error fetching founders circle stats:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    console.error("Error fetching referral stats:", error)
+    return NextResponse.json({ error: "Failed to fetch referral stats" }, { status: 500 })
   }
 }

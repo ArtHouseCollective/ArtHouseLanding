@@ -1,11 +1,8 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { getFirestore } from "firebase-admin/firestore"
-import { initializeFirebaseAdmin } from "@/lib/firebase-admin"
+import { NextResponse } from "next/server"
+import { getReferralCount } from "@/lib/referral"
 
-initializeFirebaseAdmin()
-
-export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url)
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url)
   const referralCode = searchParams.get("code")
 
   if (!referralCode) {
@@ -13,21 +10,10 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const db = getFirestore()
-    const referralDoc = await db.collection("referrals").doc(referralCode).get()
-
-    if (!referralDoc.exists) {
-      return NextResponse.json({ error: "Referral code not found" }, { status: 404 })
-    }
-
-    const data = referralDoc.data()
-    return NextResponse.json({
-      referralCode: referralDoc.id,
-      signups: data?.signups || 0,
-      invitedBy: data?.invitedBy || null,
-    })
+    const count = await getReferralCount(referralCode)
+    return NextResponse.json({ referralCode, count })
   } catch (error) {
-    console.error("Error fetching referral data:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    console.error("Error fetching referral count:", error)
+    return NextResponse.json({ error: "Failed to fetch referral count" }, { status: 500 })
   }
 }

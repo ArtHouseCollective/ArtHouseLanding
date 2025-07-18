@@ -1,72 +1,46 @@
 "use client"
 
-import type React from "react"
-
-import { useState, useEffect } from "react"
+import { useState, type FormEvent } from "react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/components/ui/use-toast"
-import { CheckCircle2, Copy, Loader2 } from "lucide-react"
 
 interface EmailDialogProps {
   isOpen: boolean
   onClose: () => void
-  initialEmail: string
-  referralCode: string | null
+  initialEmail?: string
 }
 
-export function EmailDialog({ isOpen, onClose, initialEmail, referralCode }: EmailDialogProps) {
+export function EmailDialog({ isOpen, onClose, initialEmail = "" }: EmailDialogProps) {
   const [email, setEmail] = useState(initialEmail)
   const [isLoading, setIsLoading] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
-  const [newReferralCode, setNewReferralCode] = useState<string | null>(null)
   const { toast } = useToast()
 
-  useEffect(() => {
-    setEmail(initialEmail)
-    if (!isOpen) {
-      setIsSubmitted(false)
-      setNewReferralCode(null)
-    }
-  }, [isOpen, initialEmail])
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleInviteSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     try {
-      const response = await fetch("/api/referralSignup", {
+      const response = await fetch("/api/subscribe", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, referralCode }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
       })
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.error || "Failed to sign up for early access.")
+        throw new Error(errorData.message || "Failed to subscribe.")
       }
 
-      const data = await response.json()
-      setNewReferralCode(data.referralCode)
       setIsSubmitted(true)
-
-      // Also subscribe to Beehiiv
-      await fetch("/api/subscribe", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email }),
-      })
-
       toast({
         title: "Success!",
-        description: "You've successfully requested early access.",
+        description: "Your invite request has been sent. Check your email for updates!",
+        className: "bg-green-500 text-white",
       })
     } catch (error: any) {
-      console.error("Signup error:", error)
+      console.error("Error inviting:", error)
       toast({
         title: "Error",
         description: error.message || "Something went wrong. Please try again.",
@@ -77,88 +51,43 @@ export function EmailDialog({ isOpen, onClose, initialEmail, referralCode }: Ema
     }
   }
 
-  const handleCopyReferralCode = () => {
-    if (newReferralCode) {
-      const referralLink = `${window.location.origin}?ref=${newReferralCode}`
-      navigator.clipboard.writeText(referralLink)
-      toast({
-        title: "Copied!",
-        description: "Referral link copied to clipboard.",
-      })
-    }
-  }
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] bg-gray-900 text-white border-gray-700">
+      <DialogContent className="sm:max-w-[425px] bg-zinc-900 text-white border-zinc-700">
         <DialogHeader>
-          <DialogTitle className="text-yellow-500 text-2xl">
-            {isSubmitted ? "You're In!" : "Request Early Access"}
-          </DialogTitle>
-          <DialogDescription className="text-gray-400">
-            {isSubmitted
-              ? "Share your unique referral link with friends to help them skip the waitlist!"
-              : "Enter your email below to join the ArtHouse Founders Circle and get early access."}
+          <DialogTitle className="text-white">Invite Friends</DialogTitle>
+          <DialogDescription className="text-zinc-400">
+            Share ArtHouse with your creative network. Invite 3 friends to skip the waitlist!
           </DialogDescription>
         </DialogHeader>
         {!isSubmitted ? (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
+          <form onSubmit={handleInviteSubmit} className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
               <Input
                 id="email"
                 type="email"
-                placeholder="your@email.com"
-                className="bg-gray-800 border border-gray-700 text-white placeholder-gray-500 focus:ring-yellow-500"
+                placeholder="Enter your friend's email"
+                className="col-span-4 bg-zinc-800 border-zinc-700 text-white focus:border-cobalt-500"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                disabled={isLoading}
               />
             </div>
-            <Button
-              type="submit"
-              className="w-full bg-yellow-500 text-black font-bold hover:bg-yellow-600 transition-colors"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Submitting...
-                </>
-              ) : (
-                "Apply Now"
-              )}
+            <Button type="submit" className="bg-cobalt-600 hover:bg-cobalt-700 text-white" disabled={isLoading}>
+              {isLoading ? "Sending Invite..." : "Send Invite"}
             </Button>
           </form>
         ) : (
-          <div className="space-y-4 text-center">
-            <CheckCircle2 className="h-16 w-16 text-yellow-500 mx-auto" />
-            <p className="text-lg font-semibold">Welcome to the Founders Circle!</p>
-            {newReferralCode && (
-              <div className="flex flex-col gap-2">
-                <p className="text-gray-300">Your unique referral link:</p>
-                <div className="flex items-center space-x-2 bg-gray-800 border border-gray-700 rounded-md p-2">
-                  <Input
-                    type="text"
-                    value={`${window.location.origin}?ref=${newReferralCode}`}
-                    readOnly
-                    className="flex-grow bg-transparent border-none text-white text-sm"
-                  />
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={handleCopyReferralCode}
-                    className="text-gray-400 hover:text-yellow-500"
-                  >
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                </div>
-                <p className="text-sm text-gray-500">Share this link with 3 friends to help them skip the waitlist!</p>
-              </div>
-            )}
-            <Button
-              onClick={onClose}
-              className="w-full bg-gray-700 text-white font-bold hover:bg-gray-600 transition-colors"
-            >
+          <div className="text-center py-8">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-500/20 flex items-center justify-center">
+              <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-semibold text-white mb-2">Invite Sent!</h3>
+            <p className="text-zinc-400">Your friend will receive an invitation to ArtHouse.</p>
+            <Button onClick={onClose} className="mt-6 bg-cobalt-600 hover:bg-cobalt-700 text-white">
               Close
             </Button>
           </div>

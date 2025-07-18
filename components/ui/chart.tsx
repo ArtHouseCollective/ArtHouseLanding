@@ -14,8 +14,8 @@ import {
   Area,
   AreaChart,
 } from "recharts"
-import { cn } from "@/lib/utils"
 
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 // Helper to determine chart type from data keys
@@ -37,7 +37,7 @@ function getChartType(data: any[], dataKeys: string[]) {
   return "line" // Default to line for multi-series or time-series like data
 }
 
-interface ChartProps {
+interface ChartProps extends React.HTMLAttributes<HTMLDivElement> {
   data: Record<string, any>[]
   dataKeys: string[]
   chartType?: "line" | "bar" | "pie" | "radial" | "area"
@@ -60,7 +60,6 @@ interface ChartProps {
   height?: number
   width?: number
   enableSelect?: boolean
-  children?: React.ReactNode
 }
 
 const Chart: React.FC<ChartProps> = ({
@@ -81,7 +80,6 @@ const Chart: React.FC<ChartProps> = ({
   height = 300,
   width = 500,
   enableSelect = false,
-  children,
   ...props
 }) => {
   const [chartType, setChartType] = React.useState(propChartType || getChartType(data, dataKeys) || "line")
@@ -119,7 +117,7 @@ const Chart: React.FC<ChartProps> = ({
         return (
           <LineChart {...commonProps}>
             {showGrid && <CartesianGrid vertical={false} />}
-            {showTooltip && <></>} {/* Add ChartTooltip if needed */}
+            {showTooltip && <ChartTooltip content={<ChartTooltipContent />} />}
             {showAxis && <></>} {/* Add XAxis, YAxis if needed */}
             {renderSeries()}
           </LineChart>
@@ -128,7 +126,7 @@ const Chart: React.FC<ChartProps> = ({
         return (
           <BarChart {...commonProps}>
             {showGrid && <CartesianGrid vertical={false} />}
-            {showTooltip && <></>} {/* Add ChartTooltip if needed */}
+            {showTooltip && <ChartTooltip content={<ChartTooltipContent />} />}
             {showAxis && <></>} {/* Add XAxis, YAxis if needed */}
             {renderSeries()}
           </BarChart>
@@ -140,7 +138,7 @@ const Chart: React.FC<ChartProps> = ({
         }
         return (
           <PieChart {...commonProps}>
-            {showTooltip && <></>} {/* Add ChartTooltip if needed */}
+            {showTooltip && <ChartTooltip content={<ChartTooltipContent />} />}
             <Pie
               data={data}
               dataKey={valueKey}
@@ -168,7 +166,7 @@ const Chart: React.FC<ChartProps> = ({
             endAngle={-270}
             {...commonProps}
           >
-            {showTooltip && <></>} {/* Add ChartTooltip if needed */}
+            {showTooltip && <ChartTooltip content={<ChartTooltipContent />} />}
             <RadialBar
               minAngle={15}
               label={{ position: "insideStart", fill: "#fff" }}
@@ -183,7 +181,7 @@ const Chart: React.FC<ChartProps> = ({
         return (
           <AreaChart {...commonProps}>
             {showGrid && <CartesianGrid vertical={false} />}
-            {showTooltip && <></>} {/* Add ChartTooltip if needed */}
+            {showTooltip && <ChartTooltip content={<ChartTooltipContent />} />}
             {showAxis && <></>} {/* Add XAxis, YAxis if needed */}
             {renderSeries()}
           </AreaChart>
@@ -209,16 +207,11 @@ const Chart: React.FC<ChartProps> = ({
           </SelectContent>
         </Select>
       )}
-      <div className={cn("flex aspect-video justify-center text-tremor-content")}>{children || renderChart()}</div>
+      <ChartContainer config={{}} className="min-h-[200px] w-full">
+        {renderChart()}
+      </ChartContainer>
     </div>
   )
 }
 
-const ChartContainer = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn("flex aspect-video justify-center text-tremor-content", className)} {...props} />
-  ),
-)
-ChartContainer.displayName = "ChartContainer"
-
-export { Chart, ChartContainer }
+export { Chart }
