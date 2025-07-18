@@ -74,6 +74,13 @@ const creators = [
     genre: "Comedy, Action",
     specialty: "Hacked",
   },
+  {
+    name: "Emily Zercher",
+    title: "Actress",
+    image: "/images/creators/emilyzercher.jpg",
+    genre: "Comedy, Action",
+    specialty: "Hacked",
+  },
 ] as const
 
 interface Creator {
