@@ -75,7 +75,7 @@ export function EmailDialog({ isOpen, onClose, initialEmail = "" }: EmailDialogP
               />
             </div>
             <Button type="submit" className="bg-cobalt-600 hover:bg-cobalt-700 text-white" disabled={isLoading}>
-              {isLoading ? "Sending Invite..." : "Send Invite"}
+              {isLoading ? "Sending Invite..." : "Request Invite"}
             </Button>
           </form>
         ) : (
