@@ -55,9 +55,9 @@ export function EmailDialog({ isOpen, onClose, initialEmail = "" }: EmailDialogP
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px] bg-zinc-900 text-white border-zinc-700">
         <DialogHeader>
-          <DialogTitle className="text-white">Invite Friends</DialogTitle>
+          <DialogTitle className="text-white">Request to Join</DialogTitle>
           <DialogDescription className="text-zinc-400">
-            Share ArtHouse with your creative network. Invite 3 friends to skip the waitlist!
+            Enter your email for updates and potential early access!
           </DialogDescription>
         </DialogHeader>
         {!isSubmitted ? (
@@ -85,8 +85,8 @@ export function EmailDialog({ isOpen, onClose, initialEmail = "" }: EmailDialogP
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h3 className="text-xl font-semibold text-white mb-2">Invite Sent!</h3>
-            <p className="text-zinc-400">Your friend will receive an invitation to ArtHouse.</p>
+            <h3 className="text-xl font-semibold text-white mb-2">Email Received!</h3>
+            <p className="text-zinc-400">Check your inbox to confirm your subscription.</p>
             <Button onClick={onClose} className="mt-6 bg-cobalt-600 hover:bg-cobalt-700 text-white">
               Close
             </Button>
