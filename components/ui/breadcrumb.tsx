@@ -1,5 +1,5 @@
-import { ChevronRight, MoreHorizontal } from "lucide-react"
 import * as React from "react"
+import { ChevronRightIcon, DotsHorizontalIcon } from "@radix-ui/react-icons"
 
 import { cn } from "@/lib/utils"
 
@@ -12,10 +12,7 @@ const BreadcrumbList = React.forwardRef<HTMLOListElement, React.ComponentPropsWi
   ({ className, ...props }, ref) => (
     <ol
       ref={ref}
-      className={cn(
-        "flex flex-wrap items-center gap-1.5 break-words text-sm text-muted-foreground sm:gap-2.5",
-        className,
-      )}
+      className={cn("flex flex-wrap items-center gap-1.5 break-words text-sm text-muted-foreground", className)}
       {...props}
     />
   ),
@@ -23,9 +20,7 @@ const BreadcrumbList = React.forwardRef<HTMLOListElement, React.ComponentPropsWi
 BreadcrumbList.displayName = "BreadcrumbList"
 
 const BreadcrumbItem = React.forwardRef<HTMLLIElement, React.ComponentPropsWithoutRef<"li">>(
-  ({ className, ...props }, ref) => (
-    <li ref={ref} className={cn("inline-flex items-center gap-1.5", className)} {...props} />
-  ),
+  ({ className, ...props }, ref) => <li ref={ref} className={cn("inline-flex items-center", className)} {...props} />,
 )
 BreadcrumbItem.displayName = "BreadcrumbItem"
 
@@ -41,15 +36,26 @@ BreadcrumbLink.displayName = "BreadcrumbLink"
 
 const BreadcrumbSeparator = React.forwardRef<HTMLLIElement, React.ComponentPropsWithoutRef<"li">>(
   ({ className, ...props }, ref) => (
-    <li ref={ref} aria-hidden="true" className={cn("select-none text-muted-foreground", className)} {...props}>
-      <ChevronRight className="h-4 w-4" />
+    <li ref={ref} aria-hidden="true" className={cn("[&>svg]:size-3.5", className)} {...props}>
+      <ChevronRightIcon />
     </li>
   ),
 )
 BreadcrumbSeparator.displayName = "BreadcrumbSeparator"
 
-const BreadcrumbEllipsis = React.forwardRef<SVGSVGElement, React.ComponentPropsWithoutRef<"svg">>(
-  ({ className, ...props }, ref) => <MoreHorizontal ref={ref} className={cn("h-4 w-4", className)} {...props} />,
+const BreadcrumbEllipsis = React.forwardRef<HTMLSpanElement, React.ComponentPropsWithoutRef<"span">>(
+  ({ className, ...props }, ref) => (
+    <span
+      ref={ref}
+      role="presentation"
+      aria-hidden="true"
+      className={cn("flex h-9 w-9 items-center justify-center", className)}
+      {...props}
+    >
+      <DotsHorizontalIcon className="h-4 w-4" />
+      <span className="sr-only">More pages</span>
+    </span>
+  ),
 )
 BreadcrumbEllipsis.displayName = "BreadcrumbEllipsis"
 
