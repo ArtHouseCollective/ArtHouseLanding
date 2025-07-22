@@ -166,10 +166,28 @@ export default function Page() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const [referralCode, setReferralCode] = useState<string | null>(null)
-  const [foundersCount] = useState(46)
+  const [foundersCount, setFoundersCount] = useState(46) // Default fallback value
   const appMockupsRef = useRef<HTMLDivElement>(null)
   const [isAppMockupsVisible, setIsAppMockupsVisible] = useState(false)
   const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false)
+
+  // Fetch subscriber count from Beehiiv
+  useEffect(() => {
+    const fetchSubscriberCount = async () => {
+      try {
+        const response = await fetch("/api/subscriber-count")
+        if (response.ok) {
+          const data = await response.json()
+          setFoundersCount(data.count)
+        }
+      } catch (error) {
+        console.error("Error fetching subscriber count:", error)
+        // Keep the default fallback value of 46
+      }
+    }
+
+    fetchSubscriberCount()
+  }, [])
 
   // Capture referral code from URL and store in localStorage (for initial landing)
   useEffect(() => {
@@ -305,35 +323,33 @@ export default function Page() {
         </div>
       </div>
 
-      {/* Continuously Scrolling Creators Carousel */}
-      <div className="py-12 px-4 overflow-hidden">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-2xl md:text-3xl font-bold text-center mb-8 text-zinc-200">
-            Creators in the Founder's Circle
-          </h2>
+      {/* Continuously Scrolling Creators Carousel - Full Width */}
+      <div className="py-12 overflow-hidden w-screen">
+        <div className="px-4 max-w-6xl mx-auto mb-8">
+          <h2 className="text-2xl md:text-3xl font-bold text-center text-zinc-200">Creators in the Founder's Circle</h2>
+        </div>
 
-          <div className="relative space-y-4">
-            {/* Row 1 */}
-            <div className="w-full overflow-hidden relative">
-              <div className="flex animate-scroll-row1 whitespace-nowrap space-x-4 md:space-x-8">
-                {[...creatorsRow1, ...creatorsRow1].map((creator, index) => (
-                  <CreatorCard key={`row1-${index}`} creator={creator} />
-                ))}
-              </div>
-            </div>
-            {/* Row 2 */}
-            <div className="w-full overflow-hidden relative">
-              <div className="flex animate-scroll-row2 whitespace-nowrap space-x-4 md:space-x-8">
-                {[...creatorsRow2, ...creatorsRow2].map((creator, index) => (
-                  <CreatorCard key={`row2-${index}`} creator={creator} />
-                ))}
-              </div>
+        <div className="relative space-y-4">
+          {/* Row 1 */}
+          <div className="w-full overflow-hidden relative">
+            <div className="flex animate-scroll-row1 whitespace-nowrap space-x-4 md:space-x-8 pl-4 md:pl-8">
+              {[...creatorsRow1, ...creatorsRow1, ...creatorsRow1].map((creator, index) => (
+                <CreatorCard key={`row1-${index}`} creator={creator} />
+              ))}
             </div>
           </div>
-
-          <div className="text-center mt-10">
-            <p className="text-zinc-500 text-lg">Founding Creator Spots Limited</p>
+          {/* Row 2 */}
+          <div className="w-full overflow-hidden relative">
+            <div className="flex animate-scroll-row2 whitespace-nowrap space-x-4 md:space-x-8 pl-4 md:pl-8">
+              {[...creatorsRow2, ...creatorsRow2, ...creatorsRow2].map((creator, index) => (
+                <CreatorCard key={`row2-${index}`} creator={creator} />
+              ))}
+            </div>
           </div>
+        </div>
+
+        <div className="text-center mt-10 px-4">
+          <p className="text-zinc-500 text-lg">Founding Creator Spots Limited</p>
         </div>
       </div>
 
@@ -466,12 +482,12 @@ export default function Page() {
             transform: translateX(0);
           }
           100% {
-            transform: translateX(-50%);
+            transform: translateX(-33.333%);
           }
         }
         @keyframes scroll-row2 {
           0% {
-            transform: translateX(-50%);
+            transform: translateX(-33.333%);
           }
           100% {
             transform: translateX(0);
@@ -479,10 +495,10 @@ export default function Page() {
         }
         
         .animate-scroll-row1 {
-          animation: scroll-row1 40s linear infinite;
+          animation: scroll-row1 60s linear infinite;
         }
         .animate-scroll-row2 {
-          animation: scroll-row2 50s linear infinite;
+          animation: scroll-row2 60s linear infinite;
         }
 
         @keyframes fade-in-up {
