@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, type FormEvent } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { EmailDialog } from "@/components/email-dialog" // Import the new dialog component
+import { EmailDialog } from "@/components/email-dialog"
 import Image from "next/image"
 
 /* -------------------------------------------------------------------------- */
@@ -75,11 +75,39 @@ const creators = [
     specialty: "Hacked",
   },
   {
+    name: "Yoshi Barrigas",
+    title: "Actor",
+    image: "/images/creators/emilyzercher.jpg",
+    genre: "Drama, Comedy",
+    specialty: "The Chosen",
+  },
+  {
     name: "Emily Zercher",
     title: "Actress",
     image: "/images/creators/emilyzercher.jpg",
     genre: "Comedy, Action",
     specialty: "Hacked",
+  },
+  {
+    name: "Ethan Daniel Corbett",
+    title: "Actor",
+    image: "/images/creators/emilyzercher.jpg",
+    genre: "Drama, Action",
+    specialty: "Faces",
+  },
+  {
+    name: "Julio Gabay",
+    title: "Actor",
+    image: "/images/creators/emilyzercher.jpg",
+    genre: "Drama, Action",
+    specialty: "Bullet Train",
+  },
+  {
+    name: "Kevin Auger",
+    title: "Visual Effects Supervisor",
+    image: "/images/creators/emilyzercher.jpg",
+    genre: "Drama, Action",
+    specialty: "Land of Martyrdom",
   },
 ] as const
 
@@ -93,12 +121,10 @@ interface Creator {
 
 function CreatorCard({ creator }: { creator: Creator }) {
   return (
-    <div className="flex-shrink-0 relative">
-      {/* Golden glow background */}
-      <div className="absolute inset-0 bg-gradient-to-r from-cobalt-600/20 via-cobalt-700/30 to-cobalt-600/20 rounded-2xl blur-xl scale-110"></div>
+    <div className="flex-shrink-0 relative w-[70vw] max-w-[256px] h-[104vw] max-h-[416px]">
+      <div className="absolute inset-0 bg-gradient-to-r from-cobalt-600/20 via-cobalt-700/30 to-cobalt-600/20 rounded-2xl blur-xl scale-110 z-0" />
 
-      {/* Profile card */}
-      <div className="relative bg-zinc-950/80 border border-zinc-700/50 rounded-2xl p-6 md:p-8 w-[70vw] max-w-[256px] h-[104vw] max-h-[416px] backdrop-blur-sm">
+      <div className="relative z-10 bg-zinc-950/80 border border-zinc-700/50 rounded-2xl p-6 md:p-8 w-full h-full backdrop-blur-sm">
         <div className="flex flex-col items-center text-center h-full space-y-2">
           <div className="w-28 h-36 md:w-32 md:h-40 mb-4 rounded-2xl overflow-hidden">
             <img
@@ -106,11 +132,11 @@ function CreatorCard({ creator }: { creator: Creator }) {
               alt={creator.name}
               className="w-full h-full object-cover"
               onError={(e) => {
-                const target = e.target as HTMLImageElement
-                target.src = "/placeholder.png?height=128&width=128"
+                ;(e.currentTarget as HTMLImageElement).src = "/placeholder.png"
               }}
             />
           </div>
+
           <div className="flex flex-col items-center text-center flex-grow justify-evenly">
             <h3 className="text-base md:text-lg font-bold text-white leading-tight">{creator.name}</h3>
             <p className="text-sm md:text-base text-cobalt-400 font-medium">{creator.title}</p>
@@ -132,11 +158,11 @@ export default function Page() {
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
-  const [referralCode, setReferralCode] = useState<string | null>(null) // Keep for display if user landed via ref
-  const [foundersCount] = useState(33)
-  const appMockupsRef = useRef<HTMLDivElement>(null) // Renamed ref for new section
-  const [isAppMockupsVisible, setIsAppMockupsVisible] = useState(false) // State for new section
-  const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false) // State for the new dialog
+  const [referralCode, setReferralCode] = useState<string | null>(null)
+  const [foundersCount] = useState(46)
+  const appMockupsRef = useRef<HTMLDivElement>(null)
+  const [isAppMockupsVisible, setIsAppMockupsVisible] = useState(false)
+  const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false)
 
   // Capture referral code from URL and store in localStorage (for initial landing)
   useEffect(() => {
@@ -188,8 +214,6 @@ export default function Page() {
 
       if (response.ok) {
         setIsSubmitted(true)
-        // No longer need to remove referralCode from localStorage here,
-        // as Beehiiv handles the referral logic internally after subscription.
       } else {
         setError(data.error || "Something went wrong. Please try again.")
       }
@@ -200,19 +224,17 @@ export default function Page() {
     }
   }
 
-  const creatorsRow1 = creators.slice(0, 4)
-  const creatorsRow2 = creators.slice(4, 8)
+  const creatorsRow1 = creators.filter((_, i) => i % 2 === 0)
+  const creatorsRow2 = creators.filter((_, i) => i % 2 !== 0)
 
   return (
     <div className="min-h-screen bg-black text-white relative">
       {/* Hero Section */}
       <div className="min-h-screen flex flex-col items-center justify-center px-4 relative">
-        {/* Background gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-zinc-900 via-black to-zinc-900" />
         <div className="absolute inset-0 bg-gradient-radial from-zinc-800/20 via-transparent to-black/40" />
 
         <div className="relative z-10 flex flex-col items-center justify-center">
-          {/* Logo */}
           <div className="mb-6 text-center">
             <h1 className="text-6xl md:text-8xl font-bold tracking-tight mb-4 relative">
               <span className="bg-gradient-to-r from-white via-zinc-200 to-white bg-clip-text text-transparent drop-shadow-2xl flex items-start">
@@ -225,7 +247,6 @@ export default function Page() {
             </h1>
           </div>
 
-          {/* Tagline */}
           <div className="mb-6 text-center">
             <p className="text-xl md:text-2xl text-zinc-300 font-light tracking-wide animate-fade-in-up">
               Where bold creatives meet.
@@ -237,7 +258,6 @@ export default function Page() {
             )}
           </div>
 
-          {/* Email Form (Main) */}
           <div className="w-full max-w-md mx-auto">
             {!isSubmitted ? (
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -287,16 +307,20 @@ export default function Page() {
 
           <div className="relative space-y-4">
             {/* Row 1 */}
-            <div className="flex animate-scroll-row1 space-x-4 md:space-x-8">
-              {[...creatorsRow1, ...creatorsRow1, ...creatorsRow1].map((creator, index) => (
-                <CreatorCard key={`row1-${index}`} creator={creator} />
-              ))}
+            <div className="w-full overflow-hidden relative">
+              <div className="flex animate-scroll-row1 whitespace-nowrap space-x-4 md:space-x-8">
+                {[...creatorsRow1, ...creatorsRow1].map((creator, index) => (
+                  <CreatorCard key={`row1-${index}`} creator={creator} />
+                ))}
+              </div>
             </div>
             {/* Row 2 */}
-            <div className="flex animate-scroll-row2 space-x-4 md:space-x-8">
-              {[...creatorsRow2, ...creatorsRow2, ...creatorsRow2].map((creator, index) => (
-                <CreatorCard key={`row2-${index}`} creator={creator} />
-              ))}
+            <div className="w-full overflow-hidden relative">
+              <div className="flex animate-scroll-row2 whitespace-nowrap space-x-4 md:space-x-8">
+                {[...creatorsRow2, ...creatorsRow2].map((creator, index) => (
+                  <CreatorCard key={`row2-${index}`} creator={creator} />
+                ))}
+              </div>
             </div>
           </div>
 
@@ -310,22 +334,23 @@ export default function Page() {
       <div className="py-20 px-4">
         <div className="max-w-6xl mx-auto text-center">
           <h2 className="text-2xl md:text-3xl font-bold text-center mb-12 text-zinc-200">
-            BUILT FOR CREATIVES. BY CREATIVES.
+            BUILT FOR CREATIVES.
+            <br />
+            BY CREATIVES.
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Feature 1: Curated Onboarding */}
             <div className="flex flex-col items-center">
               <h3 className="text-xl font-semibold text-white mb-4">Curated Onboarding</h3>
               <div className="relative flex-shrink-0">
-                {/* Light blue glow background */}
                 <div className="absolute inset-0 bg-gradient-to-r from-cobalt-600/20 via-cobalt-700/30 to-cobalt-600/20 rounded-lg blur-xl scale-105"></div>
                 <div className="relative flex flex-col items-center justify-center bg-zinc-950/70 rounded-lg border border-zinc-700/50 backdrop-blur-sm mx-auto w-[70vw] max-w-[256px] h-[276px] overflow-hidden">
                   <div className="relative w-full h-1/2 flex items-center justify-center overflow-hidden p-4">
                     <Image
                       src="/assets/icons/cards 2.png"
                       alt="Curated Onboarding"
-                      layout="fill"
-                      objectFit="cover"
+                      fill
+                      style={{ objectFit: "cover" }}
                       className="opacity-80"
                     />
                   </div>
@@ -339,17 +364,16 @@ export default function Page() {
             </div>
             {/* Feature 2: Swipe by Style */}
             <div className="flex flex-col items-center">
-              <h3 className="text-xl font-semibold text-white mb-4">Swipe by Style</h3>
+              <h3 className="text-xl font-semibold text-white mb-4">Meet your next Collaborator</h3>
               <div className="relative flex-shrink-0">
-                {/* Light blue glow background */}
                 <div className="absolute inset-0 bg-gradient-to-r from-cobalt-600/20 via-cobalt-700/30 to-cobalt-600/20 rounded-lg blur-xl scale-105"></div>
                 <div className="relative flex flex-col items-center justify-center bg-zinc-950/70 rounded-lg border border-zinc-700/50 backdrop-blur-sm mx-auto w-[70vw] max-w-[256px] h-[276px] overflow-hidden">
                   <div className="relative w-full h-1/2 flex items-center justify-center overflow-hidden p-4">
                     <Image
                       src="/assets/icons/resonance.png"
                       alt="Swipe by Style"
-                      layout="fill"
-                      objectFit="cover"
+                      fill
+                      style={{ objectFit: "cover" }}
                       className="opacity-80"
                     />
                   </div>
@@ -365,15 +389,14 @@ export default function Page() {
             <div className="flex flex-col items-center">
               <h3 className="text-xl font-semibold text-white mb-4">Join Collectives</h3>
               <div className="relative flex-shrink-0">
-                {/* Light blue glow background */}
                 <div className="absolute inset-0 bg-gradient-to-r from-cobalt-600/20 via-cobalt-700/30 to-cobalt-600/20 rounded-lg blur-xl scale-105"></div>
                 <div className="relative flex flex-col items-center justify-center bg-zinc-950/70 rounded-lg border border-zinc-700/50 backdrop-blur-sm mx-auto w-[70vw] max-w-[256px] h-[276px] overflow-hidden">
                   <div className="relative w-full h-1/2 flex items-center justify-center overflow-hidden p-4">
                     <Image
                       src="/assets/icons/collective.png"
                       alt="Join Collectives"
-                      layout="fill"
-                      objectFit="cover"
+                      fill
+                      style={{ objectFit: "cover" }}
                       className="opacity-80"
                     />
                   </div>
@@ -389,14 +412,14 @@ export default function Page() {
         </div>
       </div>
 
-      {/* Final CTA Section (Updated) */}
+      {/* Final CTA Section */}
       <div className="text-center py-12">
         <h2 className="text-2xl md:text-3xl font-semibold text-white mb-4">Ready to Join ArtHouse?</h2>
         <p className="text-zinc-400 mb-6">
-          Early access is invite-only. We’re curating the future of creative connection.
+          Early access is invite-only. We're curating the future of creative connection.
         </p>
         <a
-          onClick={() => setIsEmailDialogOpen(true)} // Open the dialog
+          onClick={() => setIsEmailDialogOpen(true)}
           className="inline-block bg-gradient-to-r from-cobalt-700 to-cobalt-800 hover:from-cobalt-600 hover:to-cobalt-700 text-white font-medium py-3 px-6 rounded-full transition cursor-pointer shadow-lg hover:shadow-xl"
         >
           Apply Now
@@ -414,7 +437,7 @@ export default function Page() {
         </div>
       </div>
 
-      {/* Footer (Simplified) */}
+      {/* Footer */}
       <footer className="py-8 px-4">
         <div className="flex justify-center space-x-6 text-sm text-zinc-500">
           <a href="#" className="hover:text-white transition-colors duration-300">
@@ -436,12 +459,12 @@ export default function Page() {
             transform: translateX(0);
           }
           100% {
-            transform: translateX(-100%); /* Adjusted to cover full width of duplicated content */
+            transform: translateX(-50%);
           }
         }
         @keyframes scroll-row2 {
           0% {
-            transform: translateX(-100%); /* Start from the end to create opposite direction */
+            transform: translateX(-50%);
           }
           100% {
             transform: translateX(0);
@@ -449,12 +472,12 @@ export default function Page() {
         }
         
         .animate-scroll-row1 {
-          animation: scroll-row1 30s linear infinite; /* Adjusted speed for more items */
+          animation: scroll-row1 40s linear infinite;
         }
         .animate-scroll-row2 {
-          animation: scroll-row2 32s linear infinite; /* Slightly different speed for visual interest */
+          animation: scroll-row2 50s linear infinite;
         }
-        
+
         @keyframes fade-in-up {
           from {
             opacity: 0;
