@@ -128,7 +128,7 @@ interface Creator {
 
 function CreatorCard({ creator }: { creator: Creator }) {
   return (
-    <div className="flex-shrink-0 relative w-[70vw] max-w-[256px] h-[104vw] max-h-[416px]">
+    <div className="flex-shrink-0 relative w-[70vw] max-w-[256px] h-[104vw] max-h-[416px] mx-2 md:mx-4">
       <div className="absolute inset-0 bg-gradient-to-r from-cobalt-600/20 via-cobalt-700/30 to-cobalt-600/20 rounded-2xl blur-xl scale-110 z-0" />
 
       <div className="relative z-10 bg-zinc-950/80 border border-zinc-700/50 rounded-2xl p-6 md:p-8 w-full h-full backdrop-blur-sm">
@@ -332,16 +332,16 @@ export default function Page() {
         <div className="relative space-y-4">
           {/* Row 1 */}
           <div className="w-full overflow-hidden relative">
-            <div className="flex animate-scroll-row1 whitespace-nowrap space-x-4 md:space-x-8 pl-4 md:pl-8">
-              {[...creatorsRow1, ...creatorsRow1, ...creatorsRow1].map((creator, index) => (
+            <div className="flex animate-scroll-row1 whitespace-nowrap">
+              {[...creatorsRow1, ...creatorsRow1].map((creator, index) => (
                 <CreatorCard key={`row1-${index}`} creator={creator} />
               ))}
             </div>
           </div>
           {/* Row 2 */}
           <div className="w-full overflow-hidden relative">
-            <div className="flex animate-scroll-row2 whitespace-nowrap space-x-4 md:space-x-8 pl-4 md:pl-8">
-              {[...creatorsRow2, ...creatorsRow2, ...creatorsRow2].map((creator, index) => (
+            <div className="flex animate-scroll-row2 whitespace-nowrap">
+              {[...creatorsRow2, ...creatorsRow2].map((creator, index) => (
                 <CreatorCard key={`row2-${index}`} creator={creator} />
               ))}
             </div>
@@ -482,12 +482,12 @@ export default function Page() {
             transform: translateX(0);
           }
           100% {
-            transform: translateX(-33.333%);
+            transform: translateX(-50%);
           }
         }
         @keyframes scroll-row2 {
           0% {
-            transform: translateX(-33.333%);
+            transform: translateX(-50%);
           }
           100% {
             transform: translateX(0);
