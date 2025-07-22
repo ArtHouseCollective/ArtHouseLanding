@@ -485,12 +485,12 @@ export default function Page() {
             transform: translateX(0);
           }
           100% {
-            transform: translateX(-50%);
+            transform: translateX(-100%);
           }
         }
         @keyframes scroll-row2 {
           0% {
-            transform: translateX(-50%);
+            transform: translateX(-100%);
           }
           100% {
             transform: translateX(0);
