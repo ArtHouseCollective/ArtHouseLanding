@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import { useState, useEffect, useRef, type FormEvent } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -152,6 +154,79 @@ function CreatorCard({ creator }: { creator: Creator }) {
           </div>
         </div>
       </div>
+    </div>
+  )
+}
+
+function DraggableCarousel({
+  children,
+  className,
+  animationClass,
+}: { children: React.ReactNode; className?: string; animationClass: string }) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const [startX, setStartX] = useState(0)
+  const [dragOffset, setDragOffset] = useState(0)
+  const [isAnimationPaused, setIsAnimationPaused] = useState(false)
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true)
+    setIsAnimationPaused(true)
+    setStartX(e.clientX)
+    e.preventDefault()
+  }
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return
+    e.preventDefault()
+    const currentX = e.clientX
+    const diff = currentX - startX
+    setDragOffset(diff)
+  }
+
+  const handleMouseUp = () => {
+    setIsDragging(false)
+    setDragOffset(0)
+    setTimeout(() => setIsAnimationPaused(false), 500)
+  }
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setIsDragging(true)
+    setIsAnimationPaused(true)
+    setStartX(e.touches[0].clientX)
+  }
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging) return
+    const currentX = e.touches[0].clientX
+    const diff = currentX - startX
+    setDragOffset(diff)
+  }
+
+  const handleTouchEnd = () => {
+    setIsDragging(false)
+    setDragOffset(0)
+    setTimeout(() => setIsAnimationPaused(false), 500)
+  }
+
+  return (
+    <div
+      ref={containerRef}
+      className={`${className} ${isAnimationPaused ? "" : animationClass}`}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      style={{
+        cursor: isDragging ? "grabbing" : "grab",
+        transform: dragOffset !== 0 ? `translateX(${dragOffset}px)` : undefined,
+        transition: isDragging ? "none" : undefined,
+      }}
+    >
+      {children}
     </div>
   )
 }
@@ -332,19 +407,19 @@ export default function Page() {
         <div className="relative space-y-4">
           {/* Row 1 */}
           <div className="w-full overflow-hidden relative">
-            <div className="flex animate-scroll-row1 whitespace-nowrap">
+            <DraggableCarousel className="flex whitespace-nowrap" animationClass="animate-scroll-row1">
               {[...creatorsRow1, ...creatorsRow1].map((creator, index) => (
                 <CreatorCard key={`row1-${index}`} creator={creator} />
               ))}
-            </div>
+            </DraggableCarousel>
           </div>
           {/* Row 2 */}
           <div className="w-full overflow-hidden relative">
-            <div className="flex animate-scroll-row2 whitespace-nowrap">
+            <DraggableCarousel className="flex whitespace-nowrap" animationClass="animate-scroll-row2">
               {[...creatorsRow2, ...creatorsRow2].map((creator, index) => (
                 <CreatorCard key={`row2-${index}`} creator={creator} />
               ))}
-            </div>
+            </DraggableCarousel>
           </div>
         </div>
 
@@ -495,10 +570,10 @@ export default function Page() {
         }
         
         .animate-scroll-row1 {
-          animation: scroll-row1 60s linear infinite;
+          animation: scroll-row1 30s linear infinite;
         }
         .animate-scroll-row2 {
-          animation: scroll-row2 60s linear infinite;
+          animation: scroll-row2 30s linear infinite;
         }
 
         @keyframes fade-in-up {
