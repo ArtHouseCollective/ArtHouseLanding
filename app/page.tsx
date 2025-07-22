@@ -77,7 +77,7 @@ const creators = [
   {
     name: "Yoshi Barrigas",
     title: "Actor",
-    image: "/images/creators/emilyzercher.jpg",
+    image: "/images/creators/yoshi.jpg",
     genre: "Drama, Comedy",
     specialty: "The Chosen",
   },
@@ -91,23 +91,30 @@ const creators = [
   {
     name: "Ethan Daniel Corbett",
     title: "Actor",
-    image: "/images/creators/emilyzercher.jpg",
+    image: "/images/creators/ethan.jpg",
     genre: "Drama, Action",
     specialty: "Faces",
   },
   {
     name: "Julio Gabay",
     title: "Actor",
-    image: "/images/creators/emilyzercher.jpg",
+    image: "/images/creators/julio.jpg",
     genre: "Drama, Action",
     specialty: "Bullet Train",
   },
   {
     name: "Kevin Auger",
-    title: "Visual Effects Supervisor",
-    image: "/images/creators/emilyzercher.jpg",
+    title: "Visual Effects Specialist",
+    image: "/images/creators/kevin a.jpg",
     genre: "Drama, Action",
     specialty: "Land of Martyrdom",
+  },
+  {
+    name: "Karsen Schovajsa",
+    title: "Actor",
+    image: "/images/creators/karsen.jpeg",
+    genre: "Horror",
+    specialty: "Scorched Earth",
   },
 ] as const
 
