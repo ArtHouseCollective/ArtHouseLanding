@@ -485,12 +485,12 @@ export default function Page() {
             transform: translateX(0);
           }
           100% {
-            transform: translateX(-33.333%);
+            transform: translateX(-50%);
           }
         }
         @keyframes scroll-row2 {
           0% {
-            transform: translateX(-33.333%);
+            transform: translateX(-50%);
           }
           100% {
             transform: translateX(0);
@@ -498,18 +498,35 @@ export default function Page() {
         }
         
         .animate-scroll-row1 {
-          animation: scroll-row1 15s linear infinite;
+          animation: scroll-row1 60s linear infinite;
         }
         .animate-scroll-row2 {
-          animation: scroll-row2 15s linear infinite;
+          animation: scroll-row2 60s linear infinite;
         }
 
         @media (min-width: 768px) {
+          @keyframes scroll-row1 {
+            0% {
+              transform: translateX(0);
+            }
+            100% {
+              transform: translateX(-33.333%);
+            }
+          }
+          @keyframes scroll-row2 {
+            0% {
+              transform: translateX(-33.333%);
+            }
+            100% {
+              transform: translateX(0);
+            }
+          }
+          
           .animate-scroll-row1 {
-            animation: scroll-row1 30s linear infinite;
+            animation: scroll-row1 60s linear infinite;
           }
           .animate-scroll-row2 {
-            animation: scroll-row2 30s linear infinite;
+            animation: scroll-row2 60s linear infinite;
           }
         }
 
