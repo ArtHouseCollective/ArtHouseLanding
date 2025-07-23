@@ -128,12 +128,12 @@ interface Creator {
 
 function CreatorCard({ creator }: { creator: Creator }) {
   return (
-    <div className="flex-shrink-0 relative w-[60vw] max-w-[200px] h-[90vw] max-h-[320px] mx-2 md:mx-4 md:w-[70vw] md:max-w-[256px] md:h-[104vw] md:max-h-[416px]">
+    <div className="flex-shrink-0 relative w-[70vw] max-w-[256px] h-[104vw] max-h-[416px] mx-2 md:mx-4">
       <div className="absolute inset-0 bg-gradient-to-r from-cobalt-600/20 via-cobalt-700/30 to-cobalt-600/20 rounded-2xl blur-xl scale-110 z-0" />
 
-      <div className="relative z-10 bg-zinc-950/80 border border-zinc-700/50 rounded-2xl p-4 md:p-6 lg:p-8 w-full h-full backdrop-blur-sm">
+      <div className="relative z-10 bg-zinc-950/80 border border-zinc-700/50 rounded-2xl p-6 md:p-8 w-full h-full backdrop-blur-sm">
         <div className="flex flex-col items-center text-center h-full space-y-2">
-          <div className="w-20 h-28 md:w-28 md:h-36 lg:w-32 lg:h-40 mb-3 md:mb-4 rounded-2xl overflow-hidden">
+          <div className="w-28 h-36 md:w-32 md:h-40 mb-4 rounded-2xl overflow-hidden">
             <img
               src={creator.image || "/placeholder.png"}
               alt={creator.name}
@@ -145,8 +145,8 @@ function CreatorCard({ creator }: { creator: Creator }) {
           </div>
 
           <div className="flex flex-col items-center text-center flex-grow justify-evenly">
-            <h3 className="text-lg md:text-base lg:text-lg font-bold text-white leading-tight">{creator.name}</h3>
-            <p className="text-lg md:text-base lg:text-base text-cobalt-400 font-medium">{creator.title}</p>
+            <h3 className="text-base md:text-lg font-bold text-white leading-tight">{creator.name}</h3>
+            <p className="text-sm md:text-base text-cobalt-400 font-medium">{creator.title}</p>
             <p className="text-xs leading-tight tracking-wide uppercase font-semibold text-zinc-300">{creator.genre}</p>
             <p className="text-sm leading-snug text-zinc-400">{creator.specialty}</p>
           </div>
@@ -166,7 +166,7 @@ export default function Page() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const [referralCode, setReferralCode] = useState<string | null>(null)
-  const [foundersCount, setFoundersCount] = useState(46) // Default fallback value
+  const [foundersCount, setFoundersCount] = useState(48) // Default fallback value
   const appMockupsRef = useRef<HTMLDivElement>(null)
   const [isAppMockupsVisible, setIsAppMockupsVisible] = useState(false)
   const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false)
@@ -326,10 +326,7 @@ export default function Page() {
       {/* Continuously Scrolling Creators Carousel - Full Width */}
       <div className="py-12 overflow-hidden w-screen">
         <div className="px-4 max-w-6xl mx-auto mb-8">
-          <h2 className="text-2xl md:text-3xl font-bold text-center text-zinc-200">
-            <span className="block md:inline">Creators in the</span>
-            <span className="block md:inline md:ml-1">Founder's Circle</span>
-          </h2>
+          <h2 className="text-2xl md:text-3xl font-bold text-center text-zinc-200">Creators in the Founder's Circle</h2>
         </div>
 
         <div className="relative space-y-4">
@@ -485,12 +482,12 @@ export default function Page() {
             transform: translateX(0);
           }
           100% {
-            transform: translateX(-100%);
+            transform: translateX(-33.333%);
           }
         }
         @keyframes scroll-row2 {
           0% {
-            transform: translateX(-100%);
+            transform: translateX(-33.333%);
           }
           100% {
             transform: translateX(0);
@@ -498,36 +495,10 @@ export default function Page() {
         }
         
         .animate-scroll-row1 {
-          animation: scroll-row1 60s linear infinite;
+          animation: scroll-row1 30s linear infinite;
         }
         .animate-scroll-row2 {
-          animation: scroll-row2 60s linear infinite;
-        }
-
-        @media (min-width: 768px) {
-          @keyframes scroll-row1 {
-            0% {
-              transform: translateX(0);
-            }
-            100% {
-              transform: translateX(-33.333%);
-            }
-          }
-          @keyframes scroll-row2 {
-            0% {
-              transform: translateX(-33.333%);
-            }
-            100% {
-              transform: translateX(0);
-            }
-          }
-          
-          .animate-scroll-row1 {
-            animation: scroll-row1 60s linear infinite;
-          }
-          .animate-scroll-row2 {
-            animation: scroll-row2 60s linear infinite;
-          }
+          animation: scroll-row2 30s linear infinite;
         }
 
         @keyframes fade-in-up {
