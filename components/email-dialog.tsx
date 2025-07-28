@@ -53,7 +53,7 @@ export function EmailDialog({ isOpen, onClose, initialEmail = "" }: EmailDialogP
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] bg-zinc-900 text-white border-zinc-700">
+      <DialogContent darkOverlay={true} className="sm:max-w-[425px] bg-zinc-900 text-white border-zinc-700">
         <DialogHeader>
           <DialogTitle className="text-white">Interested in ArtHouse?</DialogTitle>
           <DialogDescription className="text-zinc-400">

@@ -1,14 +1,10 @@
 "use client"
 
-import { useState, useEffect, useRef, type FormEvent } from "react"
+import { useState, useEffect, type FormEvent } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { EmailDialog } from "@/components/email-dialog"
 import Image from "next/image"
-
-/* -------------------------------------------------------------------------- */
-/*                               Creator Stubs                                */
-/* -------------------------------------------------------------------------- */
 
 const creators = [
   {
@@ -116,7 +112,7 @@ const creators = [
     genre: "Horror",
     specialty: "Scorched Earth",
   },
-] as const
+]
 
 interface Creator {
   name: string
@@ -156,19 +152,13 @@ function CreatorCard({ creator }: { creator: Creator }) {
   )
 }
 
-/* -------------------------------------------------------------------------- */
-/*                                Page Component                              */
-/* -------------------------------------------------------------------------- */
-
 export default function Page() {
   const [email, setEmail] = useState("")
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const [referralCode, setReferralCode] = useState<string | null>(null)
-  const [foundersCount, setFoundersCount] = useState(48) // Default fallback value
-  const appMockupsRef = useRef<HTMLDivElement>(null)
-  const [isAppMockupsVisible, setIsAppMockupsVisible] = useState(false)
+  const [foundersCount, setFoundersCount] = useState(50)
   const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false)
 
   // Fetch subscriber count from Beehiiv
@@ -182,14 +172,13 @@ export default function Page() {
         }
       } catch (error) {
         console.error("Error fetching subscriber count:", error)
-        // Keep the default fallback value of 46
       }
     }
 
     fetchSubscriberCount()
   }, [])
 
-  // Capture referral code from URL and store in localStorage (for initial landing)
+  // Capture referral code from URL
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search)
     const refParam = urlParams.get("ref")
@@ -203,24 +192,6 @@ export default function Page() {
         setReferralCode(storedReferralCode)
       }
     }
-  }, [])
-
-  // Scroll reveal for app mockups
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsAppMockupsVisible(true)
-        }
-      },
-      { threshold: 0.3 },
-    )
-
-    if (appMockupsRef.current) {
-      observer.observe(appMockupsRef.current)
-    }
-
-    return () => observer.disconnect()
   }, [])
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -323,14 +294,13 @@ export default function Page() {
         </div>
       </div>
 
-      {/* Continuously Scrolling Creators Carousel - Full Width */}
+      {/* Creators Carousel */}
       <div className="py-12 overflow-hidden w-screen">
         <div className="px-4 max-w-6xl mx-auto mb-8">
           <h2 className="text-2xl md:text-3xl font-bold text-center text-zinc-200">Creators in the Founder's Circle</h2>
         </div>
 
         <div className="relative space-y-4">
-          {/* Row 1 */}
           <div className="w-full overflow-hidden relative">
             <div className="flex animate-scroll-row1 whitespace-nowrap">
               {[...creatorsRow1, ...creatorsRow1, ...creatorsRow1].map((creator, index) => (
@@ -338,7 +308,6 @@ export default function Page() {
               ))}
             </div>
           </div>
-          {/* Row 2 */}
           <div className="w-full overflow-hidden relative">
             <div className="flex animate-scroll-row2 whitespace-nowrap">
               {[...creatorsRow2, ...creatorsRow2, ...creatorsRow2].map((creator, index) => (
@@ -353,7 +322,7 @@ export default function Page() {
         </div>
       </div>
 
-      {/* New Feature Board Section */}
+      {/* Features Section */}
       <div className="py-20 px-4">
         <div className="max-w-6xl mx-auto text-center">
           <h2 className="text-2xl md:text-3xl font-bold text-center mb-12 text-zinc-200">
@@ -362,7 +331,6 @@ export default function Page() {
             BY CREATIVES.
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Feature 1: Curated Onboarding */}
             <div className="flex flex-col items-center">
               <h3 className="text-xl font-semibold text-white mb-4">Curated Onboarding</h3>
               <div className="relative flex-shrink-0">
@@ -385,7 +353,6 @@ export default function Page() {
                 </div>
               </div>
             </div>
-            {/* Feature 2: Swipe by Style */}
             <div className="flex flex-col items-center">
               <h3 className="text-xl font-semibold text-white mb-4">Meet your next Collaborator</h3>
               <div className="relative flex-shrink-0">
@@ -408,7 +375,6 @@ export default function Page() {
                 </div>
               </div>
             </div>
-            {/* Feature 3: Join Collectives */}
             <div className="flex flex-col items-center">
               <h3 className="text-xl font-semibold text-white mb-4">Join Collectives</h3>
               <div className="relative flex-shrink-0">
@@ -435,7 +401,7 @@ export default function Page() {
         </div>
       </div>
 
-      {/* Final CTA Section */}
+      {/* CTA Section */}
       <div className="text-center py-12">
         <h2 className="text-2xl md:text-3xl font-semibold text-white mb-4">Ready to Join ArtHouse?</h2>
         <p className="text-zinc-400 mb-6">
@@ -449,7 +415,7 @@ export default function Page() {
         </a>
       </div>
 
-      {/* Floating Founders Circle Badge */}
+      {/* Founders Circle Badge */}
       <div className="fixed bottom-6 right-6 z-50">
         <div className="bg-black border border-zinc-700 rounded-full px-4 py-2 shadow-lg backdrop-blur-sm">
           <div className="flex items-center space-x-2">
@@ -473,7 +439,6 @@ export default function Page() {
         </div>
       </footer>
 
-      {/* Email Dialog Component */}
       <EmailDialog isOpen={isEmailDialogOpen} onClose={() => setIsEmailDialogOpen(false)} />
 
       <style jsx>{`
@@ -495,10 +460,10 @@ export default function Page() {
         }
         
         .animate-scroll-row1 {
-          animation: scroll-row1 30s linear infinite;
+          animation: scroll-row1 60s linear infinite;
         }
         .animate-scroll-row2 {
-          animation: scroll-row2 30s linear infinite;
+          animation: scroll-row2 60s linear infinite;
         }
 
         @keyframes fade-in-up {
