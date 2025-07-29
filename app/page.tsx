@@ -420,7 +420,7 @@ export default function Page() {
         <div className="bg-black border border-zinc-700 rounded-full px-4 py-2 shadow-lg backdrop-blur-sm">
           <div className="flex items-center space-x-2">
             <span className="text-lg">🪩</span>
-            <span className="text-white text-sm font-medium">{foundersCount} / 150 Founder's Circle Spots Filled</span>
+            <span className="text-white text-sm font-medium">{foundersCount} / 150 Founders Circle Spots Filled</span>
           </div>
           <div className="absolute inset-0 rounded-full bg-gradient-to-r from-cobalt-600/20 to-cobalt-800/20 blur-sm -z-10"></div>
         </div>
@@ -460,10 +460,10 @@ export default function Page() {
         }
         
         .animate-scroll-row1 {
-          animation: scroll-row1 60s linear infinite;
+          animation: scroll-row1 30s linear infinite;
         }
         .animate-scroll-row2 {
-          animation: scroll-row2 60s linear infinite;
+          animation: scroll-row2 30s linear infinite;
         }
 
         @keyframes fade-in-up {
