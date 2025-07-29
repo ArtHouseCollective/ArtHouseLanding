@@ -161,23 +161,6 @@ export default function Page() {
   const [foundersCount, setFoundersCount] = useState(50)
   const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false)
 
-  // Fetch subscriber count from Beehiiv
-  useEffect(() => {
-    const fetchSubscriberCount = async () => {
-      try {
-        const response = await fetch("/api/subscriber-count")
-        if (response.ok) {
-          const data = await response.json()
-          setFoundersCount(data.count)
-        }
-      } catch (error) {
-        console.error("Error fetching subscriber count:", error)
-      }
-    }
-
-    fetchSubscriberCount()
-  }, [])
-
   // Capture referral code from URL
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search)
