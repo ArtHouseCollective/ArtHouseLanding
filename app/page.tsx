@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { EmailDialog } from "@/components/email-dialog"
 import Image from "next/image"
+import Link from "next/link"
 
 const creators = [
   {
@@ -412,13 +413,17 @@ export default function Page() {
       {/* Footer */}
       <footer className="py-8 px-4">
         <div className="flex justify-center space-x-6 text-sm text-zinc-500">
-          <a href="#" className="hover:text-white transition-colors duration-300">
-            Privacy
-          </a>
+          <Link href="/newsletter" className="hover:text-white transition-colors duration-300">
+            Newsletter
+          </Link>
           <span>·</span>
-          <a href="#" className="hover:text-white transition-colors duration-300">
+          <Link href="/privacy" className="hover:text-white transition-colors duration-300">
+            Privacy
+          </Link>
+          <span>·</span>
+          <Link href="/contact" className="hover:text-white transition-colors duration-300">
             Contact
-          </a>
+          </Link>
         </div>
       </footer>
 
