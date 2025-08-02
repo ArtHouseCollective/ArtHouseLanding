@@ -403,7 +403,7 @@ export default function Page() {
         <div className="bg-black border border-zinc-700 rounded-full px-4 py-2 shadow-lg backdrop-blur-sm">
           <div className="flex items-center space-x-2">
             <span className="text-lg">🪩</span>
-            <span className="text-white text-sm font-medium">51 / 150 Founder's Circle Spots Filled</span>
+            <span className="text-white text-sm font-medium">57 / 150 Founder's Circle Spots Filled</span>
           </div>
           <div className="absolute inset-0 rounded-full bg-gradient-to-r from-cobalt-600/20 to-cobalt-800/20 blur-sm -z-10"></div>
         </div>

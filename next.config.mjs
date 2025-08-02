@@ -27,7 +27,7 @@ const nextConfig = {
             value: 'http',
           },
         ],
-        destination: 'https://yourdomain.com/:path*',
+        destination: 'https://www.arthousecollective.xyz/:path*',
         permanent: true,
       },
     ]
