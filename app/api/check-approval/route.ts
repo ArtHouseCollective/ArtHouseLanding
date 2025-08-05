@@ -21,8 +21,11 @@ export async function POST(request: NextRequest) {
         userRecord = await auth.getUserByEmail(email)
       }
 
-      // Check custom claims first
-      if (userRecord.customClaims?.approved || userRecord.customClaims?.admin) {
+      // Check custom claims first - PRIORITIZE ADMIN
+      if (userRecord.customClaims?.admin || userRecord.customClaims?.role === 'admin') {
+        isApproved = true
+        approvalSource = "admin"
+      } else if (userRecord.customClaims?.approved) {
         isApproved = true
         approvalSource = "custom_claims"
       }
@@ -61,8 +64,8 @@ export async function POST(request: NextRequest) {
         }
       } catch (dbError) {
         console.error("Database query error:", dbError)
-        // If database fails, allow login for existing users
-        if (userRecord) {
+        // Only use fallback for non-admin users
+        if (userRecord && !userRecord.customClaims?.admin) {
           isApproved = true
           approvalSource = "fallback"
         }
@@ -74,6 +77,7 @@ export async function POST(request: NextRequest) {
       approvalSource,
       email: email || userRecord?.email,
       uid: userRecord?.uid,
+      isAdmin: userRecord?.customClaims?.admin || userRecord?.customClaims?.role === 'admin',
     })
   } catch (error) {
     console.error("Error checking approval status:", error)

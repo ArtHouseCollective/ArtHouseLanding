@@ -69,7 +69,7 @@ export default function DiscoverPage() {
                 <Calendar className="w-8 h-8 text-white" />
               </div>
               <CardTitle className="text-2xl md:text-3xl font-bold text-white">Events</CardTitle>
-              <p className="text-zinc-400 text-lg">ArtHouse screenings, creative meetups, and festival moments</p>
+              <p className="text-zinc-400 text-lg">ArtHouse exclusive screenings, meetups, and events.   </p>
             </CardHeader>
             <CardContent className="text-center space-y-6">
               <div className="bg-zinc-800/50 rounded-lg p-8 border border-zinc-700/50">
@@ -118,14 +118,13 @@ export default function DiscoverPage() {
                 <Users className="w-8 h-8 text-white" />
               </div>
               <CardTitle className="text-2xl md:text-3xl font-bold text-white">Collectives</CardTitle>
-              <p className="text-zinc-400 text-lg">Micro-communities within ArtHouse — by city, genre, or mission</p>
+              <p className="text-zinc-400 text-lg">Communities within ArtHouse — by city, genre, or mission</p>
             </CardHeader>
             <CardContent className="text-center space-y-6">
               <div className="bg-zinc-800/50 rounded-lg p-8 border border-zinc-700/50">
                 <h3 className="text-xl font-semibold text-white mb-4">Launching Soon</h3>
                 <p className="text-zinc-300 mb-6">
-                  Join or create micro-communities based on your location, creative genre, or shared mission. Connect
-                  with like-minded creators in your area or specialty.
+                  Connect with like-minded creators in your area or specialty.
                 </p>
                 <div className="space-y-4">
                   <p className="text-zinc-400">Want to host or join a Collective?</p>

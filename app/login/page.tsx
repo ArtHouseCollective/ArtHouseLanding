@@ -2,15 +2,15 @@
 
 import type React from "react"
 
-import { useState } from "react"
-import { signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth"
+import { useState, useEffect } from "react"
+import { signInWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged } from "firebase/auth"
 import { auth } from "@/lib/firebase-client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { ArrowLeft, Loader2 } from "lucide-react"
+import { ArrowLeft, Loader2, LogOut, User } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
@@ -19,9 +19,22 @@ export default function LoginPage() {
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [isResetting, setIsResetting] = useState(false)
+  const [isSigningOut, setIsSigningOut] = useState(false)
   const [error, setError] = useState("")
   const [resetMessage, setResetMessage] = useState("")
+  const [user, setUser] = useState<any>(null)
+  const [isAuthLoading, setIsAuthLoading] = useState(true)
   const router = useRouter()
+
+  // Check authentication state
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user)
+      setIsAuthLoading(false)
+    })
+
+    return () => unsubscribe()
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -41,12 +54,12 @@ export default function LoginPage() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ email: user.email }),
+          body: JSON.stringify({ email: user.email, uid: user.uid }),
         })
 
         if (response.ok) {
           const responseText = await response.text()
-          let data = { isApproved: false }
+          let data = { isApproved: false, isAdmin: false }
 
           if (responseText) {
             try {
@@ -56,23 +69,40 @@ export default function LoginPage() {
             }
           }
 
-          if (data.isApproved) {
-            // User is approved, redirect to home
+          if (data.isApproved || data.isAdmin) {
+            // User is approved or admin, redirect to home
+            console.log(`Login successful - ${data.isAdmin ? "Admin" : "Approved"} user`)
             router.push("/")
           } else {
             // User exists but not approved
             setError("Your application is under review. We'll notify you once it's approved.")
-            await auth.signOut() // Sign out the user
+            await auth.signOut()
           }
         } else {
-          // API error, but allow login anyway for now
-          console.error("Approval check failed, allowing login")
-          router.push("/")
+          // API error - check if it's a known admin email
+          const adminEmails = ["hello@arthousecollective.xyz"]
+          if (adminEmails.includes(user.email || "")) {
+            console.log("Admin login - bypassing approval check")
+            router.push("/")
+          } else {
+            console.error("Approval check failed for regular user")
+            setError("Unable to verify account status. Please try again.")
+            await auth.signOut()
+          }
         }
       } catch (approvalError) {
-        // Network error in approval check, allow login
+        // Network error in approval check
         console.error("Approval check network error:", approvalError)
-        router.push("/")
+
+        // Only allow admins to bypass on network errors
+        const adminEmails = ["hello@arthousecollective.xyz"]
+        if (adminEmails.includes(user.email || "")) {
+          console.log("Admin login - bypassing network error")
+          router.push("/")
+        } else {
+          setError("Network error. Please check your connection and try again.")
+          await auth.signOut()
+        }
       }
     } catch (error: any) {
       console.error("Login error:", error)
@@ -119,6 +149,106 @@ export default function LoginPage() {
     }
   }
 
+  const handleSignOut = async () => {
+    setIsSigningOut(true)
+    try {
+      await signOut(auth)
+      setError("")
+      setResetMessage("")
+    } catch (error) {
+      console.error("Sign out error:", error)
+      setError("Failed to sign out. Please try again.")
+    } finally {
+      setIsSigningOut(false)
+    }
+  }
+
+  // Show loading state while checking auth
+  if (isAuthLoading) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center px-4">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-white" />
+          <p className="text-zinc-400">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Show already logged in state
+  if (user) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center px-4">
+        <div className="w-full max-w-md">
+          <div className="mb-8">
+            <Link href="/" className="inline-flex items-center text-zinc-400 hover:text-white transition-colors mb-6">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Home
+            </Link>
+            <h1 className="text-3xl font-bold text-white mb-2">Already Logged In</h1>
+            <p className="text-zinc-400">You're currently signed in to ArtHouse</p>
+          </div>
+
+          <Card className="bg-zinc-900/50 border-zinc-800">
+            <CardHeader>
+              <CardTitle className="text-white text-center flex items-center justify-center gap-2">
+                <User className="w-5 h-5" />
+                Account Status
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-center space-y-6">
+              <div className="space-y-2">
+                <p className="text-zinc-300">Signed in as:</p>
+                <p className="text-white font-medium">{user.email}</p>
+              </div>
+
+              <div className="space-y-3">
+                <Button
+                  onClick={() => router.push("/")}
+                  className="w-full bg-white text-black hover:bg-zinc-200 transition-colors"
+                >
+                  Go to Home
+                </Button>
+
+                <Button
+                  onClick={handleSignOut}
+                  disabled={isSigningOut}
+                  variant="outline"
+                  className="w-full border-zinc-600 text-zinc-300 hover:bg-zinc-800 hover:text-white bg-transparent"
+                >
+                  {isSigningOut ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Signing Out...
+                    </>
+                  ) : (
+                    <>
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Sign Out
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              {error && (
+                <Alert className="bg-red-500/10 border-red-500/20">
+                  <AlertDescription className="text-red-400">{error}</AlertDescription>
+                </Alert>
+              )}
+
+              <div className="text-center pt-4 border-t border-zinc-700">
+                <p className="text-zinc-500 text-sm">
+                  Want to switch accounts? Sign out first, then sign in with a different email.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
+
+  // Show login form for non-authenticated users
   return (
     <div className="min-h-screen bg-black text-white flex items-center justify-center px-4">
       <div className="w-full max-w-md">

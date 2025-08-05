@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { EmailDialog } from "@/components/email-dialog"
 import Image from "next/image"
 import Link from "next/link"
-import { Menu, X } from "lucide-react"
+import { Menu, X, Settings } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { RetroNav } from "@/components/retro-nav"
 import { onAuthStateChanged } from "firebase/auth"
@@ -169,12 +169,56 @@ export default function Page() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [isAuthLoading, setIsAuthLoading] = useState(true)
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [adminCheckComplete, setAdminCheckComplete] = useState(false)
   const router = useRouter()
 
-  // Check authentication state
+  // Check authentication state and admin status
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      console.log("Auth state changed:", user?.email)
       setUser(user)
+
+      if (user) {
+        console.log("Checking admin status for:", user.email)
+        // Check if user is admin
+        try {
+          const response = await fetch("/api/check-approval", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ email: user.email, uid: user.uid }),
+          })
+
+          console.log("Admin check response status:", response.status)
+
+          if (response.ok) {
+            const responseText = await response.text()
+            console.log("Admin check response text:", responseText)
+
+            if (responseText) {
+              try {
+                const data = JSON.parse(responseText)
+                console.log("Admin check data:", data)
+                const adminStatus = data.isAdmin || false
+                console.log("Setting admin status to:", adminStatus)
+                setIsAdmin(adminStatus)
+              } catch (parseError) {
+                console.error("Failed to parse admin response:", parseError)
+              }
+            }
+          } else {
+            console.error("Admin check failed with status:", response.status)
+          }
+        } catch (error) {
+          console.error("Admin check error:", error)
+        }
+      } else {
+        setIsAdmin(false)
+      }
+
+      setAdminCheckComplete(true)
       setIsAuthLoading(false)
     })
 
@@ -247,10 +291,35 @@ export default function Page() {
   const creatorsRow1 = creators.filter((_, i) => i % 2 === 0)
   const creatorsRow2 = creators.filter((_, i) => i % 2 !== 0)
 
+  console.log("Render - isAdmin:", isAdmin, "adminCheckComplete:", adminCheckComplete, "user:", user?.email)
+
   return (
     <div className="min-h-screen bg-black text-white relative">
       {/* Retro Navigation */}
       <RetroNav />
+
+      {/* Admin Button - Fixed position with debugging */}
+      {adminCheckComplete && isAdmin && (
+        <div className="fixed top-4 left-4 z-50">
+          <Button
+            onClick={() => router.push("/admin/applications")}
+            className="bg-red-600 hover:bg-red-700 text-white border border-red-500 shadow-lg backdrop-blur-sm"
+            size="sm"
+          >
+            <Settings className="w-4 h-4 mr-2" />
+            Admin Panel
+          </Button>
+        </div>
+      )}
+
+      {/* Debug info - remove this after testing */}
+      {process.env.NODE_ENV === "development" && (
+        <div className="fixed top-20 left-4 z-50 bg-black/80 text-white p-2 text-xs rounded">
+          <div>User: {user?.email || "None"}</div>
+          <div>Admin: {isAdmin ? "Yes" : "No"}</div>
+          <div>Check Complete: {adminCheckComplete ? "Yes" : "No"}</div>
+        </div>
+      )}
 
       {/* Mobile Menu */}
       <div className="md:hidden fixed top-4 right-4 z-50">
@@ -284,6 +353,11 @@ export default function Page() {
             <Link href="/login" className="block text-2xl font-mono text-white hover:text-zinc-300">
               [ Login ]
             </Link>
+            {isAdmin && (
+              <Link href="/admin/applications" className="block text-2xl font-mono text-red-400 hover:text-red-300">
+                [ Admin Panel ]
+              </Link>
+            )}
           </div>
         </div>
       )}
@@ -369,6 +443,7 @@ export default function Page() {
               <div>
                 <h3 className="text-xl font-semibold text-white mb-2">Welcome back!</h3>
                 <p className="text-zinc-400">You're logged in as {user.email}</p>
+                {isAdmin && <p className="text-red-400 text-sm mt-2 font-medium">Admin Access Enabled</p>}
               </div>
             </div>
           )}
