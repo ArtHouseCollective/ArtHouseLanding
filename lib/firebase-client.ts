@@ -24,14 +24,57 @@ const missingVars = requiredEnvVars.filter((varName) => {
   return !value || value.trim() === ""
 })
 
+// Only log warning instead of throwing error to prevent white screen
 if (missingVars.length > 0) {
-  console.error("Missing Firebase environment variables:", missingVars)
-  throw new Error(`Missing required Firebase environment variables: ${missingVars.join(", ")}`)
+  console.warn("Missing Firebase environment variables:", missingVars)
+  console.warn("Firebase features will be disabled until environment variables are configured")
 }
 
-// Initialize Firebase
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
+// Initialize Firebase only if we have the required config
+let app: any = null
+let auth: any = null
+let db: any = null
 
-export const auth = getAuth(app)
-export const db = getFirestore(app)
+try {
+  if (missingVars.length === 0) {
+    app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
+    auth = getAuth(app)
+    db = getFirestore(app)
+  } else {
+    // Create mock objects to prevent crashes
+    auth = {
+      currentUser: null,
+      onAuthStateChanged: () => () => {},
+      signInWithEmailAndPassword: () => Promise.reject(new Error("Firebase not configured")),
+      signOut: () => Promise.reject(new Error("Firebase not configured")),
+    }
+    db = {
+      collection: () => ({
+        doc: () => ({
+          get: () => Promise.reject(new Error("Firebase not configured")),
+          set: () => Promise.reject(new Error("Firebase not configured")),
+        }),
+      }),
+    }
+  }
+} catch (error) {
+  console.warn("Firebase initialization failed:", error)
+  // Create mock objects to prevent crashes
+  auth = {
+    currentUser: null,
+    onAuthStateChanged: () => () => {},
+    signInWithEmailAndPassword: () => Promise.reject(new Error("Firebase not configured")),
+    signOut: () => Promise.reject(new Error("Firebase not configured")),
+  }
+  db = {
+    collection: () => ({
+      doc: () => ({
+        get: () => Promise.reject(new Error("Firebase not configured")),
+        set: () => Promise.reject(new Error("Firebase not configured")),
+      }),
+    }),
+  }
+}
+
+export { auth, db }
 export default app
