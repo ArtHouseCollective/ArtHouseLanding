@@ -173,6 +173,16 @@ export default function Page() {
   const [adminCheckComplete, setAdminCheckComplete] = useState(false)
   const router = useRouter()
 
+  // Add client-side environment variable debugging
+  useEffect(() => {
+    console.log("Client env check:", {
+      apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY ? "FOUND" : "MISSING",
+      authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN ? "FOUND" : "MISSING",
+      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ? "FOUND" : "MISSING",
+      appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID ? "FOUND" : "MISSING",
+    })
+  }, [])
+
   // Check authentication state and admin status
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
