@@ -40,6 +40,7 @@
     "clsx": "^2.1.1",
     "cmdk": "latest",
     "embla-carousel-react": "latest",
+    "firebase": "latest",
     "firebase-admin": "latest",
     "input-otp": "latest",
     "lucide-react": "^0.454.0",

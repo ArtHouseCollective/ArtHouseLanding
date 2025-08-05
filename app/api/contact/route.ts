@@ -12,6 +12,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Name, email, and message are required" }, { status: 400 })
     }
 
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      return NextResponse.json({ error: "Invalid email format" }, { status: 400 })
+    }
+
+    console.log("Processing contact form submission:", { name, email, messageLength: message.length })
+
+    // Check if Resend API key is configured
+    if (!process.env.RESEND_API_KEY) {
+      console.error("RESEND_API_KEY not configured")
+      return NextResponse.json({ error: "Email service not configured" }, { status: 500 })
+    }
+
     // Send email notification to ArtHouse team
     const { data, error } = await resend.emails.send({
       from: "ArtHouse Contact <noreply@arthousecollective.xyz>",
@@ -58,11 +72,11 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error("Resend error:", error)
-      return NextResponse.json({ error: "Failed to send email" }, { status: 500 })
+      return NextResponse.json({ error: "Failed to send email. Please try again." }, { status: 500 })
     }
 
     // Log successful submission
-    console.log("Contact form submission:", {
+    console.log("Contact form submission successful:", {
       name,
       email,
       messageLength: message.length,
@@ -76,6 +90,11 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error("Contact form error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json(
+      {
+        error: "Failed to process contact form. Please try again.",
+      },
+      { status: 500 },
+    )
   }
 }

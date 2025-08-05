@@ -20,19 +20,52 @@ export function EmailDialog({ isOpen, onClose, initialEmail = "" }: EmailDialogP
 
   const handleInviteSubmit = async (e: FormEvent) => {
     e.preventDefault()
+
+    if (!email.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter your email address.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      toast({
+        title: "Error",
+        description: "Please enter a valid email address.",
+        variant: "destructive",
+      })
+      return
+    }
+
     setIsLoading(true)
+
     try {
+      console.log("Submitting email subscription:", email)
+
       const response = await fetch("/api/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email: email.trim() }),
       })
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to subscribe.")
+      let responseData
+      try {
+        const responseText = await response.text()
+        responseData = responseText ? JSON.parse(responseText) : {}
+      } catch (parseError) {
+        console.error("Failed to parse response:", parseError)
+        throw new Error("Invalid server response")
       }
 
+      if (!response.ok) {
+        throw new Error(responseData.error || `Server error: ${response.status}`)
+      }
+
+      console.log("Email subscription successful:", responseData)
       setIsSubmitted(true)
       toast({
         title: "Success!",
@@ -40,7 +73,7 @@ export function EmailDialog({ isOpen, onClose, initialEmail = "" }: EmailDialogP
         className: "bg-green-500 text-white",
       })
     } catch (error: any) {
-      console.error("Error inviting:", error)
+      console.error("Error submitting email:", error)
       toast({
         title: "Error",
         description: error.message || "Something went wrong. Please try again.",
@@ -51,8 +84,14 @@ export function EmailDialog({ isOpen, onClose, initialEmail = "" }: EmailDialogP
     }
   }
 
+  const handleClose = () => {
+    setIsSubmitted(false)
+    setEmail("")
+    onClose()
+  }
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[425px] bg-zinc-900 text-white border-zinc-700 [&~div]:bg-black/90">
         <DialogHeader>
           <DialogTitle className="text-white">Interested in ArtHouse?</DialogTitle>
@@ -87,7 +126,7 @@ export function EmailDialog({ isOpen, onClose, initialEmail = "" }: EmailDialogP
             </div>
             <h3 className="text-xl font-semibold text-white mb-2">Email Received!</h3>
             <p className="text-zinc-400">Check your inbox to confirm your subscription.</p>
-            <Button onClick={onClose} className="mt-6 bg-cobalt-600 hover:bg-cobalt-700 text-white">
+            <Button onClick={handleClose} className="mt-6 bg-cobalt-600 hover:bg-cobalt-700 text-white">
               Close
             </Button>
           </div>

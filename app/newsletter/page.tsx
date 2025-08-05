@@ -52,14 +52,16 @@ export default function NewsletterPage() {
       try {
         const response = await fetch("/api/newsletter-posts")
         if (!response.ok) {
-          throw new Error("Failed to fetch posts")
+          const errorData = await response.json()
+          console.error("API Error:", errorData)
+          throw new Error(errorData.error || "Failed to fetch posts")
         }
         const data: NewsletterResponse = await response.json()
         console.log("Received posts data:", data)
         setPosts(data.data || [])
       } catch (error) {
         console.error("Error fetching posts:", error)
-        setPostsError("Unable to load newsletter posts")
+        setPostsError(error instanceof Error ? error.message : "Unable to load newsletter posts")
       } finally {
         setPostsLoading(false)
       }

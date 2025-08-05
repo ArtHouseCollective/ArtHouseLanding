@@ -6,6 +6,11 @@ import { Input } from "@/components/ui/input"
 import { EmailDialog } from "@/components/email-dialog"
 import Image from "next/image"
 import Link from "next/link"
+import { Menu, X } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { RetroNav } from "@/components/retro-nav"
+import { onAuthStateChanged } from "firebase/auth"
+import { auth } from "@/lib/firebase-client"
 
 const creators = [
   {
@@ -161,6 +166,20 @@ export default function Page() {
   const [referralCode, setReferralCode] = useState<string | null>(null)
   const [foundersCount, setFoundersCount] = useState(50)
   const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [user, setUser] = useState<any>(null)
+  const [isAuthLoading, setIsAuthLoading] = useState(true)
+  const router = useRouter()
+
+  // Check authentication state
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user)
+      setIsAuthLoading(false)
+    })
+
+    return () => unsubscribe()
+  }, [])
 
   // Capture referral code from URL
   useEffect(() => {
@@ -193,7 +212,10 @@ export default function Page() {
       const data = await response.json()
 
       if (response.ok) {
-        setIsSubmitted(true)
+        // Store email for the application form
+        localStorage.setItem("applicationEmail", email)
+        // Redirect to application page
+        router.push("/apply")
       } else {
         setError(data.error || "Something went wrong. Please try again.")
       }
@@ -204,13 +226,70 @@ export default function Page() {
     }
   }
 
+  const handleApplyClick = () => {
+    router.push("/apply")
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: "smooth" })
+    }, 100)
+  }
+
+  const handleHomeClick = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
+
+  const handleFooterNavigation = (href: string) => {
+    router.push(href)
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: "smooth" })
+    }, 100)
+  }
+
   const creatorsRow1 = creators.filter((_, i) => i % 2 === 0)
   const creatorsRow2 = creators.filter((_, i) => i % 2 !== 0)
 
   return (
     <div className="min-h-screen bg-black text-white relative">
+      {/* Retro Navigation */}
+      <RetroNav />
+
+      {/* Mobile Menu */}
+      <div className="md:hidden fixed top-4 right-4 z-50">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="text-white hover:bg-zinc-800"
+        >
+          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </Button>
+      </div>
+
+      {isMobileMenuOpen && (
+        <div className="md:hidden fixed inset-0 bg-black/95 backdrop-blur-sm z-40 flex items-center justify-center">
+          <div className="text-center space-y-8">
+            <Link href="/discover" className="block text-2xl font-mono text-white hover:text-zinc-300">
+              [ Discover ]
+            </Link>
+            <Link href="/newsletter" className="block text-2xl font-mono text-white hover:text-zinc-300">
+              [ Newsletter ]
+            </Link>
+            <Link href="/contact" className="block text-2xl font-mono text-white hover:text-zinc-300">
+              [ Contact ]
+            </Link>
+            {!user && (
+              <Link href="/apply" className="block text-2xl font-mono text-white hover:text-zinc-300">
+                [ Apply ]
+              </Link>
+            )}
+            <Link href="/login" className="block text-2xl font-mono text-white hover:text-zinc-300">
+              [ Login ]
+            </Link>
+          </div>
+        </div>
+      )}
+
       {/* Hero Section */}
-      <div className="min-h-screen flex flex-col items-center justify-center px-4 relative">
+      <div className="min-h-screen flex flex-col items-center justify-center px-4 relative pt-20">
         <div className="absolute inset-0 bg-gradient-to-br from-zinc-900 via-black to-zinc-900" />
         <div className="absolute inset-0 bg-gradient-radial from-zinc-800/20 via-transparent to-black/40" />
 
@@ -238,43 +317,61 @@ export default function Page() {
             )}
           </div>
 
-          <div className="w-full max-w-md mx-auto">
-            {!isSubmitted ? (
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="relative">
-                  <Input
-                    type="email"
-                    placeholder="Enter your email..."
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
+          {/* Only show email form if user is not logged in */}
+          {!isAuthLoading && !user && (
+            <div className="w-full max-w-md mx-auto">
+              {!isSubmitted ? (
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="relative">
+                    <Input
+                      type="email"
+                      placeholder="Enter your email..."
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      disabled={isLoading}
+                      className="w-full px-6 py-4 text-lg bg-zinc-900/50 border-zinc-700 rounded-lg backdrop-blur-sm focus:border-white focus:ring-1 focus:ring-white transition-all duration-300 placeholder:text-zinc-500 disabled:opacity-50"
+                    />
+                  </div>
+                  {error && <p className="text-red-400 text-sm text-center">{error}</p>}
+                  <Button
+                    type="submit"
                     disabled={isLoading}
-                    className="w-full px-6 py-4 text-lg bg-zinc-900/50 border-zinc-700 rounded-lg backdrop-blur-sm focus:border-white focus:ring-1 focus:ring-white transition-all duration-300 placeholder:text-zinc-500 disabled:opacity-50"
-                  />
+                    className="w-full py-4 text-lg font-semibold bg-white text-black hover:bg-zinc-200 transition-all duration-300 rounded-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] disabled:opacity-50 disabled:transform-none"
+                  >
+                    {isLoading ? "Processing..." : "Request Access"}
+                  </Button>
+                </form>
+              ) : (
+                <div className="text-center space-y-6 animate-fade-in">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-500/20 flex items-center justify-center">
+                    <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold text-white mb-2">Thanks for signing up!</h3>
+                    <p className="text-zinc-400">{"Welcome to ArtHouse. Check your inbox for more info."}</p>
+                  </div>
                 </div>
-                {error && <p className="text-red-400 text-sm text-center">{error}</p>}
-                <Button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full py-4 text-lg font-semibold bg-white text-black hover:bg-zinc-200 transition-all duration-300 rounded-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] disabled:opacity-50 disabled:transform-none"
-                >
-                  {isLoading ? "Joining..." : "Request Invite"}
-                </Button>
-              </form>
-            ) : (
-              <div className="text-center space-y-6 animate-fade-in">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-500/20 flex items-center justify-center">
-                  <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold text-white mb-2">Thanks for signing up!</h3>
-                  <p className="text-zinc-400">{"Welcome to ArtHouse. Check your inbox for more info."}</p>
-                </div>
+              )}
+            </div>
+          )}
+
+          {/* Show welcome message if user is logged in */}
+          {user && (
+            <div className="text-center space-y-6 animate-fade-in">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-500/20 flex items-center justify-center">
+                <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
               </div>
-            )}
-          </div>
+              <div>
+                <h3 className="text-xl font-semibold text-white mb-2">Welcome back!</h3>
+                <p className="text-zinc-400">You're logged in as {user.email}</p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -385,22 +482,24 @@ export default function Page() {
         </div>
       </div>
 
-      {/* CTA Section */}
-      <div className="text-center py-12">
-        <h2 className="text-2xl md:text-3xl font-semibold text-white mb-4">Ready to Join ArtHouse?</h2>
-        <p className="text-zinc-400 mb-6">
-          Early access is invite-only. We're curating the future of creative connection.
-        </p>
-        <a
-          onClick={() => setIsEmailDialogOpen(true)}
-          className="inline-block bg-gradient-to-r from-cobalt-700 to-cobalt-800 hover:from-cobalt-600 hover:to-cobalt-700 text-white font-medium py-3 px-6 rounded-full transition cursor-pointer shadow-lg hover:shadow-xl"
-        >
-          Apply Now
-        </a>
-      </div>
+      {/* CTA Section - Only show if user is not logged in */}
+      {!isAuthLoading && !user && (
+        <div className="text-center py-12">
+          <h2 className="text-2xl md:text-3xl font-semibold text-white mb-4">Ready to Join ArtHouse?</h2>
+          <p className="text-zinc-400 mb-6">
+            Early access is invite-only. We're curating the future of creative connection.
+          </p>
+          <Button
+            onClick={handleApplyClick}
+            className="bg-gradient-to-r from-cobalt-700 to-cobalt-800 hover:from-cobalt-600 hover:to-cobalt-700 text-white font-medium py-3 px-6 rounded-full transition shadow-lg hover:shadow-xl"
+          >
+            Apply Now
+          </Button>
+        </div>
+      )}
 
-      {/* Founders Circle Badge */}
-      <div className="fixed bottom-6 right-6 z-50">
+      {/* Founders Circle Badge - Fixed positioning for mobile */}
+      <div className="fixed bottom-20 md:bottom-6 right-6 z-40">
         <div className="bg-black border border-zinc-700 rounded-full px-4 py-2 shadow-lg backdrop-blur-sm">
           <div className="flex items-center space-x-2">
             <span className="text-lg">🪩</span>
@@ -410,20 +509,38 @@ export default function Page() {
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="py-8 px-4">
-        <div className="flex justify-center space-x-6 text-sm text-zinc-500">
-          <Link href="/newsletter" className="hover:text-white transition-colors duration-300">
-            Newsletter
-          </Link>
-          <span>·</span>
-          <Link href="/privacy" className="hover:text-white transition-colors duration-300">
-            Privacy
-          </Link>
-          <span>·</span>
-          <Link href="/contact" className="hover:text-white transition-colors duration-300">
-            Contact
-          </Link>
+      {/* Updated Footer */}
+      <footer className="border-t border-zinc-800 py-12 px-4 pb-24 md:pb-8">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="mb-4 md:mb-0 cursor-pointer" onClick={handleHomeClick}>
+              <h3 className="text-2xl font-bold text-white hover:text-zinc-300 transition-colors">ArtHouse</h3>
+              <p className="text-zinc-400">Where bold creatives meet.</p>
+            </div>
+            <div className="flex space-x-6">
+              <button
+                onClick={() => handleFooterNavigation("/newsletter")}
+                className="text-zinc-400 hover:text-white transition-colors"
+              >
+                Newsletter
+              </button>
+              <button
+                onClick={() => handleFooterNavigation("/privacy")}
+                className="text-zinc-400 hover:text-white transition-colors"
+              >
+                Privacy
+              </button>
+              <button
+                onClick={() => handleFooterNavigation("/contact")}
+                className="text-zinc-400 hover:text-white transition-colors"
+              >
+                Contact
+              </button>
+            </div>
+          </div>
+          <div className="mt-8 pt-8 border-t border-zinc-800 text-center">
+            <p className="text-zinc-500 text-sm">© 2024 ArtHouse. All rights reserved.</p>
+          </div>
         </div>
       </footer>
 
