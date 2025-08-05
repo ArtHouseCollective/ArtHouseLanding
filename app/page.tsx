@@ -312,24 +312,6 @@ export default function Page() {
         </div>
       )}
 
-      {/* Firebase Configuration Warning - Only show in development */}
-      {process.env.NODE_ENV === "development" && !isFirebaseConfigured && (
-        <div className="fixed top-4 left-4 z-50 bg-red-900/90 text-white p-3 text-xs rounded border border-red-500 max-w-sm">
-          <div className="font-bold mb-1">⚠️ Firebase Not Configured</div>
-          <div className="text-red-200">Add Firebase environment variables to enable authentication</div>
-        </div>
-      )}
-
-      {/* Debug info - remove this after testing */}
-      {process.env.NODE_ENV === "development" && (
-        <div className="fixed top-20 left-4 z-50 bg-black/80 text-white p-2 text-xs rounded">
-          <div>Firebase: {isFirebaseConfigured ? "✅ Configured" : "❌ Not Configured"}</div>
-          <div>User: {user?.email || "None"}</div>
-          <div>Admin: {isAdmin ? "Yes" : "No"}</div>
-          <div>Check Complete: {adminCheckComplete ? "Yes" : "No"}</div>
-        </div>
-      )}
-
       {/* Mobile Menu */}
       <div className="md:hidden fixed top-4 right-4 z-50">
         <Button

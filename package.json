@@ -6,6 +6,7 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "next lint",
+    "set-admin": "node scripts/set-admin.js",
     "start": "next start"
   },
   "dependencies": {
