@@ -86,7 +86,7 @@ export default function ContactPage() {
           {/* Heading */}
           <div className="text-center space-y-4">
             <h1 className="text-4xl md:text-5xl font-bold text-white">Contact Us</h1>
-            <p className="text-lg text-zinc-400 font-light">Get in touch with the ArtHouse Team!</p>
+            <p className="text-lg text-zinc-400 font-light">Get in touch with the ArtHouse Team.</p>
           </div>
 
           {/* Contact Form */}
