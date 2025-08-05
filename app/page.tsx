@@ -10,7 +10,7 @@ import { Menu, X, Settings } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { RetroNav } from "@/components/retro-nav"
 import { onAuthStateChanged } from "firebase/auth"
-import { auth } from "@/lib/firebase-client"
+import { auth, isFirebaseConfigured } from "@/lib/firebase-client"
 
 const creators = [
   {
@@ -173,24 +173,16 @@ export default function Page() {
   const [adminCheckComplete, setAdminCheckComplete] = useState(false)
   const router = useRouter()
 
-  // Add client-side environment variable debugging
-  useEffect(() => {
-    console.log("Client env check:", {
-      apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY ? "FOUND" : "MISSING",
-      authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN ? "FOUND" : "MISSING",
-      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ? "FOUND" : "MISSING",
-      appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID ? "FOUND" : "MISSING",
-    })
-  }, [])
-
   // Check authentication state and admin status
   useEffect(() => {
+    console.log("🔥 Setting up auth state listener, Firebase configured:", isFirebaseConfigured)
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      console.log("Auth state changed:", user?.email)
+      console.log("🔥 Auth state changed:", user?.email || "no user")
       setUser(user)
 
-      if (user) {
-        console.log("Checking admin status for:", user.email)
+      if (user && isFirebaseConfigured) {
+        console.log("🔥 Checking admin status for:", user.email)
         // Check if user is admin
         try {
           const response = await fetch("/api/check-approval", {
@@ -201,28 +193,28 @@ export default function Page() {
             body: JSON.stringify({ email: user.email, uid: user.uid }),
           })
 
-          console.log("Admin check response status:", response.status)
+          console.log("🔥 Admin check response status:", response.status)
 
           if (response.ok) {
             const responseText = await response.text()
-            console.log("Admin check response text:", responseText)
+            console.log("🔥 Admin check response text:", responseText)
 
             if (responseText) {
               try {
                 const data = JSON.parse(responseText)
-                console.log("Admin check data:", data)
+                console.log("🔥 Admin check data:", data)
                 const adminStatus = data.isAdmin || false
-                console.log("Setting admin status to:", adminStatus)
+                console.log("🔥 Setting admin status to:", adminStatus)
                 setIsAdmin(adminStatus)
               } catch (parseError) {
-                console.error("Failed to parse admin response:", parseError)
+                console.error("❌ Failed to parse admin response:", parseError)
               }
             }
           } else {
-            console.error("Admin check failed with status:", response.status)
+            console.error("❌ Admin check failed with status:", response.status)
           }
         } catch (error) {
-          console.error("Admin check error:", error)
+          console.error("❌ Admin check error:", error)
         }
       } else {
         setIsAdmin(false)
@@ -301,15 +293,13 @@ export default function Page() {
   const creatorsRow1 = creators.filter((_, i) => i % 2 === 0)
   const creatorsRow2 = creators.filter((_, i) => i % 2 !== 0)
 
-  console.log("Render - isAdmin:", isAdmin, "adminCheckComplete:", adminCheckComplete, "user:", user?.email)
-
   return (
     <div className="min-h-screen bg-black text-white relative">
       {/* Retro Navigation */}
       <RetroNav />
 
-      {/* Admin Button - Fixed position with debugging */}
-      {adminCheckComplete && isAdmin && (
+      {/* Admin Button - Only show if Firebase is configured and user is admin */}
+      {isFirebaseConfigured && adminCheckComplete && isAdmin && (
         <div className="fixed top-4 left-4 z-50">
           <Button
             onClick={() => router.push("/admin/applications")}
@@ -322,9 +312,18 @@ export default function Page() {
         </div>
       )}
 
+      {/* Firebase Configuration Warning - Only show in development */}
+      {process.env.NODE_ENV === "development" && !isFirebaseConfigured && (
+        <div className="fixed top-4 left-4 z-50 bg-red-900/90 text-white p-3 text-xs rounded border border-red-500 max-w-sm">
+          <div className="font-bold mb-1">⚠️ Firebase Not Configured</div>
+          <div className="text-red-200">Add Firebase environment variables to enable authentication</div>
+        </div>
+      )}
+
       {/* Debug info - remove this after testing */}
       {process.env.NODE_ENV === "development" && (
         <div className="fixed top-20 left-4 z-50 bg-black/80 text-white p-2 text-xs rounded">
+          <div>Firebase: {isFirebaseConfigured ? "✅ Configured" : "❌ Not Configured"}</div>
           <div>User: {user?.email || "None"}</div>
           <div>Admin: {isAdmin ? "Yes" : "No"}</div>
           <div>Check Complete: {adminCheckComplete ? "Yes" : "No"}</div>
@@ -363,7 +362,7 @@ export default function Page() {
             <Link href="/login" className="block text-2xl font-mono text-white hover:text-zinc-300">
               [ Login ]
             </Link>
-            {isAdmin && (
+            {isFirebaseConfigured && isAdmin && (
               <Link href="/admin/applications" className="block text-2xl font-mono text-red-400 hover:text-red-300">
                 [ Admin Panel ]
               </Link>
@@ -443,7 +442,7 @@ export default function Page() {
           )}
 
           {/* Show welcome message if user is logged in */}
-          {user && (
+          {user && isFirebaseConfigured && (
             <div className="text-center space-y-6 animate-fade-in">
               <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-500/20 flex items-center justify-center">
                 <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">

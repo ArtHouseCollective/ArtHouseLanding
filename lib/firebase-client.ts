@@ -2,13 +2,23 @@ import { initializeApp, getApps } from "firebase/app"
 import { getAuth } from "firebase/auth"
 import { getFirestore } from "firebase/firestore"
 
+// Debug environment variables
+console.log("Firebase env vars check:", {
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY ? "✅ FOUND" : "❌ MISSING",
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN ? "✅ FOUND" : "❌ MISSING",
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ? "✅ FOUND" : "❌ MISSING",
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET ? "✅ FOUND" : "❌ MISSING",
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID ? "✅ FOUND" : "❌ MISSING",
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID ? "✅ FOUND" : "❌ MISSING",
+})
+
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "demo-api-key",
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "demo-project.firebaseapp.com",
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "demo-project",
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "demo-project.appspot.com",
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "123456789",
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:123456789:web:abcdef123456",
 }
 
 // Validate required Firebase config
@@ -24,48 +34,109 @@ const missingVars = requiredEnvVars.filter((varName) => {
   return !value || value.trim() === ""
 })
 
-// Only log warning instead of throwing error to prevent white screen
-if (missingVars.length > 0) {
-  console.warn("Missing Firebase environment variables:", missingVars)
-  console.warn("Firebase features will be disabled until environment variables are configured")
+const isFirebaseConfigured = missingVars.length === 0
+
+if (!isFirebaseConfigured) {
+  console.warn("🔥 Firebase not configured - missing environment variables:", missingVars)
+  console.warn("🔧 Add these environment variables to your Vercel deployment:")
+  missingVars.forEach((varName) => {
+    console.warn(`   ${varName}=your_value_here`)
+  })
 }
 
-// Create comprehensive mock objects
-const createMockAuth = () => ({
-  currentUser: null,
-  onAuthStateChanged: (callback: any) => {
-    // Call callback immediately with null user
-    setTimeout(() => callback(null), 0)
-    return () => {} // unsubscribe function
-  },
-  signInWithEmailAndPassword: () => Promise.reject(new Error("Firebase not configured")),
-  createUserWithEmailAndPassword: () => Promise.reject(new Error("Firebase not configured")),
-  signOut: () => Promise.reject(new Error("Firebase not configured")),
-  updateProfile: () => Promise.reject(new Error("Firebase not configured")),
-})
+// Create comprehensive mock objects for when Firebase is not configured
+const createMockAuth = () => {
+  const mockUser = null
+
+  return {
+    currentUser: mockUser,
+    onAuthStateChanged: (callback: (user: any) => void) => {
+      console.log("🔥 Mock Firebase: onAuthStateChanged called")
+      // Call callback immediately with null user
+      setTimeout(() => callback(null), 100)
+      return () => {} // unsubscribe function
+    },
+    signInWithEmailAndPassword: (email: string, password: string) => {
+      console.log("🔥 Mock Firebase: signInWithEmailAndPassword called")
+      return Promise.reject(new Error("Firebase not configured - please add environment variables"))
+    },
+    createUserWithEmailAndPassword: (email: string, password: string) => {
+      console.log("🔥 Mock Firebase: createUserWithEmailAndPassword called")
+      return Promise.reject(new Error("Firebase not configured - please add environment variables"))
+    },
+    signOut: () => {
+      console.log("🔥 Mock Firebase: signOut called")
+      return Promise.reject(new Error("Firebase not configured - please add environment variables"))
+    },
+    sendPasswordResetEmail: (email: string) => {
+      console.log("🔥 Mock Firebase: sendPasswordResetEmail called")
+      return Promise.reject(new Error("Firebase not configured - please add environment variables"))
+    },
+    updateProfile: () => {
+      console.log("🔥 Mock Firebase: updateProfile called")
+      return Promise.reject(new Error("Firebase not configured - please add environment variables"))
+    },
+  }
+}
 
 const createMockFirestore = () => ({
-  collection: () => ({
-    doc: () => ({
-      get: () => Promise.reject(new Error("Firebase not configured")),
-      set: () => Promise.reject(new Error("Firebase not configured")),
-      update: () => Promise.reject(new Error("Firebase not configured")),
-      delete: () => Promise.reject(new Error("Firebase not configured")),
-      onSnapshot: () => () => {}, // unsubscribe function
-    }),
-    add: () => Promise.reject(new Error("Firebase not configured")),
-    where: () => ({
-      get: () => Promise.reject(new Error("Firebase not configured")),
-      onSnapshot: () => () => {},
-    }),
-    orderBy: () => ({
-      get: () => Promise.reject(new Error("Firebase not configured")),
-      limit: () => ({
-        get: () => Promise.reject(new Error("Firebase not configured")),
+  collection: (path: string) => {
+    console.log("🔥 Mock Firestore: collection called with path:", path)
+    return {
+      doc: (id?: string) => ({
+        get: () => {
+          console.log("🔥 Mock Firestore: doc.get called")
+          return Promise.reject(new Error("Firebase not configured - please add environment variables"))
+        },
+        set: (data: any) => {
+          console.log("🔥 Mock Firestore: doc.set called")
+          return Promise.reject(new Error("Firebase not configured - please add environment variables"))
+        },
+        update: (data: any) => {
+          console.log("🔥 Mock Firestore: doc.update called")
+          return Promise.reject(new Error("Firebase not configured - please add environment variables"))
+        },
+        delete: () => {
+          console.log("🔥 Mock Firestore: doc.delete called")
+          return Promise.reject(new Error("Firebase not configured - please add environment variables"))
+        },
+        onSnapshot: (callback: any) => {
+          console.log("🔥 Mock Firestore: doc.onSnapshot called")
+          return () => {} // unsubscribe function
+        },
       }),
-    }),
-    get: () => Promise.reject(new Error("Firebase not configured")),
-  }),
+      add: (data: any) => {
+        console.log("🔥 Mock Firestore: collection.add called")
+        return Promise.reject(new Error("Firebase not configured - please add environment variables"))
+      },
+      where: (field: string, operator: any, value: any) => ({
+        get: () => {
+          console.log("🔥 Mock Firestore: where.get called")
+          return Promise.reject(new Error("Firebase not configured - please add environment variables"))
+        },
+        onSnapshot: (callback: any) => {
+          console.log("🔥 Mock Firestore: where.onSnapshot called")
+          return () => {}
+        },
+      }),
+      orderBy: (field: string, direction?: "asc" | "desc") => ({
+        get: () => {
+          console.log("🔥 Mock Firestore: orderBy.get called")
+          return Promise.reject(new Error("Firebase not configured - please add environment variables"))
+        },
+        limit: (limitCount: number) => ({
+          get: () => {
+            console.log("🔥 Mock Firestore: orderBy.limit.get called")
+            return Promise.reject(new Error("Firebase not configured - please add environment variables"))
+          },
+        }),
+      }),
+      get: () => {
+        console.log("🔥 Mock Firestore: collection.get called")
+        return Promise.reject(new Error("Firebase not configured - please add environment variables"))
+      },
+    }
+  },
 })
 
 // Initialize Firebase only if we have the required config
@@ -74,21 +145,23 @@ let auth: any = null
 let db: any = null
 
 try {
-  if (missingVars.length === 0) {
+  if (isFirebaseConfigured) {
+    console.log("🔥 Initializing Firebase with real config...")
     app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
     auth = getAuth(app)
     db = getFirestore(app)
+    console.log("✅ Firebase initialized successfully")
   } else {
-    // Create comprehensive mock objects to prevent crashes
+    console.log("🔥 Using mock Firebase objects...")
     auth = createMockAuth()
     db = createMockFirestore()
   }
 } catch (error) {
-  console.warn("Firebase initialization failed:", error)
-  // Create comprehensive mock objects to prevent crashes
+  console.error("❌ Firebase initialization failed:", error)
+  console.log("🔥 Falling back to mock Firebase objects...")
   auth = createMockAuth()
   db = createMockFirestore()
 }
 
-export { auth, db }
+export { auth, db, isFirebaseConfigured }
 export default app
