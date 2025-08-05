@@ -30,6 +30,44 @@ if (missingVars.length > 0) {
   console.warn("Firebase features will be disabled until environment variables are configured")
 }
 
+// Create comprehensive mock objects
+const createMockAuth = () => ({
+  currentUser: null,
+  onAuthStateChanged: (callback: any) => {
+    // Call callback immediately with null user
+    setTimeout(() => callback(null), 0)
+    return () => {} // unsubscribe function
+  },
+  signInWithEmailAndPassword: () => Promise.reject(new Error("Firebase not configured")),
+  createUserWithEmailAndPassword: () => Promise.reject(new Error("Firebase not configured")),
+  signOut: () => Promise.reject(new Error("Firebase not configured")),
+  updateProfile: () => Promise.reject(new Error("Firebase not configured")),
+})
+
+const createMockFirestore = () => ({
+  collection: () => ({
+    doc: () => ({
+      get: () => Promise.reject(new Error("Firebase not configured")),
+      set: () => Promise.reject(new Error("Firebase not configured")),
+      update: () => Promise.reject(new Error("Firebase not configured")),
+      delete: () => Promise.reject(new Error("Firebase not configured")),
+      onSnapshot: () => () => {}, // unsubscribe function
+    }),
+    add: () => Promise.reject(new Error("Firebase not configured")),
+    where: () => ({
+      get: () => Promise.reject(new Error("Firebase not configured")),
+      onSnapshot: () => () => {},
+    }),
+    orderBy: () => ({
+      get: () => Promise.reject(new Error("Firebase not configured")),
+      limit: () => ({
+        get: () => Promise.reject(new Error("Firebase not configured")),
+      }),
+    }),
+    get: () => Promise.reject(new Error("Firebase not configured")),
+  }),
+})
+
 // Initialize Firebase only if we have the required config
 let app: any = null
 let auth: any = null
@@ -41,39 +79,15 @@ try {
     auth = getAuth(app)
     db = getFirestore(app)
   } else {
-    // Create mock objects to prevent crashes
-    auth = {
-      currentUser: null,
-      onAuthStateChanged: () => () => {},
-      signInWithEmailAndPassword: () => Promise.reject(new Error("Firebase not configured")),
-      signOut: () => Promise.reject(new Error("Firebase not configured")),
-    }
-    db = {
-      collection: () => ({
-        doc: () => ({
-          get: () => Promise.reject(new Error("Firebase not configured")),
-          set: () => Promise.reject(new Error("Firebase not configured")),
-        }),
-      }),
-    }
+    // Create comprehensive mock objects to prevent crashes
+    auth = createMockAuth()
+    db = createMockFirestore()
   }
 } catch (error) {
   console.warn("Firebase initialization failed:", error)
-  // Create mock objects to prevent crashes
-  auth = {
-    currentUser: null,
-    onAuthStateChanged: () => () => {},
-    signInWithEmailAndPassword: () => Promise.reject(new Error("Firebase not configured")),
-    signOut: () => Promise.reject(new Error("Firebase not configured")),
-  }
-  db = {
-    collection: () => ({
-      doc: () => ({
-        get: () => Promise.reject(new Error("Firebase not configured")),
-        set: () => Promise.reject(new Error("Firebase not configured")),
-      }),
-    }),
-  }
+  // Create comprehensive mock objects to prevent crashes
+  auth = createMockAuth()
+  db = createMockFirestore()
 }
 
 export { auth, db }
