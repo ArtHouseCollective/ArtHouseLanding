@@ -1,16 +1,21 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
-import { signInWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged } from "firebase/auth"
+import {
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail,
+  signOut,
+  onAuthStateChanged,
+  type User,
+} from "firebase/auth"
 import { auth } from "@/lib/firebase-client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { ArrowLeft, Loader2, LogOut, User } from "lucide-react"
+import { ArrowLeft, Loader2, LogOut, UserIcon } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 
@@ -22,13 +27,14 @@ export default function LoginPage() {
   const [isSigningOut, setIsSigningOut] = useState(false)
   const [error, setError] = useState("")
   const [resetMessage, setResetMessage] = useState("")
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [isAuthLoading, setIsAuthLoading] = useState(true)
   const router = useRouter()
 
   // Check authentication state
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      console.log("Auth state changed:", user ? "User logged in" : "User logged out")
       setUser(user)
       setIsAuthLoading(false)
     })
@@ -43,9 +49,13 @@ export default function LoginPage() {
     setResetMessage("")
 
     try {
-      // Sign in with Firebase Auth
+      console.log("Attempting to sign in with email:", email)
+
+      // Sign in with Firebase Auth using proper modular syntax
       const userCredential = await signInWithEmailAndPassword(auth, email, password)
       const user = userCredential.user
+
+      console.log("Sign in successful, checking approval status...")
 
       // Check if user is approved
       try {
@@ -76,7 +86,7 @@ export default function LoginPage() {
           } else {
             // User exists but not approved
             setError("Your application is under review. We'll notify you once it's approved.")
-            await auth.signOut()
+            await signOut(auth)
           }
         } else {
           // API error - check if it's a known admin email
@@ -87,7 +97,7 @@ export default function LoginPage() {
           } else {
             console.error("Approval check failed for regular user")
             setError("Unable to verify account status. Please try again.")
-            await auth.signOut()
+            await signOut(auth)
           }
         }
       } catch (approvalError) {
@@ -101,22 +111,38 @@ export default function LoginPage() {
           router.push("/")
         } else {
           setError("Network error. Please check your connection and try again.")
-          await auth.signOut()
+          await signOut(auth)
         }
       }
     } catch (error: any) {
       console.error("Login error:", error)
-      if (error.code === "auth/invalid-credential") {
-        setError("Invalid email or password. Please check your credentials and try again.")
-      } else if (error.code === "auth/user-not-found") {
-        setError("No account found with this email address.")
-      } else if (error.code === "auth/wrong-password") {
-        setError("Incorrect password. Please try again.")
-      } else if (error.code === "auth/too-many-requests") {
-        setError("Too many failed login attempts. Please try again later.")
-      } else {
-        setError("Login failed. Please try again.")
+
+      // Handle specific Firebase Auth errors
+      let errorMessage = "Login failed. Please try again."
+
+      if (error.code) {
+        switch (error.code) {
+          case "auth/invalid-credential":
+          case "auth/invalid-email":
+          case "auth/user-not-found":
+          case "auth/wrong-password":
+            errorMessage = "Invalid email or password. Please check your credentials and try again."
+            break
+          case "auth/too-many-requests":
+            errorMessage = "Too many failed login attempts. Please try again later."
+            break
+          case "auth/network-request-failed":
+            errorMessage = "Network error. Please check your connection and try again."
+            break
+          case "auth/user-disabled":
+            errorMessage = "This account has been disabled. Please contact support."
+            break
+          default:
+            errorMessage = `Authentication error: ${error.message}`
+        }
       }
+
+      setError(errorMessage)
     } finally {
       setIsLoading(false)
     }
@@ -137,13 +163,24 @@ export default function LoginPage() {
       setResetMessage("Password reset email sent! Check your inbox.")
     } catch (error: any) {
       console.error("Password reset error:", error)
-      if (error.code === "auth/user-not-found") {
-        setError("No account found with this email address.")
-      } else if (error.code === "auth/invalid-email") {
-        setError("Invalid email address.")
-      } else {
-        setError("Failed to send reset email. Please try again.")
+
+      let errorMessage = "Failed to send reset email. Please try again."
+
+      if (error.code) {
+        switch (error.code) {
+          case "auth/user-not-found":
+            errorMessage = "No account found with this email address."
+            break
+          case "auth/invalid-email":
+            errorMessage = "Invalid email address."
+            break
+          case "auth/too-many-requests":
+            errorMessage = "Too many requests. Please try again later."
+            break
+        }
       }
+
+      setError(errorMessage)
     } finally {
       setIsResetting(false)
     }
@@ -192,7 +229,7 @@ export default function LoginPage() {
           <Card className="bg-zinc-900/50 border-zinc-800">
             <CardHeader>
               <CardTitle className="text-white text-center flex items-center justify-center gap-2">
-                <User className="w-5 h-5" />
+                <UserIcon className="w-5 h-5" />
                 Account Status
               </CardTitle>
             </CardHeader>

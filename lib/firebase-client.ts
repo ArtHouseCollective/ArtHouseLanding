@@ -1,6 +1,6 @@
-import { initializeApp, getApps } from "firebase/app"
-import { getAuth } from "firebase/auth"
-import { getFirestore } from "firebase/firestore"
+import { initializeApp, getApps, type FirebaseApp } from "firebase/app"
+import { getAuth, type Auth } from "firebase/auth"
+import { getFirestore, type Firestore } from "firebase/firestore"
 
 // Check if we're in a browser environment
 const isBrowser = typeof window !== "undefined"
@@ -51,7 +51,7 @@ const firebaseConfig = {
 }
 
 // Create comprehensive mock objects for when Firebase is not configured
-const createMockAuth = () => {
+const createMockAuth = (): Auth => {
   return {
     currentUser: null,
     onAuthStateChanged: (callback: (user: any) => void) => {
@@ -92,106 +92,112 @@ const createMockAuth = () => {
       }
       return Promise.reject(new Error("Firebase not configured - please add environment variables"))
     },
-  }
+  } as any
 }
 
-const createMockFirestore = () => ({
-  collection: (path: string) => {
-    if (process.env.NODE_ENV === "development") {
-      console.log("🔥 Mock Firestore: collection called with path:", path)
-    }
-    return {
-      doc: (id?: string) => ({
-        get: () => {
-          if (process.env.NODE_ENV === "development") {
-            console.log("🔥 Mock Firestore: doc.get called")
-          }
-          return Promise.reject(new Error("Firebase not configured - please add environment variables"))
-        },
-        set: (data: any) => {
-          if (process.env.NODE_ENV === "development") {
-            console.log("🔥 Mock Firestore: doc.set called")
-          }
-          return Promise.reject(new Error("Firebase not configured - please add environment variables"))
-        },
-        update: (data: any) => {
-          if (process.env.NODE_ENV === "development") {
-            console.log("🔥 Mock Firestore: doc.update called")
-          }
-          return Promise.reject(new Error("Firebase not configured - please add environment variables"))
-        },
-        delete: () => {
-          if (process.env.NODE_ENV === "development") {
-            console.log("🔥 Mock Firestore: doc.delete called")
-          }
-          return Promise.reject(new Error("Firebase not configured - please add environment variables"))
-        },
-        onSnapshot: (callback: any) => {
-          if (process.env.NODE_ENV === "development") {
-            console.log("🔥 Mock Firestore: doc.onSnapshot called")
-          }
-          return () => {} // unsubscribe function
-        },
-      }),
-      add: (data: any) => {
-        if (process.env.NODE_ENV === "development") {
-          console.log("🔥 Mock Firestore: collection.add called")
-        }
-        return Promise.reject(new Error("Firebase not configured - please add environment variables"))
-      },
-      where: (field: string, operator: any, value: any) => ({
-        get: () => {
-          if (process.env.NODE_ENV === "development") {
-            console.log("🔥 Mock Firestore: where.get called")
-          }
-          return Promise.reject(new Error("Firebase not configured - please add environment variables"))
-        },
-        onSnapshot: (callback: any) => {
-          if (process.env.NODE_ENV === "development") {
-            console.log("🔥 Mock Firestore: where.onSnapshot called")
-          }
-          return () => {}
-        },
-      }),
-      orderBy: (field: string, direction?: "asc" | "desc") => ({
-        get: () => {
-          if (process.env.NODE_ENV === "development") {
-            console.log("🔥 Mock Firestore: orderBy.get called")
-          }
-          return Promise.reject(new Error("Firebase not configured - please add environment variables"))
-        },
-        limit: (limitCount: number) => ({
+const createMockFirestore = (): Firestore =>
+  ({
+    collection: (path: string) => {
+      if (process.env.NODE_ENV === "development") {
+        console.log("🔥 Mock Firestore: collection called with path:", path)
+      }
+      return {
+        doc: (id?: string) => ({
           get: () => {
             if (process.env.NODE_ENV === "development") {
-              console.log("🔥 Mock Firestore: orderBy.limit.get called")
+              console.log("🔥 Mock Firestore: doc.get called")
             }
             return Promise.reject(new Error("Firebase not configured - please add environment variables"))
           },
+          set: (data: any) => {
+            if (process.env.NODE_ENV === "development") {
+              console.log("🔥 Mock Firestore: doc.set called")
+            }
+            return Promise.reject(new Error("Firebase not configured - please add environment variables"))
+          },
+          update: (data: any) => {
+            if (process.env.NODE_ENV === "development") {
+              console.log("🔥 Mock Firestore: doc.update called")
+            }
+            return Promise.reject(new Error("Firebase not configured - please add environment variables"))
+          },
+          delete: () => {
+            if (process.env.NODE_ENV === "development") {
+              console.log("🔥 Mock Firestore: doc.delete called")
+            }
+            return Promise.reject(new Error("Firebase not configured - please add environment variables"))
+          },
+          onSnapshot: (callback: any) => {
+            if (process.env.NODE_ENV === "development") {
+              console.log("🔥 Mock Firestore: doc.onSnapshot called")
+            }
+            return () => {} // unsubscribe function
+          },
         }),
-      }),
-      get: () => {
-        if (process.env.NODE_ENV === "development") {
-          console.log("🔥 Mock Firestore: collection.get called")
-        }
-        return Promise.reject(new Error("Firebase not configured - please add environment variables"))
-      },
-    }
-  },
-})
+        add: (data: any) => {
+          if (process.env.NODE_ENV === "development") {
+            console.log("🔥 Mock Firestore: collection.add called")
+          }
+          return Promise.reject(new Error("Firebase not configured - please add environment variables"))
+        },
+        where: (field: string, operator: any, value: any) => ({
+          get: () => {
+            if (process.env.NODE_ENV === "development") {
+              console.log("🔥 Mock Firestore: where.get called")
+            }
+            return Promise.reject(new Error("Firebase not configured - please add environment variables"))
+          },
+          onSnapshot: (callback: any) => {
+            if (process.env.NODE_ENV === "development") {
+              console.log("🔥 Mock Firestore: where.onSnapshot called")
+            }
+            return () => {}
+          },
+        }),
+        orderBy: (field: string, direction?: "asc" | "desc") => ({
+          get: () => {
+            if (process.env.NODE_ENV === "development") {
+              console.log("🔥 Mock Firestore: orderBy.get called")
+            }
+            return Promise.reject(new Error("Firebase not configured - please add environment variables"))
+          },
+          limit: (limitCount: number) => ({
+            get: () => {
+              if (process.env.NODE_ENV === "development") {
+                console.log("🔥 Mock Firestore: orderBy.limit.get called")
+              }
+              return Promise.reject(new Error("Firebase not configured - please add environment variables"))
+            },
+          }),
+        }),
+        get: () => {
+          if (process.env.NODE_ENV === "development") {
+            console.log("🔥 Mock Firestore: collection.get called")
+          }
+          return Promise.reject(new Error("Firebase not configured - please add environment variables"))
+        },
+      }
+    },
+  }) as any
 
 // Initialize Firebase only if we have the required config
-let app: any = null
-let auth: any = null
-let db: any = null
+let app: FirebaseApp | null = null
+let auth: Auth
+let db: Firestore
 
 try {
   if (isFirebaseConfigured) {
     if (process.env.NODE_ENV === "development") {
       console.log("🔥 Initializing Firebase with real config...")
     }
+
+    // Initialize Firebase app
     app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
+
+    // Initialize Auth and Firestore with the app instance
     auth = getAuth(app)
     db = getFirestore(app)
+
     if (process.env.NODE_ENV === "development") {
       console.log("✅ Firebase initialized successfully")
     }
