@@ -16,6 +16,6 @@ const app = getApps().length === 0 ? initializeApp(firebaseAdminConfig) : getApp
 
 // Export the Firestore database and Auth instances
 export const db = getFirestore(app)
-export const adminAuth = getAuth(app)
+export const auth = getAuth(app)
 
 export default app
