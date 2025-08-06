@@ -487,9 +487,12 @@ export default function Page() {
                     <Image
                       src="/assets/icons/cards 2.png"
                       alt="Curated Onboarding"
-                      fill
-                      style={{ objectFit: "cover" }}
-                      className="opacity-80"
+                      width={200}
+                      height={138}
+                      className="opacity-80 object-contain"
+                      onError={(e) => {
+                        console.log("Image failed to load:", e)
+                      }}
                     />
                   </div>
                   <div className="flex-none p-6 flex items-center justify-center text-center bg-zinc-900/70 border-t border-zinc-700 w-full h-1/2">
@@ -509,9 +512,12 @@ export default function Page() {
                     <Image
                       src="/assets/icons/resonance.png"
                       alt="Swipe by Style"
-                      fill
-                      style={{ objectFit: "cover" }}
-                      className="opacity-80"
+                      width={200}
+                      height={138}
+                      className="opacity-80 object-contain"
+                      onError={(e) => {
+                        console.log("Image failed to load:", e)
+                      }}
                     />
                   </div>
                   <div className="flex-none p-6 flex items-center justify-center text-center bg-zinc-900/70 border-t border-zinc-700 w-full h-1/2">
@@ -531,9 +537,12 @@ export default function Page() {
                     <Image
                       src="/assets/icons/collective.png"
                       alt="Join Collectives"
-                      fill
-                      style={{ objectFit: "cover" }}
-                      className="opacity-80"
+                      width={200}
+                      height={138}
+                      className="opacity-80 object-contain"
+                      onError={(e) => {
+                        console.log("Image failed to load:", e)
+                      }}
                     />
                   </div>
                   <div className="flex-none p-6 flex items-center justify-center text-center bg-zinc-900/70 border-t border-zinc-700 w-full h-1/2">

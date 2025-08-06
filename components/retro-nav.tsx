@@ -11,6 +11,7 @@ const navItems = [
   { label: "Contact", href: "/contact" },
   { label: "Apply", href: "/apply" },
   { label: "Login", href: "/login" },
+  { label: "Merch", href: "/merch" },
 ]
 
 export function RetroNav() {
@@ -33,35 +34,45 @@ export function RetroNav() {
         isScrolled ? "backdrop-blur-md bg-black/90" : ""
       }`}
     >
-      <div
-        className="overflow-hidden whitespace-nowrap"
-        onMouseEnter={() => setIsPaused(true)}
-        onMouseLeave={() => setIsPaused(false)}
-      >
+      {/* Desktop Navigation */}
+      <div className="hidden md:block">
         <div
-          className="inline-flex items-center space-x-8 py-4 px-4 font-mono text-sm tracking-wider animate-marquee"
-          style={{
-            animationPlayState: isPaused ? "paused" : "running",
-          }}
+          className="overflow-hidden whitespace-nowrap"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
         >
-          {/* Duplicate the nav items for seamless loop */}
-          {[...navItems, ...navItems, ...navItems].map((item, index) => (
-            <Link
-              key={`${item.href}-${index}`}
-              href={item.href}
-              className={`text-white hover:text-zinc-300 transition-colors duration-200 hover:underline underline-offset-4 ${
-                pathname === item.href ? "text-zinc-400" : ""
-              }`}
-              onClick={() => {
-                setTimeout(() => {
-                  window.scrollTo({ top: 0, behavior: "smooth" })
-                }, 100)
-              }}
-            >
-              [ {item.label} ]
-            </Link>
-          ))}
+          <div
+            className="inline-flex items-center space-x-8 py-4 px-4 font-mono text-sm tracking-wider animate-marquee"
+            style={{
+              animationPlayState: isPaused ? "paused" : "running",
+            }}
+          >
+            {/* Duplicate the nav items for seamless loop */}
+            {[...navItems, ...navItems, ...navItems].map((item, index) => (
+              <Link
+                key={`${item.href}-${index}`}
+                href={item.href}
+                className={`text-white hover:text-zinc-300 transition-colors duration-200 hover:underline underline-offset-4 ${
+                  pathname === item.href ? "text-zinc-400" : ""
+                }`}
+                onClick={() => {
+                  setTimeout(() => {
+                    window.scrollTo({ top: 0, behavior: "smooth" })
+                  }, 100)
+                }}
+              >
+                [ {item.label} ]
+              </Link>
+            ))}
+          </div>
         </div>
+      </div>
+
+      {/* Mobile Navigation */}
+      <div className="md:hidden flex items-center justify-center py-4 px-4">
+        <Link href="/" className="text-white font-mono text-lg font-bold">
+          [ ArtHouse ]
+        </Link>
       </div>
     </nav>
   )

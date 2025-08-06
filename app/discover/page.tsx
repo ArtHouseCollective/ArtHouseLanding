@@ -5,10 +5,11 @@ import type React from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Calendar, Users, ArrowRight, Mail } from "lucide-react"
+import { Calendar, Users, ArrowRight, Mail, ShoppingBag, Star } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
 import { RetroNav } from "@/components/retro-nav"
+import Image from "next/image"
 
 export default function DiscoverPage() {
   const [email, setEmail] = useState("")
@@ -42,6 +43,52 @@ export default function DiscoverPage() {
     }
   }
 
+  const merchItems = [
+    {
+      id: "arthouse-tee-black",
+      name: "ArtHouse Essential Tee",
+      price: 45,
+      image: "/placeholder.svg?height=400&width=400",
+      description: "Premium cotton tee with embroidered ArtHouse logo",
+    },
+    {
+      id: "collective-hoodie",
+      name: "Collective Hoodie",
+      price: 85,
+      image: "/placeholder.svg?height=400&width=400",
+      description: "Oversized hoodie in premium fleece",
+    },
+    {
+      id: "director-cap",
+      name: "Director's Cap",
+      price: 35,
+      image: "/placeholder.svg?height=400&width=400",
+      description: "Structured cap with ArtHouse embroidery",
+    },
+  ]
+
+  const featuredArtist = {
+    name: "Maya Chen",
+    avatar: "/images/creators/ava-williams.jpg",
+    quote: "Creating pieces that blur the line between streetwear and cinema.",
+    items: [
+      {
+        id: "maya-film-strip-tee",
+        name: "Film Strip Longsleeve",
+        price: 65,
+        image: "/placeholder.svg?height=400&width=400",
+        description: "Limited edition longsleeve designed by Maya Chen",
+      },
+      {
+        id: "maya-viewfinder-hoodie",
+        name: "Viewfinder Hoodie",
+        price: 95,
+        image: "/placeholder.svg?height=400&width=400",
+        description: "Exclusive hoodie collaboration with Maya Chen",
+      },
+    ],
+  }
+
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Retro Navigation */}
@@ -69,7 +116,7 @@ export default function DiscoverPage() {
                 <Calendar className="w-8 h-8 text-white" />
               </div>
               <CardTitle className="text-2xl md:text-3xl font-bold text-white">Events</CardTitle>
-              <p className="text-zinc-400 text-lg">ArtHouse exclusive screenings, meetups, and events.   </p>
+              <p className="text-zinc-400 text-lg">ArtHouse exclusive screenings, meetups, and events. </p>
             </CardHeader>
             <CardContent className="text-center space-y-6">
               <div className="bg-zinc-800/50 rounded-lg p-8 border border-zinc-700/50">
@@ -123,9 +170,7 @@ export default function DiscoverPage() {
             <CardContent className="text-center space-y-6">
               <div className="bg-zinc-800/50 rounded-lg p-8 border border-zinc-700/50">
                 <h3 className="text-xl font-semibold text-white mb-4">Launching Soon</h3>
-                <p className="text-zinc-300 mb-6">
-                  Connect with like-minded creators in your area or specialty.
-                </p>
+                <p className="text-zinc-300 mb-6">Connect with like-minded creators in your area or specialty.</p>
                 <div className="space-y-4">
                   <p className="text-zinc-400">Want to host or join a Collective?</p>
                   <Button
@@ -136,6 +181,133 @@ export default function DiscoverPage() {
                       <span>Apply Here</span>
                       <ArrowRight size={16} />
                     </Link>
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      {/* Merch Section */}
+      <section id="merch" className="py-16 px-4">
+        <div className="max-w-6xl mx-auto">
+          <Card className="bg-zinc-900/50 border-zinc-800 hover:border-zinc-600 transition-all duration-300">
+            <CardHeader className="text-center pb-8">
+              <div className="w-16 h-16 mx-auto mb-4 bg-zinc-800 rounded-full flex items-center justify-center">
+                <ShoppingBag className="w-8 h-8 text-white" />
+              </div>
+              <CardTitle className="text-2xl md:text-3xl font-bold text-white">Support the Collective</CardTitle>
+              <p className="text-zinc-400 text-lg">
+                Shop cinematic, limited-run pieces designed by artists in the community.
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-12">
+              {/* Core Merch Collection */}
+              <div className="bg-zinc-800/30 rounded-2xl p-8 border border-zinc-700/30">
+                <h3 className="text-xl font-semibold text-white mb-8 text-center">Core Collection</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  {merchItems.map((item) => (
+                    <div key={item.id} className="group">
+                      <div className="bg-zinc-900/50 rounded-xl p-6 border border-zinc-700/50 hover:border-zinc-600 transition-all duration-300 hover:shadow-2xl">
+                        <div className="aspect-square mb-4 overflow-hidden rounded-lg bg-zinc-800">
+                          <Image
+                            src={item.image || "/placeholder.svg"}
+                            alt={item.name}
+                            width={400}
+                            height={400}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        </div>
+                        <h4 className="text-white font-medium mb-2">{item.name}</h4>
+                        <p className="text-zinc-400 text-sm mb-4">{item.description}</p>
+                        <div className="flex items-center justify-between">
+                          <span className="text-white font-semibold">${item.price}</span>
+                          <Button
+                            className="bg-white text-black hover:bg-zinc-200 transition-colors text-sm px-4 py-2"
+                            data-snipcart-add-to-cart
+                            data-item-id={item.id}
+                            data-item-price={item.price}
+                            data-item-url={`/merch/${item.id}`}
+                            data-item-description={item.description}
+                            data-item-name={item.name}
+                          >
+                            Add to Cart
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Featured Artist Drop */}
+              <div className="bg-zinc-800/30 rounded-2xl p-8 border border-zinc-700/30">
+                <div className="flex items-center justify-center mb-2">
+                  <Star className="w-5 h-5 text-yellow-400 mr-2" />
+                  <h3 className="text-xl font-semibold text-white">Featured Artist Drop</h3>
+                </div>
+                <p className="text-zinc-400 text-center mb-8">
+                  Exclusive merch created in collaboration with verified ArtHouse creatives.
+                </p>
+
+                {/* Artist Info */}
+                <div className="flex flex-col items-center mb-8">
+                  <div className="w-16 h-16 rounded-full overflow-hidden mb-4 border-2 border-zinc-600">
+                    <Image
+                      src={featuredArtist.avatar || "/placeholder.svg"}
+                      alt={featuredArtist.name}
+                      width={64}
+                      height={64}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <h4 className="text-white font-medium text-lg mb-2">{featuredArtist.name}</h4>
+                  <p className="text-zinc-300 text-center italic max-w-md">"{featuredArtist.quote}"</p>
+                </div>
+
+                {/* Artist Items */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                  {featuredArtist.items.map((item) => (
+                    <div key={item.id} className="group">
+                      <div className="bg-zinc-900/50 rounded-xl p-6 border border-zinc-700/50 hover:border-zinc-600 transition-all duration-300 hover:shadow-2xl">
+                        <div className="aspect-square mb-4 overflow-hidden rounded-lg bg-zinc-800">
+                          <Image
+                            src={item.image || "/placeholder.svg"}
+                            alt={item.name}
+                            width={400}
+                            height={400}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        </div>
+                        <h4 className="text-white font-medium mb-2">{item.name}</h4>
+                        <p className="text-zinc-400 text-sm mb-4">{item.description}</p>
+                        <div className="flex items-center justify-between">
+                          <span className="text-white font-semibold">${item.price}</span>
+                          <Button
+                            className="bg-white text-black hover:bg-zinc-200 transition-colors text-sm px-4 py-2"
+                            data-snipcart-add-to-cart
+                            data-item-id={item.id}
+                            data-item-price={item.price}
+                            data-item-url={`/merch/${item.id}`}
+                            data-item-description={item.description}
+                            data-item-name={item.name}
+                          >
+                            Add to Cart
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Submit Your Drop CTA */}
+                <div className="text-center">
+                  <Button
+                    className="bg-gradient-to-r from-zinc-700 to-zinc-800 hover:from-zinc-600 hover:to-zinc-700 text-white font-medium px-8 py-3 rounded-full transition shadow-lg hover:shadow-xl border border-zinc-600"
+                    disabled
+                  >
+                    Submit Your Drop (Coming Soon)
                   </Button>
                 </div>
               </div>

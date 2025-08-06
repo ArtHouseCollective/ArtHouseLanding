@@ -1,119 +1,82 @@
 "use client"
 
 import type React from "react"
+
 import { useState, useEffect } from "react"
-import {
-  signInWithEmailAndPassword,
-  sendPasswordResetEmail,
-  signOut,
-  onAuthStateChanged,
-  type User,
-} from "firebase/auth"
-import { auth } from "@/lib/firebase-client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Label } from "@/components/ui/label"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { ArrowLeft, Loader2, LogOut, UserIcon } from "lucide-react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { ArrowLeft, Eye, EyeOff } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from "firebase/auth"
+import { auth, isFirebaseConfigured } from "@/lib/firebase-client"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const [isResetting, setIsResetting] = useState(false)
-  const [isSigningOut, setIsSigningOut] = useState(false)
   const [error, setError] = useState("")
-  const [resetMessage, setResetMessage] = useState("")
-  const [user, setUser] = useState<User | null>(null)
+  const [isSignUp, setIsSignUp] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [user, setUser] = useState<any>(null)
   const [isAuthLoading, setIsAuthLoading] = useState(true)
   const router = useRouter()
 
-  // Check authentication state
+  // Check if user is already logged in
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      console.log("Auth state changed:", user ? "User logged in" : "User logged out")
-      setUser(user)
+    if (!isFirebaseConfigured) {
       setIsAuthLoading(false)
-    })
+      return
+    }
+
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      (user) => {
+        setUser(user)
+        setIsAuthLoading(false)
+        if (user) {
+          // User is already logged in, redirect to home
+          router.push("/")
+        }
+      },
+      (error) => {
+        console.error("Auth state change error:", error)
+        setIsAuthLoading(false)
+      },
+    )
 
     return () => unsubscribe()
-  }, [])
+  }, [router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (!isFirebaseConfigured) {
+      setError("Authentication service is not configured. Please contact support.")
+      return
+    }
+
     setIsLoading(true)
     setError("")
-    setResetMessage("")
 
     try {
-      console.log("Attempting to sign in with email:", email)
+      let userCredential
 
-      // Sign in with Firebase Auth using proper modular syntax
-      const userCredential = await signInWithEmailAndPassword(auth, email, password)
-      const user = userCredential.user
-
-      console.log("Sign in successful, checking approval status...")
-
-      // Check if user is approved
-      try {
-        const response = await fetch("/api/check-approval", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email: user.email, uid: user.uid }),
-        })
-
-        if (response.ok) {
-          const responseText = await response.text()
-          let data = { isApproved: false, isAdmin: false }
-
-          if (responseText) {
-            try {
-              data = JSON.parse(responseText)
-            } catch (parseError) {
-              console.error("Failed to parse approval response:", parseError)
-            }
-          }
-
-          if (data.isApproved || data.isAdmin) {
-            // User is approved or admin, redirect to home
-            console.log(`Login successful - ${data.isAdmin ? "Admin" : "Approved"} user`)
-            router.push("/")
-          } else {
-            // User exists but not approved
-            setError("Your application is under review. We'll notify you once it's approved.")
-            await signOut(auth)
-          }
-        } else {
-          // API error - check if it's a known admin email
-          const adminEmails = ["hello@arthousecollective.xyz"]
-          if (adminEmails.includes(user.email || "")) {
-            console.log("Admin login - bypassing approval check")
-            router.push("/")
-          } else {
-            console.error("Approval check failed for regular user")
-            setError("Unable to verify account status. Please try again.")
-            await signOut(auth)
-          }
-        }
-      } catch (approvalError) {
-        // Network error in approval check
-        console.error("Approval check network error:", approvalError)
-
-        // Only allow admins to bypass on network errors
-        const adminEmails = ["hello@arthousecollective.xyz"]
-        if (adminEmails.includes(user.email || "")) {
-          console.log("Admin login - bypassing network error")
-          router.push("/")
-        } else {
-          setError("Network error. Please check your connection and try again.")
-          await signOut(auth)
-        }
+      if (isSignUp) {
+        userCredential = await createUserWithEmailAndPassword(auth, email, password)
+        console.log("User created successfully:", userCredential.user.email)
+      } else {
+        userCredential = await signInWithEmailAndPassword(auth, email, password)
+        console.log("User signed in successfully:", userCredential.user.email)
       }
+
+      // Store auth state in localStorage for persistence
+      localStorage.setItem("isAuthenticated", "true")
+      localStorage.setItem("userEmail", userCredential.user.email || "")
+
+      // Redirect to home page
+      router.push("/")
     } catch (error: any) {
       console.error("Login error:", error)
 
@@ -122,23 +85,33 @@ export default function LoginPage() {
 
       if (error.code) {
         switch (error.code) {
-          case "auth/invalid-credential":
-          case "auth/invalid-email":
           case "auth/user-not-found":
+            errorMessage = "No account found with this email address."
+            break
           case "auth/wrong-password":
-            errorMessage = "Invalid email or password. Please check your credentials and try again."
+            errorMessage = "Incorrect password. Please try again."
+            break
+          case "auth/invalid-email":
+            errorMessage = "Please enter a valid email address."
+            break
+          case "auth/weak-password":
+            errorMessage = "Password should be at least 6 characters long."
+            break
+          case "auth/email-already-in-use":
+            errorMessage = "An account with this email already exists."
             break
           case "auth/too-many-requests":
-            errorMessage = "Too many failed login attempts. Please try again later."
+            errorMessage = "Too many failed attempts. Please try again later."
             break
           case "auth/network-request-failed":
-            errorMessage = "Network error. Please check your connection and try again."
-            break
-          case "auth/user-disabled":
-            errorMessage = "This account has been disabled. Please contact support."
+            errorMessage = "Network error. Please check your connection."
             break
           default:
-            errorMessage = `Authentication error: ${error.message}`
+            if (error.message && error.message.includes("_getRecaptchaConfig")) {
+              errorMessage = "Authentication service temporarily unavailable. Please try again."
+            } else {
+              errorMessage = error.message || "Authentication failed. Please try again."
+            }
         }
       }
 
@@ -148,239 +121,128 @@ export default function LoginPage() {
     }
   }
 
-  const handleResetPassword = async () => {
-    if (!email) {
-      setError("Please enter your email address first.")
-      return
-    }
-
-    setIsResetting(true)
-    setError("")
-    setResetMessage("")
-
-    try {
-      await sendPasswordResetEmail(auth, email)
-      setResetMessage("Password reset email sent! Check your inbox.")
-    } catch (error: any) {
-      console.error("Password reset error:", error)
-
-      let errorMessage = "Failed to send reset email. Please try again."
-
-      if (error.code) {
-        switch (error.code) {
-          case "auth/user-not-found":
-            errorMessage = "No account found with this email address."
-            break
-          case "auth/invalid-email":
-            errorMessage = "Invalid email address."
-            break
-          case "auth/too-many-requests":
-            errorMessage = "Too many requests. Please try again later."
-            break
-        }
-      }
-
-      setError(errorMessage)
-    } finally {
-      setIsResetting(false)
-    }
-  }
-
-  const handleSignOut = async () => {
-    setIsSigningOut(true)
-    try {
-      await signOut(auth)
-      setError("")
-      setResetMessage("")
-    } catch (error) {
-      console.error("Sign out error:", error)
-      setError("Failed to sign out. Please try again.")
-    } finally {
-      setIsSigningOut(false)
-    }
-  }
-
   // Show loading state while checking auth
   if (isAuthLoading) {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center px-4">
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-white" />
+          <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-zinc-400">Loading...</p>
         </div>
       </div>
     )
   }
 
-  // Show already logged in state
+  // Don't render login form if user is already logged in
   if (user) {
-    return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center px-4">
-        <div className="w-full max-w-md">
-          <div className="mb-8">
-            <Link href="/" className="inline-flex items-center text-zinc-400 hover:text-white transition-colors mb-6">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Home
-            </Link>
-            <h1 className="text-3xl font-bold text-white mb-2">Already Logged In</h1>
-            <p className="text-zinc-400">You're currently signed in to ArtHouse</p>
-          </div>
-
-          <Card className="bg-zinc-900/50 border-zinc-800">
-            <CardHeader>
-              <CardTitle className="text-white text-center flex items-center justify-center gap-2">
-                <UserIcon className="w-5 h-5" />
-                Account Status
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="text-center space-y-6">
-              <div className="space-y-2">
-                <p className="text-zinc-300">Signed in as:</p>
-                <p className="text-white font-medium">{user.email}</p>
-              </div>
-
-              <div className="space-y-3">
-                <Button
-                  onClick={() => router.push("/")}
-                  className="w-full bg-white text-black hover:bg-zinc-200 transition-colors"
-                >
-                  Go to Home
-                </Button>
-
-                <Button
-                  onClick={handleSignOut}
-                  disabled={isSigningOut}
-                  variant="outline"
-                  className="w-full border-zinc-600 text-zinc-300 hover:bg-zinc-800 hover:text-white bg-transparent"
-                >
-                  {isSigningOut ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Signing Out...
-                    </>
-                  ) : (
-                    <>
-                      <LogOut className="w-4 h-4 mr-2" />
-                      Sign Out
-                    </>
-                  )}
-                </Button>
-              </div>
-
-              {error && (
-                <Alert className="bg-red-500/10 border-red-500/20">
-                  <AlertDescription className="text-red-400">{error}</AlertDescription>
-                </Alert>
-              )}
-
-              <div className="text-center pt-4 border-t border-zinc-700">
-                <p className="text-zinc-500 text-sm">
-                  Want to switch accounts? Sign out first, then sign in with a different email.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    )
+    return null
   }
 
-  // Show login form for non-authenticated users
   return (
     <div className="min-h-screen bg-black text-white flex items-center justify-center px-4">
       <div className="w-full max-w-md">
-        <div className="mb-8">
-          <Link href="/" className="inline-flex items-center text-zinc-400 hover:text-white transition-colors mb-6">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Home
-          </Link>
-          <h1 className="text-3xl font-bold text-white mb-2">Welcome Back</h1>
-          <p className="text-zinc-400">Sign in to your ArtHouse account</p>
-        </div>
+        {/* Back to Home Link */}
+        <Link href="/" className="inline-flex items-center text-zinc-400 hover:text-white transition-colors mb-8">
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Home
+        </Link>
 
-        <Card className="bg-zinc-900/50 border-zinc-800">
-          <CardHeader>
-            <CardTitle className="text-white text-center">Sign In</CardTitle>
+        <Card className="bg-zinc-900/50 border-zinc-700/50 backdrop-blur-sm">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl font-bold text-white">
+              {isSignUp ? "Create Account" : "Welcome Back"}
+            </CardTitle>
+            <CardDescription className="text-zinc-400">
+              {isSignUp ? "Join the ArtHouse community" : "Sign in to your ArtHouse account"}
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-zinc-300">
+                <label htmlFor="email" className="text-sm font-medium text-zinc-300">
                   Email
-                </Label>
+                </label>
                 <Input
                   id="email"
                   type="email"
+                  placeholder="hello@arthousecollective.xyz"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="bg-zinc-800/50 border-zinc-700 text-white placeholder:text-zinc-500 focus:border-white focus:ring-1 focus:ring-white"
-                  placeholder="your@email.com"
+                  disabled={isLoading}
+                  className="bg-zinc-800/50 border-zinc-600 text-white placeholder:text-zinc-500 focus:border-white focus:ring-1 focus:ring-white"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-zinc-300">
+                <label htmlFor="password" className="text-sm font-medium text-zinc-300">
                   Password
-                </Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="bg-zinc-800/50 border-zinc-700 text-white placeholder:text-zinc-500 focus:border-white focus:ring-1 focus:ring-white"
-                  placeholder="Enter your password"
-                />
+                </label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    disabled={isLoading}
+                    className="bg-zinc-800/50 border-zinc-600 text-white placeholder:text-zinc-500 focus:border-white focus:ring-1 focus:ring-white pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition-colors"
+                    disabled={isLoading}
+                  >
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
               </div>
 
               {error && (
-                <Alert className="bg-red-500/10 border-red-500/20">
-                  <AlertDescription className="text-red-400">{error}</AlertDescription>
-                </Alert>
-              )}
-
-              {resetMessage && (
-                <Alert className="bg-green-500/10 border-green-500/20">
-                  <AlertDescription className="text-green-400">{resetMessage}</AlertDescription>
-                </Alert>
+                <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
+                  <p className="text-red-400 text-sm">{error}</p>
+                </div>
               )}
 
               <Button
                 type="submit"
-                disabled={isLoading}
-                className="w-full bg-white text-black hover:bg-zinc-200 transition-colors"
+                disabled={isLoading || !isFirebaseConfigured}
+                className="w-full bg-white text-black hover:bg-zinc-200 transition-colors py-3 font-semibold disabled:opacity-50"
               >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Signing In...
-                  </>
-                ) : (
-                  "Sign In"
-                )}
+                {isLoading ? "Processing..." : isSignUp ? "Create Account" : "Sign In"}
               </Button>
             </form>
 
-            <div className="mt-4 text-center">
+            <div className="mt-6 text-center">
               <button
-                type="button"
-                onClick={handleResetPassword}
-                disabled={isResetting}
-                className="text-zinc-400 hover:text-white text-sm transition-colors disabled:opacity-50"
+                onClick={() => setIsSignUp(!isSignUp)}
+                className="text-zinc-400 hover:text-white transition-colors text-sm"
+                disabled={isLoading}
               >
-                {isResetting ? "Sending..." : "Forgot Password?"}
+                {isSignUp ? "Already have an account? Sign in" : "Don't have an account? Apply to join"}
               </button>
             </div>
 
-            <div className="mt-6 text-center">
-              <p className="text-zinc-400 text-sm">
-                Don't have an account?{" "}
-                <Link href="/apply" className="text-white hover:underline">
-                  Apply to join
+            {!isSignUp && (
+              <div className="mt-4 text-center">
+                <Link
+                  href="/apply"
+                  className="text-zinc-400 hover:text-white transition-colors text-sm underline underline-offset-4"
+                >
+                  Don't have an account? Apply to join
                 </Link>
-              </p>
-            </div>
+              </div>
+            )}
+
+            {!isFirebaseConfigured && (
+              <div className="mt-4 bg-amber-500/10 border border-amber-500/20 rounded-lg p-3">
+                <p className="text-amber-400 text-sm text-center">
+                  Authentication service is currently unavailable. Please try again later.
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
