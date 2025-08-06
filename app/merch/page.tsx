@@ -142,7 +142,7 @@ export default function MerchPage() {
                   [ FOUNDER'S TEE ]
                 </h3>
                 <p className="text-zinc-400 font-mono text-sm tracking-wide">PREMIUM COTTON • DESIGNED FOR THE VISIONARIES   </p>
-                <p className="text-red-400 font-mono text-xs tracking-wide">LIMITED EDITION • EXPIRES NOVEMBER 11TH</p>
+                <p className="text-red-400 font-mono text-xs tracking-wide">LIMITED EDITION • EXPIRES 11/11</p>
 
                 <div className="my-6">
                   <span className="text-4xl font-mono font-bold tracking-wider">$75</span>
