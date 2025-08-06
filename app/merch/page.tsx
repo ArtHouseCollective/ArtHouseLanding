@@ -113,11 +113,11 @@ export default function MerchPage() {
         <div className="max-w-4xl mx-auto">
           {/* Back Link */}
           <Link
-            href="/discover"
+            href="/"
             className="inline-flex items-center text-zinc-400 hover:text-white transition-colors mb-12"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Discover
+            Back to Home
           </Link>
 
           {/* Product Section - Centered */}

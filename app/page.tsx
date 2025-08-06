@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { EmailDialog } from "@/components/email-dialog"
 import Image from "next/image"
 import Link from "next/link"
-import { Menu, X, Settings } from "lucide-react"
+import { Menu, X, Settings } from 'lucide-react'
 import { useRouter } from "next/navigation"
 import { RetroNav } from "@/components/retro-nav"
 import { onAuthStateChanged } from "firebase/auth"
@@ -489,7 +489,7 @@ export default function Page() {
                       alt="Curated Onboarding"
                       width={200}
                       height={138}
-                      className="opacity-80 object-contain"
+                      className="opacity-80 object-contain w-full h-full"
                       onError={(e) => {
                         console.log("Image failed to load:", e)
                       }}
@@ -514,7 +514,7 @@ export default function Page() {
                       alt="Swipe by Style"
                       width={200}
                       height={138}
-                      className="opacity-80 object-contain"
+                      className="opacity-80 object-contain w-full h-full"
                       onError={(e) => {
                         console.log("Image failed to load:", e)
                       }}
@@ -539,7 +539,7 @@ export default function Page() {
                       alt="Join Collectives"
                       width={200}
                       height={138}
-                      className="opacity-80 object-contain"
+                      className="opacity-80 object-contain w-full h-full"
                       onError={(e) => {
                         console.log("Image failed to load:", e)
                       }}
