@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { onAuthStateChanged } from "firebase/auth"
 import { auth } from "@/lib/firebase-client"
@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Compass, Home, Film, Music2, Globe, Upload } from 'lucide-react'
+import { ArrowLeft, Compass, Home, Film, Music2, Globe, Upload, Loader2 } from 'lucide-react'
 
 type IndustryId = "film_tv" | "digital" | "music"
 
@@ -23,7 +23,7 @@ const INDUSTRIES: { id: IndustryId; label: string; icon: React.ReactNode }[] = [
   { id: "music", label: "Music", icon: <Music2 className="h-4 w-4" /> },
 ]
 
-// Curated, concise role and genre sets per industry
+// Curated sets by industry
 const ROLES_BY_INDUSTRY: Record<IndustryId, string[]> = {
   film_tv: ["Director", "Producer", "Screenwriter", "Actor", "Cinematographer", "Editor", "Composer"],
   digital: ["Content Creator", "YouTuber", "Influencer", "Social Media Manager", "Video Editor", "Motion Graphics"],
@@ -35,6 +35,17 @@ const GENRES_BY_INDUSTRY: Record<IndustryId, string[]> = {
   digital: ["Vlogging", "Tutorials", "Reviews", "Gaming", "Lifestyle", "Tech", "Fashion"],
   music: ["Pop", "Hip‑Hop", "Electronic", "Rock", "Jazz", "Classical", "Soundtrack"],
 }
+
+type FieldErrors = Partial<{
+  name: string
+  email: string
+  website: string
+  industry: string
+  roles: string
+  genres: string
+  mainPhoto: string
+  demo: string
+}>
 
 export default function ApplyPage() {
   const router = useRouter()
@@ -54,21 +65,32 @@ export default function ApplyPage() {
   const [industry, setIndustry] = useState<IndustryId | "">("")
   const [roles, setRoles] = useState<string[]>([])
   const [genres, setGenres] = useState<string[]>([])
-  const [mainPhoto, setMainPhoto] = useState<File | null>(null)
-  const [demoFile, setDemoFile] = useState<File | null>(null)
 
+  // Media (local preview + uploaded URL)
+  const [mainPhoto, setMainPhoto] = useState<File | null>(null)
+  const [mainPhotoUrl, setMainPhotoUrl] = useState<string | null>(null)
+  const [demoFile, setDemoFile] = useState<File | null>(null)
+  const [demoUrl, setDemoUrl] = useState<string | null>(null)
+  const [uploadingMain, setUploadingMain] = useState(false)
+  const [uploadingDemo, setUploadingDemo] = useState(false)
+
+  // Submission + validation
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [submitError, setSubmitError] = useState<string>("")
+  const [submitSuccess, setSubmitSuccess] = useState<string>("")
+  const [errors, setErrors] = useState<FieldErrors>({})
 
-  // When admin, auto-redirect off the apply page
+  const firstErrorRef = useRef<HTMLDivElement | null>(null)
+
+  // Redirect admins away from /apply
   useEffect(() => {
     if (approvalCheckComplete && user && isAdmin) {
       router.replace("/admin/applications")
     }
   }, [approvalCheckComplete, user, isAdmin, router])
 
-  // Auth state + approval check
+  // Auth + approval check
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (u) => {
       setUser(u)
@@ -105,7 +127,7 @@ export default function ApplyPage() {
     return () => unsubscribe()
   }, [email, name])
 
-  // Computed options based on industry
+  // Computed options
   const roleOptions = useMemo(() => (industry ? ROLES_BY_INDUSTRY[industry] : []), [industry])
   const genreOptions = useMemo(() => (industry ? GENRES_BY_INDUSTRY[industry] : []), [industry])
 
@@ -113,20 +135,44 @@ export default function ApplyPage() {
   useEffect(() => {
     setRoles([])
     setGenres([])
+    setErrors((e) => ({ ...e, roles: undefined, genres: undefined }))
   }, [industry])
 
-  // Selection helpers (min 1, max 3)
-  const toggleSelection = (list: string[], setList: (val: string[]) => void, value: string) => {
-    if (list.includes(value)) {
-      setList(list.filter((v) => v !== value))
-    } else {
-      if (list.length >= 3) return // enforce max 3
-      setList([...list, value])
+  // Validations
+  const rolesAtMax = roles.length >= 3
+  const genresAtMax = genres.length >= 3
+
+  const validate = (): FieldErrors => {
+    const next: FieldErrors = {}
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+    if (!email.trim()) next.email = "Email is required."
+    else if (!emailRegex.test(email.trim())) next.email = "Enter a valid email."
+
+    if (!website.trim()) next.website = "Website / portfolio is required."
+    if (!industry) next.industry = "Choose your industry."
+    if (roles.length < 1) next.roles = "Select at least 1 role (max 3)."
+    if (genres.length < 1) next.genres = "Select at least 1 genre (max 3)."
+
+    return next
+  }
+
+  const scrollToFirstError = () => {
+    if (firstErrorRef.current) {
+      firstErrorRef.current.scrollIntoView({ behavior: "smooth", block: "center" })
     }
   }
 
-  const rolesAtMax = roles.length >= 3
-  const genresAtMax = genres.length >= 3
+  // Generic toggle helper
+  const toggleSelection = (list: string[], setList: (val: string[]) => void, value: string) => {
+    setErrors((e) => ({ ...e, roles: undefined, genres: undefined }))
+    if (list.includes(value)) {
+      setList(list.filter((v) => v !== value))
+    } else {
+      if (list.length >= 3) return
+      setList([...list, value])
+    }
+  }
 
   const canSubmit =
     !isSubmitting &&
@@ -138,15 +184,76 @@ export default function ApplyPage() {
     genres.length <= 3 &&
     email.trim().length > 0
 
+  // Upload helpers
+  async function uploadFile(kind: "main" | "demo", file: File) {
+    try {
+      const form = new FormData()
+      form.append("file", file)
+      form.append("kind", kind)
+      if (user?.uid) form.append("uid", user.uid)
+      if (email) form.append("email", email)
+
+      const res = await fetch("/api/applications/upload", {
+        method: "POST",
+        body: form,
+      })
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null)
+        throw new Error(data?.error || "Upload failed. Please try again.")
+      }
+
+      const data = (await res.json()) as { url: string; path: string }
+      if (kind === "main") setMainPhotoUrl(data.url)
+      else setDemoUrl(data.url)
+    } catch (err: any) {
+      setSubmitError(err?.message || "Upload failed. Please try again.")
+    } finally {
+      if (kind === "main") setUploadingMain(false)
+      else setUploadingDemo(false)
+    }
+  }
+
+  const handleMainPhotoChange = (f: File | null) => {
+    setMainPhoto(f)
+    setErrors((e) => ({ ...e, mainPhoto: undefined }))
+    if (f) {
+      setUploadingMain(true)
+      uploadFile("main", f)
+    } else {
+      setMainPhotoUrl(null)
+    }
+  }
+
+  const handleDemoChange = (f: File | null) => {
+    setDemoFile(f)
+    setErrors((e) => ({ ...e, demo: undefined }))
+    if (f) {
+      setUploadingDemo(true)
+      uploadFile("demo", f)
+    } else {
+      setDemoUrl(null)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!canSubmit) return
-
-    setIsSubmitting(true)
+    setSubmitSuccess("")
     setSubmitError("")
 
+    const nextErrors = validate()
+    setErrors(nextErrors)
+
+    if (Object.keys(nextErrors).length > 0) {
+      // set a ref to any container with error to scroll to
+      // we’ll attach ref to the first error container below
+      setTimeout(scrollToFirstError, 0)
+      return
+    }
+
+    setIsSubmitting(true)
+
     try {
-      // Sending metadata for uploads for now; integrate storage in a follow-up.
       const payload = {
         name,
         email,
@@ -159,8 +266,8 @@ export default function ApplyPage() {
         roles,
         genres,
         attachments: {
-          mainPhoto: mainPhoto ? { name: mainPhoto.name, size: mainPhoto.size, type: mainPhoto.type } : null,
-          demo: demoFile ? { name: demoFile.name, size: demoFile.size, type: demoFile.type } : null,
+          mainPhotoUrl: mainPhotoUrl || null,
+          demoUrl: demoUrl || null,
         },
         submittedAt: new Date().toISOString(),
       }
@@ -173,10 +280,16 @@ export default function ApplyPage() {
 
       if (!res.ok) {
         const data = await res.json().catch(() => null)
+        // Map server fieldErrors if present
+        if (data?.fieldErrors) {
+          setErrors(data.fieldErrors as FieldErrors)
+          setTimeout(scrollToFirstError, 0)
+        }
         throw new Error(data?.error || "Failed to submit application.")
       }
 
       setIsSubmitted(true)
+      setSubmitSuccess("Application submitted successfully!")
     } catch (err: any) {
       setSubmitError(err?.message || "Something went wrong submitting your application.")
     } finally {
@@ -196,10 +309,10 @@ export default function ApplyPage() {
     )
   }
 
-  // If admin, short-circuit (redirect effect above)
+  // If admin, short-circuit
   if (approvalCheckComplete && user && isAdmin) return null
 
-  // Already approved (non-admin)
+  // Approved (non-admin)
   if (user && isApproved) {
     return (
       <div className="min-h-screen bg-black text-white">
@@ -242,7 +355,7 @@ export default function ApplyPage() {
     )
   }
 
-  // Submitted success view
+  // Success state
   if (isSubmitted) {
     return (
       <div className="min-h-screen bg-black text-white">
@@ -274,11 +387,10 @@ export default function ApplyPage() {
     )
   }
 
-  // Main streamlined application form
+  // Main form
   return (
     <div className="min-h-screen bg-black text-white">
       <RetroNav />
-
       <div className="container mx-auto px-4 py-8 pt-24 max-w-3xl">
         <Button variant="ghost" onClick={() => router.push("/")} className="text-zinc-400 hover:text-white mb-8">
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -296,7 +408,7 @@ export default function ApplyPage() {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form onSubmit={handleSubmit} noValidate className="space-y-8">
           {/* Contact + Links */}
           <Card className="border border-white/20 bg-white/10 backdrop-blur-xl shadow-lg">
             <CardHeader>
@@ -304,19 +416,31 @@ export default function ApplyPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
+                <div ref={!name && errors.name ? firstErrorRef : null}>
                   <Label htmlFor="name" className="text-zinc-100">
                     Name
                   </Label>
                   <Input
                     id="name"
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="bg-white/90 text-zinc-900 placeholder:text-zinc-600 border-white/30 focus-visible:ring-2 focus-visible:ring-zinc-900/20"
+                    onChange={(e) => {
+                      setName(e.target.value)
+                      setErrors((er) => ({ ...er, name: undefined }))
+                    }}
+                    className={`bg-white/90 text-zinc-900 placeholder:text-zinc-600 border-white/30 focus-visible:ring-2 focus-visible:ring-zinc-900/20 ${
+                      errors.name ? "border-red-500 focus-visible:ring-red-500" : ""
+                    }`}
                     placeholder="Your name"
+                    aria-invalid={Boolean(errors.name)}
+                    aria-describedby={errors.name ? "name-error" : undefined}
                   />
+                  {errors.name && (
+                    <p id="name-error" className="mt-1 text-sm text-red-500">
+                      {errors.name}
+                    </p>
+                  )}
                 </div>
-                <div>
+                <div ref={errors.email ? firstErrorRef : null}>
                   <Label htmlFor="email" className="text-zinc-100">
                     Email
                   </Label>
@@ -324,26 +448,50 @@ export default function ApplyPage() {
                     id="email"
                     type="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                      setEmail(e.target.value)
+                      setErrors((er) => ({ ...er, email: undefined }))
+                    }}
                     required
-                    className="bg-white/90 text-zinc-900 placeholder:text-zinc-600 border-white/30 focus-visible:ring-2 focus-visible:ring-zinc-900/20"
+                    className={`bg-white/90 text-zinc-900 placeholder:text-zinc-600 border-white/30 focus-visible:ring-2 focus-visible:ring-zinc-900/20 ${
+                      errors.email ? "border-red-500 focus-visible:ring-red-500" : ""
+                    }`}
                     placeholder="hello@studio.com"
+                    aria-invalid={Boolean(errors.email)}
+                    aria-describedby={errors.email ? "email-error" : undefined}
                   />
+                  {errors.email && (
+                    <p id="email-error" className="mt-1 text-sm text-red-500">
+                      {errors.email}
+                    </p>
+                  )}
                 </div>
               </div>
 
-              <div>
+              <div ref={errors.website ? firstErrorRef : null}>
                 <Label htmlFor="website" className="text-zinc-100">
                   Website / Portfolio
                 </Label>
                 <Input
                   id="website"
                   value={website}
-                  onChange={(e) => setWebsite(e.target.value)}
+                  onChange={(e) => {
+                    setWebsite(e.target.value)
+                    setErrors((er) => ({ ...er, website: undefined }))
+                  }}
                   required
-                  className="bg-white/90 text-zinc-900 placeholder:text-zinc-600 border-white/30 focus-visible:ring-2 focus-visible:ring-zinc-900/20"
+                  className={`bg-white/90 text-zinc-900 placeholder:text-zinc-600 border-white/30 focus-visible:ring-2 focus-visible:ring-zinc-900/20 ${
+                    errors.website ? "border-red-500 focus-visible:ring-red-500" : ""
+                  }`}
                   placeholder="https://yourwebsite.com"
+                  aria-invalid={Boolean(errors.website)}
+                  aria-describedby={errors.website ? "website-error" : undefined}
                 />
+                {errors.website && (
+                  <p id="website-error" className="mt-1 text-sm text-red-500">
+                    {errors.website}
+                  </p>
+                )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -376,7 +524,7 @@ export default function ApplyPage() {
           </Card>
 
           {/* Industry */}
-          <Card className="border border-white/20 bg-white/10 backdrop-blur-xl shadow-lg">
+          <Card className="border border-white/20 bg-white/10 backdrop-blur-xl shadow-lg" ref={errors.industry ? firstErrorRef : null}>
             <CardHeader>
               <CardTitle className="text-white">Industry</CardTitle>
             </CardHeader>
@@ -388,13 +536,18 @@ export default function ApplyPage() {
                     <button
                       key={opt.id}
                       type="button"
-                      onClick={() => setIndustry(opt.id)}
+                      onClick={() => {
+                        setIndustry(opt.id)
+                        setErrors((er) => ({ ...er, industry: undefined }))
+                      }}
                       className={[
                         "rounded-lg border p-3 text-left transition",
                         "bg-white/80 hover:bg-white/90",
                         active ? "border-zinc-900/30 ring-1 ring-zinc-900/10" : "border-white/40",
+                        errors.industry && !active ? "outline outline-1 outline-red-500/60" : "",
                       ].join(" ")}
                       aria-pressed={active}
+                      aria-invalid={Boolean(errors.industry) && !active}
                     >
                       <div className="flex items-center gap-2">
                         <span className="text-zinc-900">{opt.icon}</span>
@@ -404,11 +557,12 @@ export default function ApplyPage() {
                   )
                 })}
               </div>
+              {errors.industry && <p className="mt-2 text-sm text-red-500">{errors.industry}</p>}
             </CardContent>
           </Card>
 
           {/* Roles */}
-          <Card className="border border-white/20 bg-white/10 backdrop-blur-xl shadow-lg">
+          <Card className="border border-white/20 bg-white/10 backdrop-blur-xl shadow-lg" ref={errors.roles ? firstErrorRef : null}>
             <CardHeader>
               <CardTitle className="text-white">Creative Roles (1–3)</CardTitle>
             </CardHeader>
@@ -437,6 +591,7 @@ export default function ApplyPage() {
                             onCheckedChange={() => toggleSelection(roles, setRoles, role)}
                             className="border-zinc-900/30 data-[state=checked]:bg-zinc-900 data-[state=checked]:border-zinc-900 data-[state=checked]:text-white"
                             disabled={disabled}
+                            aria-invalid={Boolean(errors.roles)}
                           />
                           <span className="text-sm text-zinc-900">{role}</span>
                         </label>
@@ -452,13 +607,14 @@ export default function ApplyPage() {
                       ))}
                     </div>
                   )}
+                  {errors.roles && <p className="mt-2 text-sm text-red-500">{errors.roles}</p>}
                 </>
               )}
             </CardContent>
           </Card>
 
           {/* Genres & Interests */}
-          <Card className="border border-white/20 bg-white/10 backdrop-blur-xl shadow-lg">
+          <Card className="border border-white/20 bg-white/10 backdrop-blur-xl shadow-lg" ref={errors.genres ? firstErrorRef : null}>
             <CardHeader>
               <CardTitle className="text-white">Genres & Interests (1–3)</CardTitle>
             </CardHeader>
@@ -487,6 +643,7 @@ export default function ApplyPage() {
                             onCheckedChange={() => toggleSelection(genres, setGenres, g)}
                             className="border-zinc-900/30 data-[state=checked]:bg-zinc-900 data-[state=checked]:border-zinc-900 data-[state=checked]:text-white"
                             disabled={disabled}
+                            aria-invalid={Boolean(errors.genres)}
                           />
                           <span className="text-sm text-zinc-900">{g}</span>
                         </label>
@@ -502,6 +659,7 @@ export default function ApplyPage() {
                       ))}
                     </div>
                   )}
+                  {errors.genres && <p className="mt-2 text-sm text-red-500">{errors.genres}</p>}
                 </>
               )}
             </CardContent>
@@ -514,14 +672,18 @@ export default function ApplyPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
+                <div ref={errors.mainPhoto ? firstErrorRef : null}>
                   <Label htmlFor="mainPhoto" className="text-zinc-100">
                     Main Photo
                   </Label>
                   <div className="mt-2">
                     <label className="flex items-center gap-2 rounded-md border border-white/40 bg-white/80 px-3 py-2 hover:bg-white/90 cursor-pointer">
-                      <Upload className="h-4 w-4 text-zinc-900" />
-                      <span className="text-sm text-zinc-900">Upload image</span>
+                      {uploadingMain ? (
+                        <Loader2 className="h-4 w-4 text-zinc-900 animate-spin" />
+                      ) : (
+                        <Upload className="h-4 w-4 text-zinc-900" />
+                      )}
+                      <span className="text-sm text-zinc-900">{uploadingMain ? "Uploading..." : "Upload image"}</span>
                       <input
                         id="mainPhoto"
                         type="file"
@@ -529,20 +691,17 @@ export default function ApplyPage() {
                         className="hidden"
                         onChange={(e) => {
                           const f = e.target.files?.[0] || null
-                          setMainPhoto(f)
+                          handleMainPhotoChange(f)
                         }}
+                        aria-invalid={Boolean(errors.mainPhoto)}
+                        aria-describedby={errors.mainPhoto ? "mainPhoto-error" : undefined}
                       />
                     </label>
                   </div>
                   {mainPhoto && (
                     <div className="mt-3 flex items-center gap-3">
                       <div className="h-16 w-16 rounded-md overflow-hidden bg-white/80 border border-zinc-900/10 flex items-center justify-center">
-                        <img
-                          src={URL.createObjectURL(mainPhoto) || "/placeholder.svg"
-                          }
-                          alt="Main preview"
-                          className="h-full w-full object-cover"
-                        />
+                        <img src={URL.createObjectURL(mainPhoto) || "/placeholder.svg"} alt="Main preview" className="h-full w-full object-cover" />
                       </div>
                       <div className="text-xs text-zinc-800">
                         <div className="font-medium text-zinc-900">{mainPhoto.name}</div>
@@ -550,16 +709,25 @@ export default function ApplyPage() {
                       </div>
                     </div>
                   )}
+                  {errors.mainPhoto && (
+                    <p id="mainPhoto-error" className="mt-1 text-sm text-red-500">
+                      {errors.mainPhoto}
+                    </p>
+                  )}
                 </div>
 
-                <div>
+                <div ref={errors.demo ? firstErrorRef : null}>
                   <Label htmlFor="demo" className="text-zinc-100">
                     Demo Piece
                   </Label>
                   <div className="mt-2">
                     <label className="flex items-center gap-2 rounded-md border border-white/40 bg-white/80 px-3 py-2 hover:bg-white/90 cursor-pointer">
-                      <Upload className="h-4 w-4 text-zinc-900" />
-                      <span className="text-sm text-zinc-900">Upload video or audio</span>
+                      {uploadingDemo ? (
+                        <Loader2 className="h-4 w-4 text-zinc-900 animate-spin" />
+                      ) : (
+                        <Upload className="h-4 w-4 text-zinc-900" />
+                      )}
+                      <span className="text-sm text-zinc-900">{uploadingDemo ? "Uploading..." : "Upload video or audio"}</span>
                       <input
                         id="demo"
                         type="file"
@@ -567,8 +735,10 @@ export default function ApplyPage() {
                         className="hidden"
                         onChange={(e) => {
                           const f = e.target.files?.[0] || null
-                          setDemoFile(f)
+                          handleDemoChange(f)
                         }}
+                        aria-invalid={Boolean(errors.demo)}
+                        aria-describedby={errors.demo ? "demo-error" : undefined}
                       />
                     </label>
                   </div>
@@ -591,6 +761,11 @@ export default function ApplyPage() {
                       ) : null}
                     </div>
                   )}
+                  {errors.demo && (
+                    <p id="demo-error" className="mt-1 text-sm text-red-500">
+                      {errors.demo}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -607,14 +782,29 @@ export default function ApplyPage() {
                 <p className="text-red-300">{submitError}</p>
               </div>
             )}
+            {submitSuccess && (
+              <div className="mb-4 p-4 bg-emerald-900/30 border border-emerald-700/50 rounded-lg">
+                <p className="text-emerald-300">{submitSuccess}</p>
+              </div>
+            )}
 
             <Button
               type="submit"
-              disabled={!canSubmit}
+              disabled={!canSubmit || uploadingMain || uploadingDemo}
               className="bg-white text-black hover:bg-zinc-200 font-semibold py-3 px-8 rounded-full transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? "Submitting..." : "Submit Application"}
+              {isSubmitting ? (
+                <span className="inline-flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Submitting…
+                </span>
+              ) : (
+                "Submit Application"
+              )}
             </Button>
+            {(uploadingMain || uploadingDemo) && (
+              <p className="mt-2 text-sm text-zinc-400">Please wait for uploads to finish before submitting.</p>
+            )}
           </div>
         </form>
       </div>
