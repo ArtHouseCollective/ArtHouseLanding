@@ -155,7 +155,7 @@ function CreatorCard({ creator }: { creator: Creator }) {
         </div>
       </div>
     </div>
-  )``
+  )
 }
 
 export default function Page() {
