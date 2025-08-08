@@ -1,338 +1,145 @@
 "use client"
 
 import type React from "react"
-
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Label } from "@/components/ui/label"
-import { ArrowLeft, X, Home, Compass } from 'lucide-react'
+import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
-import { RetroNav } from "@/components/retro-nav"
 import { onAuthStateChanged } from "firebase/auth"
 import { auth } from "@/lib/firebase-client"
 
-const creativeRoles = [
-  "Director",
-  "Producer",
-  "Screenwriter",
-  "Cinematographer",
-  "Editor",
-  "Sound Designer",
-  "Composer",
-  "Production Designer",
-  "Costume Designer",
-  "Makeup Artist",
-  "Actor",
-  "Voice Actor",
-  "Stunt Performer",
-  "Visual Effects Artist",
-  "Animator",
-  "Photographer",
-  "Gaffer",
-  "Script Supervisor",
-  "Location Manager",
-  "Casting Director",
-  "Music Supervisor",
-  "Colorist",
-  "Sound Mixer",
-  "Boom Operator",
-  "Camera Operator",
-  "Focus Puller",
-  "Grip",
-  "Gaffer Assistant",
-  "Set Decorator",
-  "Props Master",
-  "Wardrobe Stylist",
-  "Hair Stylist",
-  "Special Effects Coordinator",
-  "Storyboard Artist",
-  "Concept Artist",
-  "Matte Painter",
-  "Motion Graphics Designer",
-  "Title Designer",
-  "Trailer Editor",
-  "Documentary Filmmaker",
-  "Commercial Director",
-  "Music Video Director",
-  "Content Creator",
-  "Influencer",
-  "Podcaster",
-  "Streamer",
-  "Social Media Manager",
-  "Brand Strategist",
-  "Creative Director",
-  "Art Director",
-  "Graphic Designer",
-  "Web Designer",
-  "UX/UI Designer",
-  "Illustrator",
-  "3D Artist",
-  "Game Designer",
-  "Game Developer",
-  "AR/VR Developer",
-  "Interactive Media Artist",
-  "Installation Artist",
-  "Performance Artist",
-  "Theater Director",
-  "Playwright",
-  "Stage Manager",
-  "Lighting Designer",
-  "Set Designer",
-  "Choreographer",
-  "Dancer",
-  "Singer",
-  "Musician",
-  "Songwriter",
-  "Audio Engineer",
-  "Mastering Engineer",
-  "Live Sound Engineer",
-  "Tour Manager",
-  "Booking Agent",
-  "Music Producer",
-  "A&R Representative",
-  "Music Journalist",
-  "Radio Host",
-  "DJ",
-  "Event Planner",
-  "Festival Organizer",
-  "Venue Manager",
-  "Talent Agent",
-  "Entertainment Lawyer",
-  "Business Manager",
-  "Publicist",
-  "Marketing Manager",
-  "Distribution Executive",
-  "Film Festival Programmer",
-  "Film Critic",
-  "Entertainment Journalist",
-  "Blogger",
-  "YouTuber",
-  "TikTok Creator",
-  "Instagram Creator",
-  "Twitch Streamer",
-  "Voice Over Artist",
-  "Narrator",
-  "Audiobook Producer",
-  "Podcast Producer",
-  "Radio Producer",
-  "Television Producer",
-  "Showrunner",
-  "Television Writer",
-  "Television Director",
-  "News Producer",
-  "News Director",
-  "Anchor",
-  "Reporter",
-  "Correspondent",
-  "Camera Person",
-  "Video Editor",
-  "Motion Graphics Artist",
-  "Broadcast Engineer",
-  "Technical Director",
-  "Other",
+import { RetroNav } from "@/components/retro-nav"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Badge } from "@/components/ui/badge"
+import { ArrowLeft, Compass, Home, ImageIcon, Film, Music2, Globe, Upload } from 'lucide-react'
+
+type IndustryId = "film_tv" | "digital" | "music"
+
+const INDUSTRIES: { id: IndustryId; label: string; icon: React.ReactNode }[] = [
+  { id: "film_tv", label: "Film & Television", icon: <Film className="h-4 w-4" /> },
+  { id: "digital", label: "Digital Media", icon: <Globe className="h-4 w-4" /> },
+  { id: "music", label: "Music", icon: <Music2 className="h-4 w-4" /> },
 ]
 
-const genres = [
-  "Action",
-  "Adventure",
-  "Animation",
-  "Biography",
-  "Comedy",
-  "Crime",
-  "Documentary",
-  "Drama",
-  "Family",
-  "Fantasy",
-  "Film Noir",
-  "History",
-  "Horror",
-  "Music",
-  "Musical",
-  "Mystery",
-  "Romance",
-  "Sci-Fi",
-  "Short",
-  "Sport",
-  "Thriller",
-  "War",
-  "Western",
-  "Experimental",
-  "Art House",
-  "Independent",
-  "Commercial",
-  "Corporate",
-  "Educational",
-  "Industrial",
-  "Training",
-  "Promotional",
-  "Music Video",
-  "Commercial",
-  "Web Series",
-  "Podcast",
-  "Live Stream",
-  "Virtual Reality",
-  "Augmented Reality",
-  "Interactive",
-  "Gaming",
-  "Social Media",
-  "Branded Content",
-  "Influencer",
-  "Lifestyle",
-  "Travel",
-  "Food",
-  "Fashion",
-  "Beauty",
-  "Fitness",
-  "Health",
-  "Technology",
-  "Business",
-  "Finance",
-  "Real Estate",
-  "Automotive",
-  "Sports",
-  "Entertainment",
-  "News",
-  "Politics",
-  "Social Issues",
-  "Environmental",
-  "Science",
-  "Nature",
-  "Wildlife",
-  "Culture",
-  "Arts",
-  "Literature",
-  "Philosophy",
-  "Religion",
-  "Spirituality",
-  "Self-Help",
-  "Motivational",
-  "Educational",
-  "Tutorial",
-  "How-To",
-  "Review",
-  "Commentary",
-  "Analysis",
-  "Interview",
-  "Talk Show",
-  "Game Show",
-  "Reality TV",
-  "Competition",
-  "Talent Show",
-  "Variety Show",
-  "Sketch Comedy",
-  "Stand-Up Comedy",
-  "Improv",
-  "Theater",
-  "Dance",
-  "Music",
-  "Concert",
-  "Festival",
-  "Event",
-  "Conference",
-  "Workshop",
-  "Masterclass",
-  "Webinar",
-  "Live Performance",
-  "Street Performance",
-  "Flash Mob",
-  "Protest",
-  "Rally",
-  "Demonstration",
-  "Activism",
-  "Charity",
-  "Fundraising",
-  "Community",
-  "Local",
-  "Regional",
-  "National",
-  "International",
-  "Global",
-  "Other",
-]
+// Limit concise curated roles and genres to reduce clutter
+const ROLES_BY_INDUSTRY: Record<IndustryId, string[]> = {
+  film_tv: [
+    "Director",
+    "Producer",
+    "Screenwriter",
+    "Actor",
+    "Cinematographer",
+    "Editor",
+    "Composer",
+  ],
+  digital: [
+    "Content Creator",
+    "YouTuber",
+    "Influencer",
+    "Social Media Manager",
+    "Video Editor",
+    "Motion Graphics",
+  ],
+  music: [
+    "Singer",
+    "Musician",
+    "Songwriter",
+    "DJ",
+    "Music Producer",
+    "Audio Engineer",
+    "Composer",
+  ],
+}
+
+const GENRES_BY_INDUSTRY: Record<IndustryId, string[]> = {
+  film_tv: [
+    "Horror",
+    "Romance",
+    "Thriller",
+    "Drama",
+    "Comedy",
+    "Documentary",
+    "Sci‑Fi",
+    "Action",
+  ],
+  digital: [
+    "Vlogging",
+    "Tutorials",
+    "Reviews",
+    "Gaming",
+    "Lifestyle",
+    "Tech",
+    "Fashion",
+  ],
+  music: [
+    "Pop",
+    "Hip‑Hop",
+    "Electronic",
+    "Rock",
+    "Jazz",
+    "Classical",
+    "Soundtrack",
+  ],
+}
 
 export default function ApplyPage() {
+  const router = useRouter()
+
   const [user, setUser] = useState<any>(null)
   const [isAuthLoading, setIsAuthLoading] = useState(true)
   const [isApproved, setIsApproved] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
   const [approvalCheckComplete, setApprovalCheckComplete] = useState(false)
 
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    location: "",
-    website: "",
-    instagram: "",
-    linkedin: "",
-    imdb: "",
-    reel: "",
-    portfolio: "",
-    bio: "",
-    experience: "",
-    goals: "",
-    referralSource: "",
-    creativeRoles: [] as string[],
-    genres: [] as string[],
-    collaborationInterests: [] as string[],
-    availability: "",
-    equipment: "",
-    skills: "",
-    achievements: "",
-    inspiration: "",
-    challenges: "",
-    networking: "",
-    feedback: "",
-    additionalInfo: "",
-  })
+  // Streamlined form state
+  const [email, setEmail] = useState("")
+  const [name, setName] = useState("")
+  const [website, setWebsite] = useState("")
+  const [instagram, setInstagram] = useState("")
+  const [additional, setAdditional] = useState("")
+  const [industry, setIndustry] = useState<IndustryId | "">("")
+  const [roles, setRoles] = useState<string[]>([])
+  const [genres, setGenres] = useState<string[]>([])
+  const [mainPhoto, setMainPhoto] = useState<File | null>(null)
+  const [demoFile, setDemoFile] = useState<File | null>(null)
 
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitError, setSubmitError] = useState("")
   const [isSubmitted, setIsSubmitted] = useState(false)
-  const router = useRouter()
+  const [submitError, setSubmitError] = useState<string>("")
 
+  // When admin, auto-redirect off the apply page
   useEffect(() => {
     if (approvalCheckComplete && user && isAdmin) {
       router.replace("/admin/applications")
     }
   }, [approvalCheckComplete, user, isAdmin, router])
 
-  // Check authentication state and approval status
+  // Auth state + approval check
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setUser(user)
+    const unsubscribe = onAuthStateChanged(auth, async (u) => {
+      setUser(u)
 
-      if (user) {
-        // Check if user is approved or admin
+      if (u) {
         try {
-          const response = await fetch("/api/check-approval", {
+          const res = await fetch("/api/check-approval", {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ email: user.email, uid: user.uid }),
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: u.email, uid: u.uid }),
           })
-
-          if (response.ok) {
-            const responseText = await response.text()
-            if (responseText) {
-              try {
-                const data = JSON.parse(responseText)
-                setIsApproved(data.isApproved || false)
-                setIsAdmin(data.isAdmin || false)
-              } catch (parseError) {
-                console.error("Failed to parse approval response:", parseError)
-              }
+          if (res.ok) {
+            const text = await res.text()
+            if (text) {
+              const data = JSON.parse(text)
+              setIsApproved(Boolean(data.isApproved))
+              setIsAdmin(Boolean(data.isAdmin))
+              if (!email) setEmail(u.email || "")
+              if (!name && u.displayName) setName(u.displayName)
             }
           }
-        } catch (error) {
-          console.error("Approval check error:", error)
+        } catch (e) {
+          console.error("Approval check error:", e)
         }
       } else {
         setIsApproved(false)
@@ -344,79 +151,105 @@ export default function ApplyPage() {
     })
 
     return () => unsubscribe()
-  }, [])
+  }, [email, name])
 
-  // Pre-fill email from localStorage if available
+  // Computed options based on industry
+  const roleOptions = useMemo(() => (industry ? ROLES_BY_INDUSTRY[industry] : []), [industry])
+  const genreOptions = useMemo(() => (industry ? GENRES_BY_INDUSTRY[industry] : []), [industry])
+
+  // Reset dependent selections when industry changes
   useEffect(() => {
-    const storedEmail = localStorage.getItem("applicationEmail")
-    if (storedEmail && !formData.email) {
-      setFormData((prev) => ({ ...prev, email: storedEmail }))
+    setRoles([])
+    setGenres([])
+  }, [industry])
+
+  // Selection helpers (min 1, max 3)
+  const toggleSelection = (list: string[], setList: (val: string[]) => void, value: string) => {
+    if (list.includes(value)) {
+      setList(list.filter((v) => v !== value))
+    } else {
+      if (list.length >= 3) return // enforce max 3
+      setList([...list, value])
     }
-  }, [formData.email])
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
-  const handleArrayChange = (field: string, value: string, checked: boolean) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: checked
-        ? [...(prev[field as keyof typeof prev] as string[]), value]
-        : (prev[field as keyof typeof prev] as string[]).filter((item) => item !== value),
-    }))
-  }
+  const rolesAtMax = roles.length >= 3
+  const genresAtMax = genres.length >= 3
+
+  const canSubmit =
+    !isSubmitting &&
+    website.trim().length > 0 &&
+    industry !== "" &&
+    roles.length >= 1 &&
+    roles.length <= 3 &&
+    genres.length >= 1 &&
+    genres.length <= 3 &&
+    email.trim().length > 0
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!canSubmit) return
+
     setIsSubmitting(true)
     setSubmitError("")
 
     try {
-      const response = await fetch("/api/applications", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      // Note: for now we send file metadata; hook up Blob/S3 upload later.
+      const payload = {
+        name,
+        email,
+        links: {
+          website,
+          instagram,
+          additional,
         },
-        body: JSON.stringify({
-          ...formData,
-          submittedAt: new Date().toISOString(),
-        }),
+        industry,
+        roles,
+        genres,
+        attachments: {
+          mainPhoto: mainPhoto
+            ? { name: mainPhoto.name, size: mainPhoto.size, type: mainPhoto.type }
+            : null,
+          demo: demoFile ? { name: demoFile.name, size: demoFile.size, type: demoFile.type } : null,
+        },
+        submittedAt: new Date().toISOString(),
+      }
+
+      const res = await fetch("/api/applications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
       })
 
-      if (response.ok) {
-        setIsSubmitted(true)
-        // Clear stored email
-        localStorage.removeItem("applicationEmail")
-      } else {
-        const errorData = await response.json()
-        setSubmitError(errorData.error || "Failed to submit application. Please try again.")
+      if (!res.ok) {
+        const data = await res.json().catch(() => null)
+        throw new Error(data?.error || "Failed to submit application.")
       }
-    } catch (error) {
-      setSubmitError("Network error. Please check your connection and try again.")
+
+      setIsSubmitted(true)
+    } catch (err: any) {
+      setSubmitError(err?.message || "Something went wrong submitting your application.")
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  // Show loading state while checking auth
+  // Loading while checking auth
   if (isAuthLoading || !approvalCheckComplete) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4" />
           <p className="text-zinc-400">Checking your status...</p>
         </div>
       </div>
     )
   }
 
-  // If admin, redirect away from Apply page (handled in effect above)
-  if (approvalCheckComplete && user && isAdmin) {
-    return null
-  }
+  // If admin, short-circuit (redirect effect above)
+  if (approvalCheckComplete && user && isAdmin) return null
 
-  // Show already approved message only for approved non-admin users
+  // Already approved (non-admin)
   if (user && isApproved) {
     return (
       <div className="min-h-screen bg-black text-white">
@@ -432,33 +265,25 @@ export default function ApplyPage() {
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold text-white mb-2">Already Approved!</h2>
-                  <p className="text-zinc-400 mb-4">
-                    Your application has been approved and you're already a member of ArtHouse!
-                  </p>
+                  <p className="text-zinc-400 mb-4">You're already a member of ArtHouse.</p>
                   <p className="text-sm text-zinc-500">
                     Logged in as: <span className="text-zinc-300">{user?.email}</span>
                   </p>
                 </div>
                 <div className="space-y-3">
-                  <Button
-                    onClick={() => router.push("/")}
-                    className="w-full bg-white text-black hover:bg-zinc-200 transition-colors"
-                  >
+                  <Button onClick={() => router.push("/")} className="w-full bg-white text-black hover:bg-zinc-200">
                     <Home className="w-4 h-4 mr-2" />
                     Go to Home
                   </Button>
                   <Button
                     onClick={() => router.push("/discover")}
                     variant="outline"
-                    className="w-full border-zinc-600 text-white hover:bg-zinc-800 transition-colors"
+                    className="w-full border-zinc-600 text-white hover:bg-zinc-800"
                   >
                     <Compass className="w-4 h-4 mr-2" />
                     Explore ArtHouse
                   </Button>
                 </div>
-                <p className="text-xs text-zinc-500 mt-4">
-                  Need to switch accounts? Sign out and log in with a different email.
-                </p>
               </div>
             </CardContent>
           </Card>
@@ -467,12 +292,11 @@ export default function ApplyPage() {
     )
   }
 
-  // Show success message if application was submitted
+  // Submitted success view
   if (isSubmitted) {
     return (
       <div className="min-h-screen bg-black text-white">
         <RetroNav />
-
         <div className="min-h-screen flex items-center justify-center px-4 pt-20">
           <Card className="w-full max-w-md bg-zinc-900/50 border-zinc-700 backdrop-blur-sm">
             <CardContent className="pt-6">
@@ -482,23 +306,16 @@ export default function ApplyPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
-
                 <div>
                   <h2 className="text-2xl font-bold text-white mb-2">Application Submitted!</h2>
                   <p className="text-zinc-400 mb-4">
-                    Thank you for applying to ArtHouse. We'll review your application and get back to you soon.
+                    Thank you for applying to ArtHouse. We’ll review your application and get back to you.
                   </p>
                 </div>
-
-                <Button
-                  onClick={() => router.push("/")}
-                  className="w-full bg-white text-black hover:bg-zinc-200 transition-colors"
-                >
+                <Button onClick={() => router.push("/")} className="w-full bg-white text-black hover:bg-zinc-200">
                   <Home className="w-4 h-4 mr-2" />
                   Return to Home
                 </Button>
-
-                <p className="text-xs text-zinc-500 mt-4">We typically review applications within 3-5 business days.</p>
               </div>
             </CardContent>
           </Card>
@@ -507,67 +324,50 @@ export default function ApplyPage() {
     )
   }
 
-  // Show the application form
+  // Main streamlined application form
   return (
     <div className="min-h-screen bg-black text-white">
       <RetroNav />
 
-      <div className="container mx-auto px-4 py-8 pt-24 max-w-4xl">
-        <div className="mb-8">
-          <Button variant="ghost" onClick={() => router.push("/")} className="text-zinc-400 hover:text-white mb-4">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Home
-          </Button>
+      <div className="container mx-auto px-4 py-8 pt-24 max-w-3xl">
+        <Button variant="ghost" onClick={() => router.push("/")} className="text-zinc-400 hover:text-white mb-8">
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Home
+        </Button>
 
-          <div className="text-center mb-8">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              <span className="bg-gradient-to-r from-white via-zinc-200 to-white bg-clip-text text-transparent">
-                Join ArtHouse
-              </span>
-            </h1>
-            <p className="text-xl text-zinc-300 max-w-2xl mx-auto">
-              Apply to join our curated community of bold creatives. Tell us about your craft, your vision, and what
-              you're looking to create.
-            </p>
-          </div>
+        <div className="text-center mb-10">
+          <h1 className="text-4xl md:text-5xl font-bold mb-3">
+            <span className="bg-gradient-to-r from-white via-zinc-200 to-white bg-clip-text text-transparent">
+              Apply to ArtHouse
+            </span>
+          </h1>
+          <p className="text-zinc-300 max-w-2xl mx-auto">
+            A concise application focused on your craft. Share your core links, pick your industry, and select up to 3
+            roles and interests.
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Personal Information */}
+          {/* Contact + Links */}
           <Card className="bg-zinc-900/50 border-zinc-700 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="text-white">Personal Information</CardTitle>
-              <CardDescription className="text-zinc-400">Tell us about yourself</CardDescription>
+              <CardTitle className="text-white">Contact & Links</CardTitle>
+              <CardDescription className="text-zinc-400">Minimal and focused</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="firstName" className="text-white">
-                    First Name *
+                  <Label htmlFor="name" className="text-white">
+                    Name
                   </Label>
                   <Input
-                    id="firstName"
-                    value={formData.firstName}
-                    onChange={(e) => handleInputChange("firstName", e.target.value)}
-                    required
+                    id="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
                     className="bg-zinc-800/50 border-zinc-600 text-white"
+                    placeholder="Your name"
                   />
                 </div>
-                <div>
-                  <Label htmlFor="lastName" className="text-white">
-                    Last Name *
-                  </Label>
-                  <Input
-                    id="lastName"
-                    value={formData.lastName}
-                    onChange={(e) => handleInputChange("lastName", e.target.value)}
-                    required
-                    className="bg-zinc-800/50 border-zinc-600 text-white"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="email" className="text-white">
                     Email *
@@ -575,440 +375,290 @@ export default function ApplyPage() {
                   <Input
                     id="email"
                     type="email"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange("email", e.target.value)}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     required
                     className="bg-zinc-800/50 border-zinc-600 text-white"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="phone" className="text-white">
-                    Phone
-                  </Label>
-                  <Input
-                    id="phone"
-                    value={formData.phone}
-                    onChange={(e) => handleInputChange("phone", e.target.value)}
-                    className="bg-zinc-800/50 border-zinc-600 text-white"
+                    placeholder="hello@studio.com"
                   />
                 </div>
               </div>
 
               <div>
-                <Label htmlFor="location" className="text-white">
-                  Location (City, State/Country) *
+                <Label htmlFor="website" className="text-white">
+                  Website / Portfolio *
                 </Label>
                 <Input
-                  id="location"
-                  value={formData.location}
-                  onChange={(e) => handleInputChange("location", e.target.value)}
+                  id="website"
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
                   required
-                  placeholder="e.g., Los Angeles, CA or London, UK"
                   className="bg-zinc-800/50 border-zinc-600 text-white"
+                  placeholder="https://yourwebsite.com"
                 />
               </div>
-            </CardContent>
-          </Card>
 
-          {/* Online Presence */}
-          <Card className="bg-zinc-900/50 border-zinc-700 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="text-white">Online Presence</CardTitle>
-              <CardDescription className="text-zinc-400">Share your professional links and portfolio</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="website" className="text-white">
-                    Website/Portfolio
-                  </Label>
-                  <Input
-                    id="website"
-                    value={formData.website}
-                    onChange={(e) => handleInputChange("website", e.target.value)}
-                    placeholder="https://yourwebsite.com"
-                    className="bg-zinc-800/50 border-zinc-600 text-white"
-                  />
-                </div>
                 <div>
                   <Label htmlFor="instagram" className="text-white">
                     Instagram
                   </Label>
                   <Input
                     id="instagram"
-                    value={formData.instagram}
-                    onChange={(e) => handleInputChange("instagram", e.target.value)}
-                    placeholder="@yourusername"
+                    value={instagram}
+                    onChange={(e) => setInstagram(e.target.value)}
                     className="bg-zinc-800/50 border-zinc-600 text-white"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="linkedin" className="text-white">
-                    LinkedIn
-                  </Label>
-                  <Input
-                    id="linkedin"
-                    value={formData.linkedin}
-                    onChange={(e) => handleInputChange("linkedin", e.target.value)}
-                    placeholder="https://linkedin.com/in/yourprofile"
-                    className="bg-zinc-800/50 border-zinc-600 text-white"
+                    placeholder="@yourhandle"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="imdb" className="text-white">
-                    IMDb
+                  <Label htmlFor="additional" className="text-white">
+                    Additional (YouTube, IMDb, Vimeo, Spotify, etc.)
                   </Label>
                   <Input
-                    id="imdb"
-                    value={formData.imdb}
-                    onChange={(e) => handleInputChange("imdb", e.target.value)}
-                    placeholder="https://imdb.com/name/nm..."
+                    id="additional"
+                    value={additional}
+                    onChange={(e) => setAdditional(e.target.value)}
                     className="bg-zinc-800/50 border-zinc-600 text-white"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="reel" className="text-white">
-                    Demo Reel/Showreel
-                  </Label>
-                  <Input
-                    id="reel"
-                    value={formData.reel}
-                    onChange={(e) => handleInputChange("reel", e.target.value)}
-                    placeholder="https://vimeo.com/... or https://youtube.com/..."
-                    className="bg-zinc-800/50 border-zinc-600 text-white"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="portfolio" className="text-white">
-                    Additional Portfolio Link
-                  </Label>
-                  <Input
-                    id="portfolio"
-                    value={formData.portfolio}
-                    onChange={(e) => handleInputChange("portfolio", e.target.value)}
-                    placeholder="Behance, Dribbble, etc."
-                    className="bg-zinc-800/50 border-zinc-600 text-white"
+                    placeholder="Link to your reel, channel, profile..."
                   />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Creative Roles */}
+          {/* Industry */}
           <Card className="bg-zinc-900/50 border-zinc-700 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="text-white">Creative Roles *</CardTitle>
+              <CardTitle className="text-white">Industry *</CardTitle>
+              <CardDescription className="text-zinc-400">Choose one</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {INDUSTRIES.map((opt) => {
+                  const active = industry === opt.id
+                  return (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => setIndustry(opt.id)}
+                      className={[
+                        "rounded-lg border p-3 text-left transition",
+                        "bg-zinc-900/60 hover:bg-zinc-900",
+                        active ? "border-white" : "border-zinc-700",
+                      ].join(" ")}
+                      aria-pressed={active}
+                    >
+                      <div className="flex items-center gap-2">
+                        {opt.icon}
+                        <span className="font-medium">{opt.label}</span>
+                      </div>
+                    </button>
+                  )
+                })}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Roles */}
+          <Card className="bg-zinc-900/50 border-zinc-700 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="text-white">Creative Roles (1–3)</CardTitle>
               <CardDescription className="text-zinc-400">
-                Select all roles that apply to your creative work (select at least 3)
+                Options match your selected industry
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-64 overflow-y-auto">
-                {creativeRoles.map((role) => (
-                  <div key={role} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`role-${role}`}
-                      checked={formData.creativeRoles.includes(role)}
-                      onCheckedChange={(checked) => handleArrayChange("creativeRoles", role, checked as boolean)}
-                      className="border-zinc-600"
-                    />
-                    <Label htmlFor={`role-${role}`} className="text-sm text-zinc-300 cursor-pointer">
-                      {role}
-                    </Label>
+              {industry === "" ? (
+                <p className="text-zinc-400 text-sm">Select an industry to choose roles.</p>
+              ) : (
+                <>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {roleOptions.map((role) => {
+                      const checked = roles.includes(role)
+                      const disabled = !checked && rolesAtMax
+                      return (
+                        <label
+                          key={role}
+                          className={[
+                            "flex items-center gap-2 rounded-md border px-3 py-2 cursor-pointer",
+                            checked ? "border-white bg-zinc-900" : "border-zinc-700 hover:bg-zinc-900/50",
+                            disabled ? "opacity-50 cursor-not-allowed" : "",
+                          ].join(" ")}
+                        >
+                          <Checkbox
+                            checked={checked}
+                            onCheckedChange={() => toggleSelection(roles, setRoles, role)}
+                            className="border-zinc-600"
+                            disabled={disabled}
+                          />
+                          <span className="text-sm">{role}</span>
+                        </label>
+                      )
+                    })}
                   </div>
-                ))}
-              </div>
-              {formData.creativeRoles.length > 0 && (
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {formData.creativeRoles.map((role) => (
-                    <Badge key={role} variant="secondary" className="bg-zinc-700 text-zinc-200">
-                      {role}
-                      <button
-                        type="button"
-                        onClick={() => handleArrayChange("creativeRoles", role, false)}
-                        className="ml-2 hover:text-red-400"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </Badge>
-                  ))}
-                </div>
+                  {roles.length > 0 && (
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {roles.map((r) => (
+                        <Badge key={r} variant="secondary" className="bg-zinc-700 text-zinc-200">
+                          {r}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </>
               )}
             </CardContent>
           </Card>
 
-          {/* Genres */}
+          {/* Genres & Interests */}
           <Card className="bg-zinc-900/50 border-zinc-700 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="text-white">Genres & Interests *</CardTitle>
+              <CardTitle className="text-white">Genres & Interests (1–3)</CardTitle>
               <CardDescription className="text-zinc-400">
-                Select genres and types of content you work with or are interested in (select at least 3)
+                Tailored by industry — composers can still pick film genres within Film & TV
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-64 overflow-y-auto">
-                {genres.map((genre) => (
-                  <div key={genre} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`genre-${genre}`}
-                      checked={formData.genres.includes(genre)}
-                      onCheckedChange={(checked) => handleArrayChange("genres", genre, checked as boolean)}
-                      className="border-zinc-600"
-                    />
-                    <Label htmlFor={`genre-${genre}`} className="text-sm text-zinc-300 cursor-pointer">
-                      {genre}
-                    </Label>
+              {industry === "" ? (
+                <p className="text-zinc-400 text-sm">Select an industry to choose genres and interests.</p>
+              ) : (
+                <>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {genreOptions.map((g) => {
+                      const checked = genres.includes(g)
+                      const disabled = !checked && genresAtMax
+                      return (
+                        <label
+                          key={g}
+                          className={[
+                            "flex items-center gap-2 rounded-md border px-3 py-2 cursor-pointer",
+                            checked ? "border-white bg-zinc-900" : "border-zinc-700 hover:bg-zinc-900/50",
+                            disabled ? "opacity-50 cursor-not-allowed" : "",
+                          ].join(" ")}
+                        >
+                          <Checkbox
+                            checked={checked}
+                            onCheckedChange={() => toggleSelection(genres, setGenres, g)}
+                            className="border-zinc-600"
+                            disabled={disabled}
+                          />
+                          <span className="text-sm">{g}</span>
+                        </label>
+                      )
+                    })}
                   </div>
-                ))}
-              </div>
-              {formData.genres.length > 0 && (
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {formData.genres.map((genre) => (
-                    <Badge key={genre} variant="secondary" className="bg-zinc-700 text-zinc-200">
-                      {genre}
-                      <button
-                        type="button"
-                        onClick={() => handleArrayChange("genres", genre, false)}
-                        className="ml-2 hover:text-red-400"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </Badge>
-                  ))}
-                </div>
+                  {genres.length > 0 && (
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {genres.map((g) => (
+                        <Badge key={g} variant="secondary" className="bg-zinc-700 text-zinc-200">
+                          {g}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </>
               )}
             </CardContent>
           </Card>
 
-          {/* Professional Background */}
+          {/* Uploads */}
           <Card className="bg-zinc-900/50 border-zinc-700 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="text-white">Professional Background</CardTitle>
-              <CardDescription className="text-zinc-400">Tell us about your creative journey</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="bio" className="text-white">
-                  Professional Bio *
-                </Label>
-                <Textarea
-                  id="bio"
-                  value={formData.bio}
-                  onChange={(e) => handleInputChange("bio", e.target.value)}
-                  required
-                  placeholder="Tell us about yourself, your creative background, and what drives your work..."
-                  className="bg-zinc-800/50 border-zinc-600 text-white min-h-[120px]"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="experience" className="text-white">
-                  Years of Experience *
-                </Label>
-                <Input
-                  id="experience"
-                  value={formData.experience}
-                  onChange={(e) => handleInputChange("experience", e.target.value)}
-                  required
-                  placeholder="e.g., 5 years, Just starting, 10+ years"
-                  className="bg-zinc-800/50 border-zinc-600 text-white"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="achievements" className="text-white">
-                  Notable Projects or Achievements
-                </Label>
-                <Textarea
-                  id="achievements"
-                  value={formData.achievements}
-                  onChange={(e) => handleInputChange("achievements", e.target.value)}
-                  placeholder="Awards, notable collaborations, projects you're proud of..."
-                  className="bg-zinc-800/50 border-zinc-600 text-white"
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Goals & Collaboration */}
-          <Card className="bg-zinc-900/50 border-zinc-700 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="text-white">Goals & Collaboration</CardTitle>
-              <CardDescription className="text-zinc-400">What are you looking to achieve and create?</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="goals" className="text-white">
-                  Creative Goals *
-                </Label>
-                <Textarea
-                  id="goals"
-                  value={formData.goals}
-                  onChange={(e) => handleInputChange("goals", e.target.value)}
-                  required
-                  placeholder="What are your creative goals? What do you hope to achieve through ArtHouse?"
-                  className="bg-zinc-800/50 border-zinc-600 text-white"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="networking" className="text-white">
-                  Collaboration Interests *
-                </Label>
-                <Textarea
-                  id="networking"
-                  value={formData.networking}
-                  onChange={(e) => handleInputChange("networking", e.target.value)}
-                  required
-                  placeholder="What types of collaborations are you interested in? What kind of creatives would you like to connect with?"
-                  className="bg-zinc-800/50 border-zinc-600 text-white"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="availability" className="text-white">
-                  Current Availability
-                </Label>
-                <Input
-                  id="availability"
-                  value={formData.availability}
-                  onChange={(e) => handleInputChange("availability", e.target.value)}
-                  placeholder="e.g., Available for projects, Seeking collaborators, Open to freelance work"
-                  className="bg-zinc-800/50 border-zinc-600 text-white"
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Technical Skills & Equipment */}
-          <Card className="bg-zinc-900/50 border-zinc-700 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="text-white">Technical Skills & Equipment</CardTitle>
+              <CardTitle className="text-white">Media</CardTitle>
               <CardDescription className="text-zinc-400">
-                What tools and skills do you bring to collaborations?
+                A single main photo and one demo piece (video, audio, or link above)
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="skills" className="text-white">
-                  Technical Skills
-                </Label>
-                <Textarea
-                  id="skills"
-                  value={formData.skills}
-                  onChange={(e) => handleInputChange("skills", e.target.value)}
-                  placeholder="Software, programming languages, technical abilities..."
-                  className="bg-zinc-800/50 border-zinc-600 text-white"
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="mainPhoto" className="text-white">
+                    Main Photo
+                  </Label>
+                  <div className="mt-2">
+                    <label className="flex items-center gap-2 rounded-md border border-zinc-700 bg-zinc-900/60 px-3 py-2 hover:bg-zinc-900 cursor-pointer">
+                      <Upload className="h-4 w-4" />
+                      <span className="text-sm">Upload image</span>
+                      <input
+                        id="mainPhoto"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const f = e.target.files?.[0] || null
+                          setMainPhoto(f)
+                        }}
+                      />
+                    </label>
+                  </div>
+                  {mainPhoto && (
+                    <div className="mt-3 flex items-center gap-3">
+                      <div className="h-16 w-16 rounded-md overflow-hidden bg-zinc-800/50 flex items-center justify-center">
+                        <img
+                          src={URL.createObjectURL(mainPhoto) || "/placeholder.svg"}
+                          alt="Main preview"
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                      <div className="text-xs text-zinc-400">
+                        <div className="font-medium text-zinc-200">{mainPhoto.name}</div>
+                        <div>{(mainPhoto.size / 1024).toFixed(1)} KB</div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <Label htmlFor="demo" className="text-white">
+                    Demo Piece
+                  </Label>
+                  <div className="mt-2">
+                    <label className="flex items-center gap-2 rounded-md border border-zinc-700 bg-zinc-900/60 px-3 py-2 hover:bg-zinc-900 cursor-pointer">
+                      <Upload className="h-4 w-4" />
+                      <span className="text-sm">Upload video or audio</span>
+                      <input
+                        id="demo"
+                        type="file"
+                        accept="video/*,audio/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const f = e.target.files?.[0] || null
+                          setDemoFile(f)
+                        }}
+                      />
+                    </label>
+                  </div>
+                  {demoFile && (
+                    <div className="mt-3 space-y-2">
+                      <div className="text-xs text-zinc-400">
+                        <div className="font-medium text-zinc-200">{demoFile.name}</div>
+                        <div>{(demoFile.size / 1024).toFixed(1)} KB</div>
+                      </div>
+                      {demoFile.type.startsWith("video/") ? (
+                        <video
+                          controls
+                          className="w-full rounded-md border border-zinc-700"
+                          src={URL.createObjectURL(demoFile)}
+                        />
+                      ) : demoFile.type.startsWith("audio/") ? (
+                        <audio controls className="w-full">
+                          <source src={URL.createObjectURL(demoFile)} type={demoFile.type} />
+                        </audio>
+                      ) : null}
+                    </div>
+                  )}
+                </div>
               </div>
 
-              <div>
-                <Label htmlFor="equipment" className="text-white">
-                  Equipment & Resources
-                </Label>
-                <Textarea
-                  id="equipment"
-                  value={formData.equipment}
-                  onChange={(e) => handleInputChange("equipment", e.target.value)}
-                  placeholder="Cameras, editing software, studio space, etc."
-                  className="bg-zinc-800/50 border-zinc-600 text-white"
-                />
-              </div>
+              <p className="text-xs text-zinc-500">
+                Tip: You can also paste links above (YouTube, Vimeo, Spotify, IMDb) in the Additional field.
+              </p>
             </CardContent>
           </Card>
 
-          {/* Creative Philosophy */}
-          <Card className="bg-zinc-900/50 border-zinc-700 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="text-white">Creative Philosophy</CardTitle>
-              <CardDescription className="text-zinc-400">Help us understand your creative perspective</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="inspiration" className="text-white">
-                  Creative Inspiration
-                </Label>
-                <Textarea
-                  id="inspiration"
-                  value={formData.inspiration}
-                  onChange={(e) => handleInputChange("inspiration", e.target.value)}
-                  placeholder="What inspires your work? Artists, movements, experiences that influence you..."
-                  className="bg-zinc-800/50 border-zinc-600 text-white"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="challenges" className="text-white">
-                  Creative Challenges
-                </Label>
-                <Textarea
-                  id="challenges"
-                  value={formData.challenges}
-                  onChange={(e) => handleInputChange("challenges", e.target.value)}
-                  placeholder="What challenges do you face in your creative work? What would you like to overcome?"
-                  className="bg-zinc-800/50 border-zinc-600 text-white"
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* How did you hear about us */}
-          <Card className="bg-zinc-900/50 border-zinc-700 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="text-white">Discovery & Feedback</CardTitle>
-              <CardDescription className="text-zinc-400">Help us improve and understand our community</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="referralSource" className="text-white">
-                  How did you hear about ArtHouse? *
-                </Label>
-                <Input
-                  id="referralSource"
-                  value={formData.referralSource}
-                  onChange={(e) => handleInputChange("referralSource", e.target.value)}
-                  required
-                  placeholder="Social media, friend referral, search, etc."
-                  className="bg-zinc-800/50 border-zinc-600 text-white"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="feedback" className="text-white">
-                  Feedback or Suggestions
-                </Label>
-                <Textarea
-                  id="feedback"
-                  value={formData.feedback}
-                  onChange={(e) => handleInputChange("feedback", e.target.value)}
-                  placeholder="Any feedback about the application process or suggestions for ArtHouse?"
-                  className="bg-zinc-800/50 border-zinc-600 text-white"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="additionalInfo" className="text-white">
-                  Additional Information
-                </Label>
-                <Textarea
-                  id="additionalInfo"
-                  value={formData.additionalInfo}
-                  onChange={(e) => handleInputChange("additionalInfo", e.target.value)}
-                  placeholder="Anything else you'd like us to know?"
-                  className="bg-zinc-800/50 border-zinc-600 text-white"
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Submit Button */}
-          <div className="text-center pt-8">
+          {/* Submit */}
+          <div className="text-center pt-2">
             {submitError && (
               <div className="mb-4 p-4 bg-red-900/50 border border-red-700 rounded-lg">
                 <p className="text-red-400">{submitError}</p>
@@ -1017,22 +667,11 @@ export default function ApplyPage() {
 
             <Button
               type="submit"
-              disabled={isSubmitting || formData.creativeRoles.length < 3 || formData.genres.length < 3}
-              className="bg-gradient-to-r from-cobalt-700 to-cobalt-800 hover:from-cobalt-600 hover:to-cobalt-700 text-white font-medium py-3 px-8 rounded-full transition shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!canSubmit}
+              className="bg-white text-black hover:bg-zinc-200 font-semibold py-3 px-8 rounded-full transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Submitting Application...
-                </>
-              ) : (
-                "Submit Application"
-              )}
+              {isSubmitting ? "Submitting..." : "Submit Application"}
             </Button>
-
-            <p className="text-sm text-zinc-500 mt-4">
-              Please ensure you've selected at least 3 creative roles and 3 genres before submitting.
-            </p>
           </div>
         </form>
       </div>
