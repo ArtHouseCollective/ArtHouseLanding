@@ -23,7 +23,6 @@ const INDUSTRIES: { id: IndustryId; label: string; icon: React.ReactNode }[] = [
   { id: "music", label: "Music", icon: <Music2 className="h-4 w-4" /> },
 ]
 
-// Curated sets by industry
 const ROLES_BY_INDUSTRY: Record<IndustryId, string[]> = {
   film_tv: ["Director", "Producer", "Screenwriter", "Actor", "Cinematographer", "Editor", "Composer"],
   digital: ["Content Creator", "YouTuber", "Influencer", "Social Media Manager", "Video Editor", "Motion Graphics"],
@@ -198,14 +197,23 @@ export default function ApplyPage() {
         body: form,
       })
 
+      // Ensure we only attempt JSON parsing if endpoint behaved:
+      const contentType = res.headers.get("content-type") || ""
       if (!res.ok) {
-        const data = await res.json().catch(() => null)
-        throw new Error(data?.error || "Upload failed. Please try again.")
+        let message = "Upload failed. Please try again."
+        if (contentType.includes("application/json")) {
+          const data = await res.json().catch(() => null)
+          message = data?.error || message
+        }
+        throw new Error(message)
       }
 
-      const data = (await res.json()) as { url: string; path: string }
-      if (kind === "main") setMainPhotoUrl(data.url)
-      else setDemoUrl(data.url)
+      const data = contentType.includes("application/json") ? await res.json() : null
+      const url = data?.url as string | undefined
+      if (!url) throw new Error("Upload succeeded but no URL returned.")
+
+      if (kind === "main") setMainPhotoUrl(url)
+      else setDemoUrl(url)
     } catch (err: any) {
       setSubmitError(err?.message || "Upload failed. Please try again.")
     } finally {
@@ -245,8 +253,6 @@ export default function ApplyPage() {
     setErrors(nextErrors)
 
     if (Object.keys(nextErrors).length > 0) {
-      // set a ref to any container with error to scroll to
-      // we’ll attach ref to the first error container below
       setTimeout(scrollToFirstError, 0)
       return
     }
@@ -278,14 +284,17 @@ export default function ApplyPage() {
         body: JSON.stringify(payload),
       })
 
+      const contentType = res.headers.get("content-type") || ""
       if (!res.ok) {
-        const data = await res.json().catch(() => null)
-        // Map server fieldErrors if present
-        if (data?.fieldErrors) {
-          setErrors(data.fieldErrors as FieldErrors)
-          setTimeout(scrollToFirstError, 0)
+        if (contentType.includes("application/json")) {
+          const data = await res.json().catch(() => null)
+          if (data?.fieldErrors) {
+            setErrors(data.fieldErrors as FieldErrors)
+            setTimeout(scrollToFirstError, 0)
+          }
+          throw new Error(data?.error || "Failed to submit application.")
         }
-        throw new Error(data?.error || "Failed to submit application.")
+        throw new Error("Failed to submit application.")
       }
 
       setIsSubmitted(true)

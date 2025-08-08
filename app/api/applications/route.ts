@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server"
 import { getFirestore } from "firebase-admin/firestore"
 import { initializeApp, cert, getApps } from "firebase-admin/app"
+import { Resend } from "resend"
 
-// Initialize Firebase Admin SDK if not already initialized
 if (!getApps().length) {
   initializeApp({
     credential: cert({
@@ -12,6 +12,7 @@ if (!getApps().length) {
     }),
   })
 }
+
 const db = getFirestore()
 
 type LegacyBody = {
@@ -78,59 +79,87 @@ export async function POST(request: Request) {
       )
     }
 
-    // Check duplicate
+    // Prevent duplicate
     const docRef = db.collection("applications").doc(email!)
     const existing = await docRef.get()
     if (existing.exists) {
       return NextResponse.json(
-        { error: "An application has already been submitted for this email.", fieldErrors: { email: "Email already has an application." } },
+        {
+          error: "An application has already been submitted for this email.",
+          fieldErrors: { email: "Email already has an application." },
+        },
         { status: 400 },
       )
     }
 
     // Prepare data
-    let applicationData: Record<string, any> = {
+    const base = {
       email,
       status: "pending",
       submittedAt: (isNew(data) && data.submittedAt) || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }
 
-    if (isNew(data)) {
-      applicationData = {
-        ...applicationData,
-        name: data.name || "",
-        industry: data.industry || "",
-        roles: data.roles || [],
-        genres: data.genres || [],
-        links: {
-          website: data.links?.website || "",
-          instagram: data.links?.instagram || "",
-          additional: data.links?.additional || "",
-        },
-        attachments: {
-          mainPhotoUrl: data.attachments?.mainPhotoUrl || null,
-          demoUrl: data.attachments?.demoUrl || null,
-        },
-        source: "new_apply_form",
-      }
-    } else {
-      const legacy = data as LegacyBody
-      applicationData = {
-        ...applicationData,
-        firstName: legacy.firstName || "",
-        lastName: legacy.lastName || "",
-        profession: legacy.profession || "",
-        experience: legacy.experience || "",
-        portfolio: legacy.portfolio || "",
-        socialMedia: legacy.socialMedia || "",
-        collaborationInterest: legacy.collaborationInterest || "",
-        additionalInfo: legacy.additionalInfo || "",
-        source: "legacy_apply_form",
-      }
-    }
+    const applicationData = isNew(data)
+      ? {
+          ...base,
+          name: data.name || "",
+          industry: data.industry || "",
+          roles: data.roles || [],
+          genres: data.genres || [],
+          links: {
+            website: data.links?.website || "",
+            instagram: data.links?.instagram || "",
+            additional: data.links?.additional || "",
+          },
+          attachments: {
+            mainPhotoUrl: data.attachments?.mainPhotoUrl || null,
+            demoUrl: data.attachments?.demoUrl || null,
+          },
+          source: "new_apply_form",
+        }
+      : {
+          ...base,
+          firstName: (data as LegacyBody).firstName || "",
+          lastName: (data as LegacyBody).lastName || "",
+          profession: (data as LegacyBody).profession || "",
+          experience: (data as LegacyBody).experience || "",
+          portfolio: (data as LegacyBody).portfolio || "",
+          socialMedia: (data as LegacyBody).socialMedia || "",
+          collaborationInterest: (data as LegacyBody).collaborationInterest || "",
+          additionalInfo: (data as LegacyBody).additionalInfo || "",
+          source: "legacy_apply_form",
+        }
 
     await docRef.set(applicationData)
+
+    // Send transactional "Thank you for applying" email via Resend (if configured)
+    const RESEND_API_KEY = process.env.RESEND_API_KEY
+    if (RESEND_API_KEY && email) {
+      try {
+        const resend = new Resend(RESEND_API_KEY)
+        const fromAddress = "ArtHouse <no-reply@your-verified-domain.com>" // Replace with your verified Resend domain
+        const subject = "Thanks for applying to ArtHouse"
+        const html = `
+          <div style="font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.6;">
+            <h2>Thanks for applying to ArtHouse</h2>
+            <p>We received your application and our team will review it shortly.</p>
+            <p>We’ll email you as soon as there’s an update.</p>
+            <hr style="border:none;border-top:1px solid #e5e7eb;margin:16px 0;" />
+            <p style="font-size:12px;color:#6b7280;">If you didn’t submit this application, you can ignore this message.</p>
+          </div>
+        `
+        await resend.emails.send({
+          from: fromAddress,
+          to: email,
+          subject,
+          html,
+        })
+      } catch (mailErr) {
+        console.error("Resend email error:", mailErr)
+        // Don't fail the request if email send fails
+      }
+    }
 
     return NextResponse.json({ success: true, message: "Application submitted successfully." })
   } catch (error) {
