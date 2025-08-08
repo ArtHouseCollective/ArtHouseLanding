@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { getFirestore } from "firebase-admin/firestore"
 import { initializeApp, cert, getApps } from "firebase-admin/app"
 import { sendTransactionalEmail } from "@/lib/resend"
+import { subscribeToBeehiiv } from "@/lib/beehiiv"
 
 if (!getApps().length) {
   initializeApp({
@@ -130,6 +131,39 @@ export async function POST(request: Request) {
         }
 
     await docRef.set(applicationData)
+
+    // Auto-subscribe the applicant to Beehiiv
+    try {
+      if (process.env.BEEHIIV_API_KEY && process.env.BEEHIIV_PUBLICATION_ID && email) {
+        const tags: string[] = []
+        if (isNew(data)) {
+          if (data.industry) tags.push(String(data.industry))
+          if (Array.isArray(data.roles)) tags.push(...data.roles.slice(0, 5))
+          if (Array.isArray(data.genres)) tags.push(...data.genres.slice(0, 5))
+        }
+        const nameStr =
+          isNew(data) ? (data.name || "") : `${(data as LegacyBody).firstName || ""} ${(data as LegacyBody).lastName || ""}`
+
+        const firstName = nameStr.trim().split(/\s+/)[0] || undefined
+        const lastName = nameStr.trim().split(/\s+/).slice(1).join(" ") || undefined
+
+        const res = await subscribeToBeehiiv(email, {
+          utmSource: "ArtHouse Apply",
+          sendWelcomeEmail: false,
+          reactivateIfArchived: true,
+          referringSite: "https://arthouse.app/apply",
+          firstName,
+          lastName,
+          tags: tags.filter(Boolean),
+        })
+
+        if (!res.ok) {
+          console.error("Beehiiv subscribe error:", res.status, res.error)
+        }
+      }
+    } catch (bhErr) {
+      console.error("Beehiiv subscribe threw:", bhErr)
+    }
 
     // Transactional "Thanks for applying" email via Resend (if configured)
     if (process.env.RESEND_API_KEY && email) {
