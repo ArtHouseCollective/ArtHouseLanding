@@ -197,7 +197,6 @@ export default function ApplyPage() {
         body: form,
       })
 
-      // Ensure we only attempt JSON parsing if endpoint behaved:
       const contentType = res.headers.get("content-type") || ""
       if (!res.ok) {
         let message = "Upload failed. Please try again."
@@ -205,16 +204,35 @@ export default function ApplyPage() {
           const data = await res.json().catch(() => null)
           message = data?.error || message
         }
+        // surface inline field error
+        setErrors((prev) => ({
+          ...prev,
+          [kind === "main" ? "mainPhoto" : "demo"]: message,
+        }))
         throw new Error(message)
       }
 
       const data = contentType.includes("application/json") ? await res.json() : null
       const url = data?.url as string | undefined
-      if (!url) throw new Error("Upload succeeded but no URL returned.")
+      if (!url) {
+        const message = "Upload succeeded but no URL returned."
+        setErrors((prev) => ({
+          ...prev,
+          [kind === "main" ? "mainPhoto" : "demo"]: message,
+        }))
+        throw new Error(message)
+      }
+
+      // Clear any prior field error on success
+      setErrors((prev) => ({
+        ...prev,
+        [kind === "main" ? "mainPhoto" : "demo"]: undefined,
+      }))
 
       if (kind === "main") setMainPhotoUrl(url)
       else setDemoUrl(url)
     } catch (err: any) {
+      // Keep a general banner error for context
       setSubmitError(err?.message || "Upload failed. Please try again.")
     } finally {
       if (kind === "main") setUploadingMain(false)
