@@ -6,7 +6,7 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowLeft, Eye, EyeOff } from "lucide-react"
+import { ArrowLeft, Eye, EyeOff } from 'lucide-react'
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from "firebase/auth"
@@ -214,16 +214,6 @@ export default function LoginPage() {
                 {isLoading ? "Processing..." : isSignUp ? "Create Account" : "Sign In"}
               </Button>
             </form>
-
-            <div className="mt-6 text-center">
-              <button
-                onClick={() => setIsSignUp(!isSignUp)}
-                className="text-zinc-400 hover:text-white transition-colors text-sm"
-                disabled={isLoading}
-              >
-                {isSignUp ? "Already have an account? Sign in" : "Don't have an account? Apply to join"}
-              </button>
-            </div>
 
             {!isSignUp && (
               <div className="mt-4 text-center">

@@ -1,63 +1,254 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { ArrowLeft, Users, Lock } from "lucide-react"
-import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { onAuthStateChanged, type User } from "firebase/auth"
+import { auth, isFirebaseConfigured } from "@/lib/firebase-client"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { RetroNav } from "@/components/retro-nav"
+import {
+  ArrowLeft,
+  Users,
+  Lock,
+  Plus,
+  Settings,
+  MessageCircle,
+  Calendar,
+  Loader2,
+  Star,
+  Eye,
+  EyeOff,
+  Edit3,
+  Trash2,
+} from "lucide-react"
+
+interface Collective {
+  id: string
+  name: string
+  description: string
+  category: string
+  tags: string[]
+  memberCount: number
+  isPrivate: boolean
+  createdBy: string
+  createdAt: any
+  lastActivity: any
+  coverImage?: string
+  members?: string[]
+  admins?: string[]
+  isOfficial?: boolean
+}
 
 export default function CollectivesPage() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [user, setUser] = useState<User | null>(null)
   const [isApproved, setIsApproved] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [showAccessDialog, setShowAccessDialog] = useState(false)
-  const [userEmail, setUserEmail] = useState("")
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [collectives, setCollectives] = useState<Collective[]>([])
+  const [collectivesLoading, setCollectivesLoading] = useState(true)
+  const [showCreateDialog, setShowCreateDialog] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [editingCollective, setEditingCollective] = useState<Collective | null>(null)
+  
+  // Form state
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    category: "General",
+    tags: "",
+    isPrivate: false,
+  })
+
   const router = useRouter()
 
   useEffect(() => {
-    // Check authentication and approval status
-    const checkAccess = () => {
-      const authenticated = localStorage.getItem("isAuthenticated") === "true"
-      const approved = localStorage.getItem("isApproved") === "true"
-      const email = localStorage.getItem("userEmail") || ""
-
-      setIsAuthenticated(authenticated)
-      setIsApproved(approved)
-      setUserEmail(email)
-      setIsLoading(false)
-
-      // Show access dialog if not authenticated or not approved
-      if (!authenticated || !approved) {
-        setShowAccessDialog(true)
-      }
+    if (!isFirebaseConfigured) {
+      router.push("/")
+      return
     }
 
-    checkAccess()
-  }, [])
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        setUser(user)
+        
+        // Check approval status and admin rights
+        try {
+          const token = await user.getIdTokenResult()
+          const approved = token.claims.approved === true
+          const admin = token.claims.admin === true || token.claims.role === "admin"
+          
+          setIsApproved(approved)
+          setIsAdmin(admin)
 
-  const handleAccessDialogClose = () => {
-    setShowAccessDialog(false)
-    router.push("/")
+          if (approved || admin) {
+            fetchCollectives()
+          }
+        } catch (error) {
+          console.error("Error checking user status:", error)
+        }
+      } else {
+        router.push("/login")
+      }
+      setLoading(false)
+    })
+
+    return () => unsubscribe()
+  }, [router])
+
+  const fetchCollectives = async () => {
+    try {
+      const response = await fetch("/api/collectives")
+      if (response.ok) {
+        const data = await response.json()
+        setCollectives(data.collectives || [])
+      }
+    } catch (error) {
+      console.error("Error fetching collectives:", error)
+    } finally {
+      setCollectivesLoading(false)
+    }
   }
 
-  const handleLogin = () => {
-    setShowAccessDialog(false)
-    router.push("/login")
+  const handleInputChange = (field: string, value: string | boolean) => {
+    setFormData(prev => ({ ...prev, [field]: value }))
   }
 
-  const handleApply = () => {
-    setShowAccessDialog(false)
-    router.push("/apply")
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+
+    try {
+      const endpoint = editingCollective ? `/api/collectives/${editingCollective.id}` : "/api/collectives"
+      const method = editingCollective ? "PUT" : "POST"
+      
+      const response = await fetch(endpoint, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...formData,
+          tags: formData.tags.split(",").map(tag => tag.trim()).filter(tag => tag),
+          createdBy: user?.email,
+        }),
+      })
+
+      if (response.ok) {
+        await fetchCollectives()
+        setShowCreateDialog(false)
+        setEditingCollective(null)
+        setFormData({
+          name: "",
+          description: "",
+          category: "General",
+          tags: "",
+          isPrivate: false,
+        })
+      }
+    } catch (error) {
+      console.error("Error saving collective:", error)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
-  if (isLoading) {
+  const handleEdit = (collective: Collective) => {
+    setEditingCollective(collective)
+    setFormData({
+      name: collective.name,
+      description: collective.description,
+      category: collective.category,
+      tags: collective.tags.join(", "),
+      isPrivate: collective.isPrivate,
+    })
+    setShowCreateDialog(true)
+  }
+
+  const handleDelete = async (collectiveId: string) => {
+    if (!confirm("Are you sure you want to delete this collective?")) return
+
+    try {
+      const response = await fetch(`/api/collectives/${collectiveId}`, {
+        method: "DELETE",
+      })
+
+      if (response.ok) {
+        await fetchCollectives()
+      }
+    } catch (error) {
+      console.error("Error deleting collective:", error)
+    }
+  }
+
+  const canManageCollective = (collective: Collective) => {
+    return isAdmin || collective.createdBy === user?.email || collective.admins?.includes(user?.email || "")
+  }
+
+  const formatDate = (timestamp: any) => {
+    if (!timestamp) return "N/A"
+    
+    let date: Date
+    if (timestamp.toDate) {
+      date = timestamp.toDate()
+    } else {
+      date = new Date(timestamp)
+    }
+    
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    })
+  }
+
+  if (loading) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-zinc-400">Loading...</p>
+        <div className="flex items-center space-x-2">
+          <Loader2 className="w-6 h-6 animate-spin" />
+          <span className="text-lg">Loading...</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (!isApproved && !isAdmin) {
+    return (
+      <div className="min-h-screen bg-black text-white">
+        <RetroNav />
+        <div className="min-h-screen flex items-center justify-center px-4 pt-20">
+          <Card className="w-full max-w-md bg-zinc-900/50 border-zinc-700 backdrop-blur-sm">
+            <CardContent className="pt-6">
+              <div className="text-center space-y-6">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-amber-500/20 flex items-center justify-center">
+                  <Lock className="w-8 h-8 text-amber-400" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-white mb-2">Access Required</h2>
+                  <p className="text-zinc-400 mb-4">
+                    You need to be approved to access Collectives. Please check your application status.
+                  </p>
+                </div>
+                <div className="space-y-3">
+                  <Button
+                    onClick={() => router.push("/dashboard")}
+                    className="w-full bg-white text-black hover:bg-zinc-200 transition-colors"
+                  >
+                    Check Status
+                  </Button>
+                  <Button
+                    onClick={() => router.push("/")}
+                    variant="outline"
+                    className="w-full border-zinc-600 text-white hover:bg-zinc-800 transition-colors"
+                  >
+                    Return Home
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     )
@@ -65,119 +256,281 @@ export default function CollectivesPage() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Navigation */}
-      <nav className="border-b border-zinc-800 bg-black/80 backdrop-blur-sm">
-        <div className="max-w-6xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center space-x-2 text-zinc-300 hover:text-white transition-colors">
-              <ArrowLeft size={20} />
-              <span>Back to Home</span>
-            </Link>
-            <div className="text-xl font-bold text-white">ArtHouse</div>
-            {isAuthenticated && <div className="text-sm text-zinc-400">Welcome, {userEmail.split("@")[0]}</div>}
-          </div>
-        </div>
-      </nav>
+      <RetroNav />
+      
+      {/* Background gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-zinc-900 via-black to-zinc-900" />
+      <div className="absolute inset-0 bg-gradient-radial from-zinc-800/10 via-transparent to-black/20" />
 
-      {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-4 py-12">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">Collectives</h1>
-          <p className="text-zinc-400 text-lg max-w-2xl mx-auto">
-            Connect with creative communities, collaborate on projects, and build meaningful relationships with fellow
-            artists.
-          </p>
-        </div>
+      <div className="relative z-10 py-8 px-4 pt-24">
+        <div className="max-w-6xl mx-auto">
+          {/* Header */}
+          <div className="mb-8">
+            <Button
+              variant="ghost"
+              onClick={() => router.push("/")}
+              className="text-zinc-400 hover:text-white mb-6"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Home
+            </Button>
 
-        {/* Collective Card */}
-        <div className="max-w-2xl mx-auto">
-          <Card className="bg-zinc-900/50 border-zinc-700/50 backdrop-blur-sm hover:bg-zinc-900/70 transition-all duration-300">
-            <CardHeader className="pb-4">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-2xl font-bold text-white">ArtHouse Central</CardTitle>
-                <div className="flex items-center space-x-2 text-zinc-400">
-                  <Users size={16} />
-                  <span className="text-sm">{isAuthenticated && isApproved ? "127 members" : "•••"}</span>
-                </div>
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h1 className="text-4xl font-bold text-white mb-2">Collectives</h1>
+                <p className="text-zinc-400 text-lg">
+                  Connect with creative communities and collaborate on amazing projects
+                </p>
               </div>
-              <CardDescription className="text-zinc-400 text-base">
-                The main hub for ArtHouse creatives. Share projects, find collaborators, and connect with the community.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex flex-wrap gap-2">
-                  <span className="px-3 py-1 bg-zinc-800 text-zinc-300 rounded-full text-sm">Film</span>
-                  <span className="px-3 py-1 bg-zinc-800 text-zinc-300 rounded-full text-sm">Digital Media</span>
-                  <span className="px-3 py-1 bg-zinc-800 text-zinc-300 rounded-full text-sm">Music</span>
-                  <span className="px-3 py-1 bg-zinc-800 text-zinc-300 rounded-full text-sm">Production</span>
-                </div>
-                <Button
-                  className="w-full bg-white text-black hover:bg-zinc-200 transition-colors py-3 text-lg font-semibold"
-                  disabled={!isAuthenticated || !isApproved}
-                >
-                  {isAuthenticated && isApproved ? (
-                    "Enter Collective"
-                  ) : (
-                    <div className="flex items-center space-x-2">
-                      <Lock size={16} />
-                      <span>Access Required</span>
+              
+              <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+                <DialogTrigger asChild>
+                  <Button 
+                    className="bg-gradient-to-r from-cobalt-700 to-cobalt-800 hover:from-cobalt-600 hover:to-cobalt-700 text-white flex items-center gap-2"
+                    onClick={() => {
+                      setEditingCollective(null)
+                      setFormData({
+                        name: "",
+                        description: "",
+                        category: "General",
+                        tags: "",
+                        isPrivate: false,
+                      })
+                    }}
+                  >
+                    <Plus className="w-4 h-4" />
+                    Create Collective
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="bg-zinc-900 border-zinc-700 text-white max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>
+                      {editingCollective ? "Edit Collective" : "Create New Collective"}
+                    </DialogTitle>
+                    <DialogDescription className="text-zinc-400">
+                      {editingCollective ? "Update your collective details" : "Start a new creative community"}
+                    </DialogDescription>
+                  </DialogHeader>
+                  
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                      <Input
+                        placeholder="Collective Name"
+                        value={formData.name}
+                        onChange={(e) => handleInputChange("name", e.target.value)}
+                        required
+                        className="bg-zinc-800/50 border-zinc-600 text-white"
+                      />
                     </div>
-                  )}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Status Message */}
-        {isAuthenticated && !isApproved && (
-          <div className="max-w-2xl mx-auto mt-8">
-            <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4 text-center">
-              <h3 className="text-amber-400 font-semibold mb-2">Application Under Review</h3>
-              <p className="text-amber-300/80 text-sm">
-                Your application is being reviewed. You'll receive access to Collectives once approved.
-              </p>
+                    
+                    <div>
+                      <Textarea
+                        placeholder="Description"
+                        value={formData.description}
+                        onChange={(e) => handleInputChange("description", e.target.value)}
+                        required
+                        className="bg-zinc-800/50 border-zinc-600 text-white min-h-[80px]"
+                      />
+                    </div>
+                    
+                    <div>
+                      <select
+                        value={formData.category}
+                        onChange={(e) => handleInputChange("category", e.target.value)}
+                        className="w-full bg-zinc-800/50 border border-zinc-600 rounded-md px-3 py-2 text-white"
+                      >
+                        <option value="General">General</option>
+                        <option value="Film">Film</option>
+                        <option value="Music">Music</option>
+                        <option value="Digital Art">Digital Art</option>
+                        <option value="Photography">Photography</option>
+                        <option value="Writing">Writing</option>
+                        <option value="Theater">Theater</option>
+                        <option value="Gaming">Gaming</option>
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <Input
+                        placeholder="Tags (comma separated)"
+                        value={formData.tags}
+                        onChange={(e) => handleInputChange("tags", e.target.value)}
+                        className="bg-zinc-800/50 border-zinc-600 text-white"
+                      />
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="isPrivate"
+                        checked={formData.isPrivate}
+                        onChange={(e) => handleInputChange("isPrivate", e.target.checked)}
+                        className="rounded"
+                      />
+                      <label htmlFor="isPrivate" className="text-sm text-zinc-300">
+                        Private collective (invite-only)
+                      </label>
+                    </div>
+                    
+                    <div className="flex gap-3 pt-4">
+                      <Button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="flex-1 bg-gradient-to-r from-cobalt-700 to-cobalt-800 hover:from-cobalt-600 hover:to-cobalt-700 text-white"
+                      >
+                        {isSubmitting ? (
+                          <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                        ) : null}
+                        {editingCollective ? "Update" : "Create"} Collective
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          setShowCreateDialog(false)
+                          setEditingCollective(null)
+                        }}
+                        className="border-zinc-600 text-white hover:bg-zinc-800"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </form>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
-        )}
+
+          {/* Collectives Grid */}
+          {collectivesLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="flex items-center space-x-2">
+                <Loader2 className="w-6 h-6 animate-spin" />
+                <span className="text-lg">Loading collectives...</span>
+              </div>
+            </div>
+          ) : collectives.length === 0 ? (
+            <Card className="bg-zinc-900/50 border-zinc-800">
+              <CardContent className="p-12 text-center">
+                <Users className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-white mb-2">No Collectives Yet</h3>
+                <p className="text-zinc-400 mb-6">Be the first to create a collective and start building your creative community.</p>
+                <Button 
+                  onClick={() => setShowCreateDialog(true)}
+                  className="bg-gradient-to-r from-cobalt-700 to-cobalt-800 hover:from-cobalt-600 hover:to-cobalt-700 text-white"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create First Collective
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {collectives.map((collective) => (
+                <Card
+                  key={collective.id}
+                  className={`${
+                    collective.isOfficial 
+                      ? "bg-gradient-to-br from-cobalt-900/50 via-zinc-900/50 to-cobalt-900/50 border-cobalt-600/50 hover:border-cobalt-400 shadow-lg shadow-cobalt-900/20" 
+                      : "bg-zinc-900/50 border-zinc-800 hover:border-zinc-600"
+                  } transition-all duration-300 group relative overflow-hidden`}
+                >
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <CardTitle className="text-white flex items-center gap-2">
+                          {collective.name}
+                          {collective.isOfficial && (
+                            <Star className="w-4 h-4 text-cobalt-400 fill-cobalt-400" />
+                          )}
+                          {collective.isPrivate && (
+                            <EyeOff className="w-4 h-4 text-zinc-400" />
+                          )}
+                        </CardTitle>
+                        <div className="flex items-center gap-2 mt-2">
+                          <Badge 
+                            variant="outline" 
+                            className={`${
+                              collective.isOfficial 
+                                ? "border-cobalt-400 text-cobalt-300 bg-cobalt-900/20" 
+                                : "border-zinc-600 text-zinc-300"
+                            } text-xs`}
+                          >
+                            {collective.category}
+                          </Badge>
+                          <div className="flex items-center text-zinc-500 text-xs">
+                            <Users className="w-3 h-3 mr-1" />
+                            {collective.memberCount || 0}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {canManageCollective(collective) && (
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleEdit(collective)}
+                            className="h-8 w-8 p-0 hover:bg-zinc-700"
+                          >
+                            <Edit3 className="w-3 h-3" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleDelete(collective.id)}
+                            className="h-8 w-8 p-0 hover:bg-red-600/20 text-red-400"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </CardHeader>
+                  
+                  <CardContent className="space-y-4">
+                    <p className="text-zinc-400 text-sm line-clamp-3">{collective.description}</p>
+                    
+                    {collective.tags && collective.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {collective.tags.slice(0, 3).map((tag, index) => (
+                          <span key={index} className="px-2 py-1 bg-zinc-800 text-zinc-300 rounded text-xs">
+                            {tag}
+                          </span>
+                        ))}
+                        {collective.tags.length > 3 && (
+                          <span className="px-2 py-1 bg-zinc-800 text-zinc-400 rounded text-xs">
+                            +{collective.tags.length - 3}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    
+                    <div className="flex items-center justify-between pt-4 border-t border-zinc-700">
+                      <div className="text-xs text-zinc-500">
+                        Active {formatDate(collective.lastActivity || collective.createdAt)}
+                      </div>
+                      <Button
+                        size="sm"
+                        className="bg-gradient-to-r from-cobalt-700 to-cobalt-800 hover:from-cobalt-600 hover:to-cobalt-700 text-white"
+                      >
+                        <MessageCircle className="w-3 h-3 mr-1" />
+                        Join Chat
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Access Dialog */}
-      <Dialog open={showAccessDialog} onOpenChange={setShowAccessDialog}>
-        <DialogContent className="bg-zinc-900 border-zinc-700 text-white">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold">
-              {!isAuthenticated ? "Login Required" : "Approval Pending"}
-            </DialogTitle>
-            <DialogDescription className="text-zinc-400">
-              {!isAuthenticated
-                ? "You need to be logged in to access Collectives."
-                : "Your application is being reviewed. Access will be granted once approved."}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex flex-col space-y-3 mt-6">
-            {!isAuthenticated ? (
-              <>
-                <Button onClick={handleLogin} className="bg-white text-black hover:bg-zinc-200">
-                  Login
-                </Button>
-                <Button
-                  onClick={handleApply}
-                  variant="outline"
-                  className="border-zinc-600 text-zinc-300 hover:bg-zinc-800 bg-transparent"
-                >
-                  Request Access
-                </Button>
-              </>
-            ) : (
-              <Button onClick={handleAccessDialogClose} className="bg-white text-black hover:bg-zinc-200">
-                Return Home
-              </Button>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
+      <style jsx>{`
+        .bg-gradient-radial {
+          background-image: radial-gradient(50% 50% at 50% 50%, rgba(30, 41, 59, 0.1) 0%, rgba(0, 0, 0, 0.2) 100%);
+        }
+      `}</style>
     </div>
   )
 }
