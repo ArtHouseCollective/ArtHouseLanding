@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { getFirestore } from "firebase-admin/firestore"
 import { initializeApp, cert, getApps } from "firebase-admin/app"
-import { Resend } from "resend"
+import { sendTransactionalEmail } from "@/lib/resend"
 
 if (!getApps().length) {
   initializeApp({
@@ -48,7 +48,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 })
     }
 
-    // Determine shape and validate fields
     const isNew = (d: any): d is NewBody => "links" in d || "industry" in d || "roles" in d || "genres" in d
 
     const email = (data as any)?.email?.trim()
@@ -66,7 +65,6 @@ export async function POST(request: Request) {
       if (!Array.isArray(data.roles) || data.roles.length < 1) fieldErrors.roles = "Select at least 1 role."
       if (!Array.isArray(data.genres) || data.genres.length < 1) fieldErrors.genres = "Select at least 1 genre."
     } else {
-      // Legacy required fields
       if (!(data as LegacyBody).firstName) fieldErrors.firstName = "First name is required."
       if (!(data as LegacyBody).lastName) fieldErrors.lastName = "Last name is required."
       if (!(data as LegacyBody).profession) fieldErrors.profession = "Profession is required."
@@ -133,31 +131,26 @@ export async function POST(request: Request) {
 
     await docRef.set(applicationData)
 
-    // Send transactional "Thank you for applying" email via Resend (if configured)
-    const RESEND_API_KEY = process.env.RESEND_API_KEY
-    if (RESEND_API_KEY && email) {
+    // Transactional "Thanks for applying" email via Resend (if configured)
+    if (process.env.RESEND_API_KEY && email) {
       try {
-        const resend = new Resend(RESEND_API_KEY)
-        const fromAddress = "ArtHouse <no-reply@your-verified-domain.com>" // Replace with your verified Resend domain
-        const subject = "Thanks for applying to ArtHouse"
-        const html = `
-          <div style="font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.6;">
-            <h2>Thanks for applying to ArtHouse</h2>
-            <p>We received your application and our team will review it shortly.</p>
-            <p>We’ll email you as soon as there’s an update.</p>
-            <hr style="border:none;border-top:1px solid #e5e7eb;margin:16px 0;" />
-            <p style="font-size:12px;color:#6b7280;">If you didn’t submit this application, you can ignore this message.</p>
-          </div>
-        `
-        await resend.emails.send({
-          from: fromAddress,
+        await sendTransactionalEmail({
           to: email,
-          subject,
-          html,
+          subject: "Thanks for applying to ArtHouse",
+          html: `
+            <div style="font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.6;color:#111827">
+              <h2>Thanks for applying to ArtHouse</h2>
+              <p>We received your application and our team will review it shortly.</p>
+              <p>We’ll email you as soon as there’s an update.</p>
+              <hr style="border:none;border-top:1px solid #e5e7eb;margin:16px 0;" />
+              <p style="font-size:12px;color:#6b7280;">If you didn’t submit this application, you can ignore this message.</p>
+            </div>
+          `,
+          text: "Thanks for applying to ArtHouse. We received your application and will follow up soon.",
         })
       } catch (mailErr) {
-        console.error("Resend email error:", mailErr)
-        // Don't fail the request if email send fails
+        console.error("Resend email error (apply receipt):", mailErr)
+        // Do not fail the request if email send fails
       }
     }
 

@@ -50,11 +50,11 @@ export async function sendTransactionalEmail({
       ...(text ? { text } : {}),
     })
 
-    if (result.error) {
-      return { ok: false, error: result.error }
+    if ((result as any)?.error) {
+      return { ok: false, error: (result as any).error }
     }
 
-    return { ok: true, id: (result.data as any)?.id }
+    return { ok: true, id: (result as any)?.data?.id }
   } catch (err: any) {
     return { ok: false, error: err?.message || "Unknown error sending email." }
   }

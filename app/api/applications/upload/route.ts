@@ -1,69 +1,63 @@
 import { NextResponse } from "next/server"
-import { initializeApp, cert, getApps } from "firebase-admin/app"
+import { getApps, initializeApp, cert } from "firebase-admin/app"
 import { getStorage } from "firebase-admin/storage"
+import { v4 as uuidv4 } from "uuid"
 
-if (!getApps().length) {
-  initializeApp({
-    credential: cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
-    }),
-    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  })
-}
-
-const bucket = getStorage().bucket()
-
-function slugify(input: string) {
-  return input.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "")
+function ensureAdmin() {
+  if (!getApps().length) {
+    initializeApp({
+      credential: cert({
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+      }),
+      storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+    })
+  }
 }
 
 export async function POST(request: Request) {
   try {
-    const formData = await request.formData()
-    const file = formData.get("file") as File | null
-    const kind = (formData.get("kind") as string | null) || "misc"
-    const uid = (formData.get("uid") as string | null) || ""
-    const email = (formData.get("email") as string | null) || ""
+    ensureAdmin()
+
+    const form = await request.formData()
+    const file = form.get("file") as File | null
+    const email = (form.get("email") as string | null)?.trim() || "anonymous"
+    const kind = (form.get("kind") as string | null)?.trim() || "attachment"
 
     if (!file) {
-      return NextResponse.json({ error: "No file provided." }, { status: 400 })
-    }
-
-    if (!process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET) {
-      return NextResponse.json({ error: "Storage bucket is not configured." }, { status: 500 })
+      return NextResponse.json({ error: "No file uploaded." }, { status: 400 })
     }
 
     const arrayBuffer = await file.arrayBuffer()
-    const buffer = Buffer.from(new Uint8Array(arrayBuffer))
-
-    const baseName = slugify(file.name || "upload")
-    const owner = uid || email.replace(/[^a-zA-Z0-9]/g, "_") || "anonymous"
+    const buffer = Buffer.from(arrayBuffer)
+    const ext = file.name.split(".").pop()?.toLowerCase() || "bin"
     const timestamp = Date.now()
-    const path = `applications/${owner}/${kind}/${timestamp}-${baseName}`
+    const safeEmail = email.replace(/[^\w.-]+/g, "_")
+    const path = `applications/${safeEmail}/${kind}-${timestamp}.${ext}`
 
-    const gcsFile = bucket.file(path)
-    await gcsFile.save(buffer, {
+    const bucket = getStorage().bucket()
+    const token = uuidv4()
+
+    await bucket.file(path).save(buffer, {
       contentType: file.type || "application/octet-stream",
       metadata: {
-        contentType: file.type || "application/octet-stream",
-        cacheControl: "public, max-age=31536000, immutable",
+        metadata: {
+          firebaseStorageDownloadTokens: token,
+        },
       },
       resumable: false,
+      validation: "md5",
     })
 
-    // Generate a long-lived signed URL (5 years)
-    const expires = new Date(Date.now() + 1000 * 60 * 60 * 24 * 365 * 5)
-    const [signedUrl] = await gcsFile.getSignedUrl({
-      action: "read",
-      expires,
-    })
+    const bucketName = bucket.name
+    const url = `https://firebasestorage.googleapis.com/v0/b/${bucketName}/o/${encodeURIComponent(
+      path,
+    )}?alt=media&token=${token}`
 
-    return NextResponse.json({ url: signedUrl, path })
-  } catch (err) {
+    return NextResponse.json({ ok: true, path, bucket: bucketName, url, contentType: file.type })
+  } catch (err: any) {
     console.error("Upload error:", err)
-    // Always return JSON so the client never sees an HTML error page
-    return NextResponse.json({ error: "Upload failed. Please try again." }, { status: 500 })
+    return NextResponse.json({ ok: false, error: err?.message || "Upload failed." }, { status: 500 })
   }
 }

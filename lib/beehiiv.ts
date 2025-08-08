@@ -1,54 +1,53 @@
-export type BeehiivSubscribeOptions = {
+type SubscribeOptions = {
   utmSource?: string
   sendWelcomeEmail?: boolean
+  reactivateIfArchived?: boolean
+  referringSite?: string
+  // Optional fields if you want to pass name, etc.
+  firstName?: string
+  lastName?: string
+  tags?: string[]
 }
 
-/**
- * Subscribes an email to the Beehiiv publication.
- * Returns { ok: boolean, status: number, data?: any, error?: any }
- *
- * Notes:
- * - If the email is already subscribed, Beehiiv may respond with an error; we treat non-2xx as failure but do not throw.
- * - You can safely call this on approval to ensure the member is present in your Beehiiv audience.
- */
-export async function subscribeToBeehiiv(email: string, opts: BeehiivSubscribeOptions = {}) {
-  const API_KEY = process.env.BEEHIIV_API_KEY
-  const PUBLICATION_ID = process.env.BEEHIIV_PUBLICATION_ID
+export async function subscribeToBeehiiv(
+  email: string,
+  opts: SubscribeOptions = {},
+): Promise<{ ok: boolean; status?: number; error?: string }> {
+  const apiKey = process.env.BEEHIIV_API_KEY
+  const publicationId = process.env.BEEHIIV_PUBLICATION_ID
 
-  if (!API_KEY || !PUBLICATION_ID) {
-    return { ok: false, status: 0, error: "Beehiiv environment variables are not configured." }
+  if (!apiKey || !publicationId) {
+    return { ok: false, error: "Missing Beehiiv environment configuration." }
   }
 
   try {
-    const res = await fetch(
-      `https://api.beehiiv.com/v2/publications/${PUBLICATION_ID}/subscriptions`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${API_KEY}`,
-        },
-        body: JSON.stringify({
-          email,
-          utm_source: opts.utmSource ?? "ArtHouseApproval",
-          send_welcome_email: opts.sendWelcomeEmail ?? false, // avoid double-welcome; keep transactional email via Resend
-        }),
+    const res = await fetch(`https://api.beehiiv.com/v2/publications/${publicationId}/subscriptions`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        // Many Beehiiv examples use Authorization: Bearer <key>.
+        // If your workspace expects a different header (e.g., X-Api-Key), we can switch.
+        Authorization: `Bearer ${apiKey}`,
       },
-    )
-
-    let data: any = null
-    try {
-      data = await res.json()
-    } catch {
-      // Beehiiv sometimes returns empty; ignore JSON parse failures
-    }
+      body: JSON.stringify({
+        email,
+        utm_source: opts.utmSource || "ArtHouse",
+        send_welcome_email: opts.sendWelcomeEmail ?? false,
+        reactivate_if_archived: opts.reactivateIfArchived ?? true,
+        referring_site: opts.referringSite,
+        first_name: opts.firstName,
+        last_name: opts.lastName,
+        tags: opts.tags,
+      }),
+    })
 
     if (!res.ok) {
-      return { ok: false, status: res.status, error: data || { message: "Beehiiv request failed" } }
+      const text = await res.text().catch(() => "")
+      return { ok: false, status: res.status, error: text || `Beehiiv error ${res.status}` }
     }
 
-    return { ok: true, status: res.status, data }
+    return { ok: true, status: res.status }
   } catch (err: any) {
-    return { ok: false, status: 0, error: { message: err?.message || "Beehiiv network error" } }
+    return { ok: false, error: err?.message || "Failed to contact Beehiiv." }
   }
 }

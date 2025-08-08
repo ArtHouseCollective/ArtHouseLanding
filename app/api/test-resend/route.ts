@@ -3,49 +3,30 @@ import { isResendConfigured, sendTransactionalEmail, getDefaultFromAddress } fro
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json().catch(() => ({}))
-    const to = (body?.to as string) ?? ""
-    const subject = (body?.subject as string) ?? "ArtHouse Test Email"
-    const html =
-      (body?.html as string) ??
-      `<div style="font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.6;">
-        <h2>ArtHouse Resend Test</h2>
-        <p>This is a test email sent from your Next.js API route.</p>
-        <p>From: ${getDefaultFromAddress()}</p>
-      </div>`
-    const text = (body?.text as string) ?? "ArtHouse Resend test email."
+    const { to, subject, html, text, from } = await request.json()
+    if (!to) {
+      return NextResponse.json({ error: "Missing 'to' email." }, { status: 400 })
+    }
 
     if (!isResendConfigured()) {
-      return NextResponse.json(
-        {
-          ok: false,
-          error:
-            "RESEND_API_KEY is not configured. Add it in your Vercel Project Settings and verify your sending domain in the Resend dashboard.",
-        },
-        { status: 400 },
-      )
+      return NextResponse.json({ ok: false, error: "RESEND_API_KEY is not configured." }, { status: 500 })
     }
 
-    if (!to) {
-      return NextResponse.json({ ok: false, error: "Missing 'to' in request body." }, { status: 400 })
-    }
+    const result = await sendTransactionalEmail({
+      to,
+      subject: subject || "ArtHouse test email",
+      html:
+        html ||
+        `<div style="font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.6">
+          <h2>ArtHouse Resend test</h2>
+          <p>If you received this, your Resend setup works.</p>
+        </div>`,
+      text: text || "ArtHouse Resend test: your setup works.",
+      from: from || getDefaultFromAddress(),
+    })
 
-    const result = await sendTransactionalEmail({ to, subject, html, text })
-    if (!result.ok) {
-      return NextResponse.json({ ok: false, error: result.error }, { status: 400 })
-    }
-
-    return NextResponse.json({ ok: true, id: result.id })
+    return NextResponse.json(result)
   } catch (err: any) {
-    return NextResponse.json({ ok: false, error: err?.message || "Unknown server error." }, { status: 500 })
+    return NextResponse.json({ ok: false, error: err?.message || "Invalid JSON body." }, { status: 400 })
   }
-}
-
-export async function GET() {
-  // Simple health check for quick debugging
-  return NextResponse.json({
-    ok: true,
-    configured: isResendConfigured(),
-    from: getDefaultFromAddress(),
-  })
 }
