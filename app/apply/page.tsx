@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
-import { ArrowLeft, X, Home, Compass } from "lucide-react"
+import { ArrowLeft, X, Home, Compass } from 'lucide-react'
 import { useRouter } from "next/navigation"
 import { RetroNav } from "@/components/retro-nav"
 import { onAuthStateChanged } from "firebase/auth"
@@ -297,6 +297,12 @@ export default function ApplyPage() {
   const [isSubmitted, setIsSubmitted] = useState(false)
   const router = useRouter()
 
+  useEffect(() => {
+    if (approvalCheckComplete && user && isAdmin) {
+      router.replace("/admin/applications")
+    }
+  }, [approvalCheckComplete, user, isAdmin, router])
+
   // Check authentication state and approval status
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -405,12 +411,16 @@ export default function ApplyPage() {
     )
   }
 
-  // Show already approved message if user is approved or admin
-  if (user && (isApproved || isAdmin)) {
+  // If admin, redirect away from Apply page (handled in effect above)
+  if (approvalCheckComplete && user && isAdmin) {
+    return null
+  }
+
+  // Show already approved message only for approved non-admin users
+  if (user && isApproved) {
     return (
       <div className="min-h-screen bg-black text-white">
         <RetroNav />
-
         <div className="min-h-screen flex items-center justify-center px-4 pt-20">
           <Card className="w-full max-w-md bg-zinc-900/50 border-zinc-700 backdrop-blur-sm">
             <CardContent className="pt-6">
@@ -420,21 +430,15 @@ export default function ApplyPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
-
                 <div>
-                  <h2 className="text-2xl font-bold text-white mb-2">
-                    {isAdmin ? "Admin Access" : "Already Approved!"}
-                  </h2>
+                  <h2 className="text-2xl font-bold text-white mb-2">Already Approved!</h2>
                   <p className="text-zinc-400 mb-4">
-                    {isAdmin
-                      ? "You have admin access to ArtHouse. No need to apply again."
-                      : "Your application has been approved and you're already a member of ArtHouse!"}
+                    Your application has been approved and you're already a member of ArtHouse!
                   </p>
                   <p className="text-sm text-zinc-500">
-                    Logged in as: <span className="text-zinc-300">{user.email}</span>
+                    Logged in as: <span className="text-zinc-300">{user?.email}</span>
                   </p>
                 </div>
-
                 <div className="space-y-3">
                   <Button
                     onClick={() => router.push("/")}
@@ -443,7 +447,6 @@ export default function ApplyPage() {
                     <Home className="w-4 h-4 mr-2" />
                     Go to Home
                   </Button>
-
                   <Button
                     onClick={() => router.push("/discover")}
                     variant="outline"
@@ -453,7 +456,6 @@ export default function ApplyPage() {
                     Explore ArtHouse
                   </Button>
                 </div>
-
                 <p className="text-xs text-zinc-500 mt-4">
                   Need to switch accounts? Sign out and log in with a different email.
                 </p>
