@@ -26,15 +26,10 @@ export async function sendTransactionalEmail(args: SendArgs) {
     to: args.to,
     subject: args.subject,
     html: args.html,
-    text: args.text,
+    text: args.text || "", // Ensure text is always a string
     ...(args.replyTo ? { reply_to: args.replyTo } : {}),
   }
 
   const result = await resend.emails.send(payload)
-  if (result.error) {
-    throw new Error(
-      typeof result.error === "string" ? result.error : JSON.stringify(result.error),
-    )
-  }
   return result
 }

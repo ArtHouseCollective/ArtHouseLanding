@@ -7,6 +7,7 @@ import { ArrowLeft } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import PageTransition from "@/components/page-transition"
 
 export default function MerchPage() {
   const [isPaused, setIsPaused] = useState(false)
@@ -48,7 +49,8 @@ export default function MerchPage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white relative overflow-hidden">
+    <PageTransition>
+      <div className="min-h-screen bg-black text-white relative overflow-hidden">
       {/* Background Text Rows */}
       <div className="fixed inset-0 z-0 pointer-events-none opacity-10">
         {[...Array(8)].map((_, rowIndex) => {
@@ -237,6 +239,7 @@ export default function MerchPage() {
           }
         }
       `}</style>
-    </div>
+      </div>
+    </PageTransition>
   )
 }

@@ -1,8 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { Resend } from "resend"
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 export async function POST(request: NextRequest) {
   try {
     const { name, email, message } = await request.json()
@@ -25,6 +23,9 @@ export async function POST(request: NextRequest) {
       console.error("RESEND_API_KEY not configured")
       return NextResponse.json({ error: "Email service not configured" }, { status: 500 })
     }
+
+    // Initialize Resend with API key
+    const resend = new Resend(process.env.RESEND_API_KEY)
 
     // Send email notification to ArtHouse team
     const { data, error } = await resend.emails.send({

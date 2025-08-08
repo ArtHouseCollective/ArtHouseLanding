@@ -3,16 +3,18 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { SmartDashboardLink } from "@/components/smart-dashboard-link"
 
 const navItems = [
-  { label: "Home", href: "/" },
-  { label: "Discover", href: "/discover" },
-  { label: "Newsletter", href: "/newsletter" },
-  { label: "Contact", href: "/contact" },
-  { label: "Apply", href: "/apply" },
-  { label: "Dashboard", href: "/dashboard" },
-  { label: "Login", href: "/login" },
-  { label: "Merch", href: "/merch" },
+  { label: "Home", href: "/", isRegularLink: true },
+  { label: "Discover", href: "/discover", isRegularLink: true },
+  { label: "Collectives", href: "/collectives", isRegularLink: true },
+  { label: "Newsletter", href: "/newsletter", isRegularLink: true },
+  { label: "Contact", href: "/contact", isRegularLink: true },
+  { label: "Apply", href: "/apply", isRegularLink: true },
+  { label: "Dashboard", href: "/dashboard", isRegularLink: false }, // Smart routing
+  { label: "Login", href: "/login", isRegularLink: true },
+  { label: "Merch", href: "/merch", isRegularLink: true },
 ]
 
 export function RetroNav() {
@@ -49,22 +51,42 @@ export function RetroNav() {
             }}
           >
             {/* Duplicate the nav items for seamless loop */}
-            {[...navItems, ...navItems, ...navItems].map((item, index) => (
-              <Link
-                key={`${item.href}-${index}`}
-                href={item.href}
-                className={`text-white hover:text-zinc-300 transition-colors duration-200 hover:underline underline-offset-4 ${
-                  pathname === item.href ? "text-zinc-400" : ""
-                }`}
-                onClick={() => {
-                  setTimeout(() => {
-                    window.scrollTo({ top: 0, behavior: "smooth" })
-                  }, 100)
-                }}
-              >
-                [ {item.label} ]
-              </Link>
-            ))}
+            {[...navItems, ...navItems, ...navItems].map((item, index) => {
+              if (item.label === "Dashboard" && !item.isRegularLink) {
+                return (
+                  <SmartDashboardLink
+                    key={`${item.href}-${index}`}
+                    className={`text-red-500 hover:text-red-400 transition-colors duration-200 hover:underline underline-offset-4 ${
+                      pathname === item.href ? "text-zinc-400" : ""
+                    }`}
+                    onClick={() => {
+                      setTimeout(() => {
+                        window.scrollTo({ top: 0, behavior: "smooth" })
+                      }, 100)
+                    }}
+                  >
+                    [ {item.label} ]
+                  </SmartDashboardLink>
+                )
+              }
+              
+              return (
+                <Link
+                  key={`${item.href}-${index}`}
+                  href={item.href}
+                  className={`text-red-500 hover:text-red-400 transition-colors duration-200 hover:underline underline-offset-4 ${
+                    pathname === item.href ? "text-zinc-400" : ""
+                  }`}
+                  onClick={() => {
+                    setTimeout(() => {
+                      window.scrollTo({ top: 0, behavior: "smooth" })
+                    }, 100)
+                  }}
+                >
+                  [ {item.label} ]
+                </Link>
+              )
+            })}
           </div>
         </div>
       </div>

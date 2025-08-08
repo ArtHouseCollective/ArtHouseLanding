@@ -416,30 +416,68 @@ export default function ApplyPage() {
 
   // Main form
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen text-white relative overflow-hidden">
+      {/* Animated Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-zinc-900 via-black to-zinc-900" />
+      <div className="absolute inset-0 bg-gradient-radial from-zinc-800/20 via-transparent to-black/40" />
+      
+      {/* Tech Grid Pattern */}
+      <div className="absolute inset-0 opacity-5">
+        <div className="absolute inset-0" style={{
+          backgroundImage: `
+            linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)
+          `,
+          backgroundSize: '30px 30px'
+        }} />
+      </div>
+      
+      {/* Floating Elements */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-cobalt-600/10 rounded-full blur-xl animate-pulse" />
+        <div className="absolute top-3/4 right-1/4 w-40 h-40 bg-white/5 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-1/2 left-3/4 w-24 h-24 bg-cobalt-700/10 rounded-full blur-xl animate-pulse" style={{ animationDelay: '4s' }} />
+      </div>
+      
       <RetroNav />
-      <div className="container mx-auto px-4 py-8 pt-24 max-w-3xl">
+      <div className="relative z-10 container mx-auto px-4 py-8 pt-24 max-w-4xl">
         <Button variant="ghost" onClick={() => router.push("/")} className="text-zinc-400 hover:text-white mb-8">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Home
         </Button>
 
-        <div className="text-center mb-10">
-          <h1 className="text-4xl md:text-5xl font-bold mb-3">
-            <span className="bg-gradient-to-r from-white via-zinc-200 to-white bg-clip-text text-transparent">
-              Apply to ArtHouse
-            </span>
-          </h1>
-          <p className="text-zinc-300 max-w-2xl mx-auto">
-            Share your core links, pick your industry, and select up to 3 roles and interests.
+        <div className="text-center mb-12">
+          <div className="mb-6">
+            <h1 className="text-5xl md:text-7xl font-bold mb-4 relative">
+              <span className="bg-gradient-to-r from-white via-zinc-200 to-white bg-clip-text text-transparent drop-shadow-2xl">
+                Apply to ArtHouse
+              </span>
+              <div className="absolute inset-0 text-5xl md:text-7xl font-bold blur-xl opacity-20 bg-gradient-to-r from-white via-zinc-200 to-white bg-clip-text text-transparent">
+                Apply to ArtHouse
+              </div>
+            </h1>
+          </div>
+          <p className="text-xl text-zinc-300 max-w-2xl mx-auto mb-8 leading-relaxed">
+            Join the future of creative collaboration. Share your vision, showcase your craft.
           </p>
+          <div className="flex items-center justify-center space-x-2 text-cobalt-400">
+            <div className="w-2 h-2 bg-cobalt-400 rounded-full animate-pulse" />
+            <span className="text-sm font-medium tracking-wide">SECURE APPLICATION</span>
+            <div className="w-2 h-2 bg-cobalt-400 rounded-full animate-pulse" style={{ animationDelay: '1s' }} />
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} noValidate className="space-y-8">
           {/* Contact + Links */}
-          <Card className="border border-white/20 bg-white/10 backdrop-blur-xl shadow-lg">
+          <div className="relative mb-8 group">
+            <div className="absolute -inset-1 bg-gradient-to-r from-cobalt-600/50 via-white/20 to-cobalt-600/50 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-1000" />
+            <Card className="relative border border-zinc-700/50 bg-zinc-950/70 backdrop-blur-xl shadow-2xl rounded-xl overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
             <CardHeader>
-              <CardTitle className="text-white">Contact & Links</CardTitle>
+              <CardTitle className="text-white text-xl font-semibold flex items-center">
+                <div className="w-2 h-2 bg-cobalt-400 rounded-full mr-3 animate-pulse" />
+                Contact & Links
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -454,8 +492,8 @@ export default function ApplyPage() {
                       setName(e.target.value)
                       setErrors((er) => ({ ...er, name: undefined }))
                     }}
-                    className={`bg-white/90 text-zinc-900 placeholder:text-zinc-600 border-white/30 focus-visible:ring-2 focus-visible:ring-zinc-900/20 ${
-                      errors.name ? "border-red-500 focus-visible:ring-red-500" : ""
+                    className={`bg-zinc-900/70 text-white placeholder:text-zinc-400 border-zinc-600/50 focus:border-cobalt-400 focus:ring-2 focus:ring-cobalt-400/20 backdrop-blur-sm transition-all duration-300 ${
+                      errors.name ? "border-red-500 focus:ring-red-500/20" : ""
                     }`}
                     placeholder="Your name"
                     aria-invalid={Boolean(errors.name)}
@@ -480,7 +518,7 @@ export default function ApplyPage() {
                       setErrors((er) => ({ ...er, email: undefined }))
                     }}
                     required
-                    className={`bg-white/90 text-zinc-900 placeholder:text-zinc-600 border-white/30 focus-visible:ring-2 focus-visible:ring-zinc-900/20 ${
+                    className={`bg-zinc-900/70 text-white placeholder:text-zinc-400 border-zinc-600/50 focus:border-cobalt-400 focus:ring-2 focus:ring-cobalt-400/20 backdrop-blur-sm transition-all duration-300 ${
                       errors.email ? "border-red-500 focus-visible:ring-red-500" : ""
                     }`}
                     placeholder="hello@studio.com"
@@ -507,7 +545,7 @@ export default function ApplyPage() {
                     setErrors((er) => ({ ...er, website: undefined }))
                   }}
                   required
-                  className={`bg-white/90 text-zinc-900 placeholder:text-zinc-600 border-white/30 focus-visible:ring-2 focus-visible:ring-zinc-900/20 ${
+                  className={`bg-zinc-900/70 text-white placeholder:text-zinc-400 border-zinc-600/50 focus:border-cobalt-400 focus:ring-2 focus:ring-cobalt-400/20 backdrop-blur-sm transition-all duration-300 ${
                     errors.website ? "border-red-500 focus-visible:ring-red-500" : ""
                   }`}
                   placeholder="https://yourwebsite.com"
@@ -530,7 +568,7 @@ export default function ApplyPage() {
                     id="instagram"
                     value={instagram}
                     onChange={(e) => setInstagram(e.target.value)}
-                    className="bg-white/90 text-zinc-900 placeholder:text-zinc-600 border-white/30 focus-visible:ring-2 focus-visible:ring-zinc-900/20"
+                    className="bg-zinc-900/70 text-white placeholder:text-zinc-400 border-zinc-600/50 focus:border-cobalt-400 focus:ring-2 focus:ring-cobalt-400/20 backdrop-blur-sm transition-all duration-300"
                     placeholder="@yourhandle"
                   />
                 </div>
@@ -542,18 +580,25 @@ export default function ApplyPage() {
                     id="additional"
                     value={additional}
                     onChange={(e) => setAdditional(e.target.value)}
-                    className="bg-white/90 text-zinc-900 placeholder:text-zinc-600 border-white/30 focus-visible:ring-2 focus-visible:ring-zinc-900/20"
+                    className="bg-zinc-900/70 text-white placeholder:text-zinc-400 border-zinc-600/50 focus:border-cobalt-400 focus:ring-2 focus:ring-cobalt-400/20 backdrop-blur-sm transition-all duration-300"
                     placeholder="Link to your reel, channel, profile..."
                   />
                 </div>
               </div>
             </CardContent>
-          </Card>
+            </Card>
+          </div>
 
           {/* Industry */}
-          <Card className="border border-white/20 bg-white/10 backdrop-blur-xl shadow-lg" ref={errors.industry ? firstErrorRef : null}>
+          <div className="relative mb-8 group" ref={errors.industry ? firstErrorRef : null}>
+            <div className="absolute -inset-1 bg-gradient-to-r from-cobalt-600/50 via-white/20 to-cobalt-600/50 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-1000" />
+            <Card className="relative border border-zinc-700/50 bg-zinc-950/70 backdrop-blur-xl shadow-2xl rounded-xl overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
             <CardHeader>
-              <CardTitle className="text-white">Industry</CardTitle>
+              <CardTitle className="text-white text-xl font-semibold flex items-center">
+                <div className="w-2 h-2 bg-cobalt-400 rounded-full mr-3 animate-pulse" />
+                Industry
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -586,10 +631,14 @@ export default function ApplyPage() {
               </div>
               {errors.industry && <p className="mt-2 text-sm text-red-500">{errors.industry}</p>}
             </CardContent>
-          </Card>
+            </Card>
+          </div>
 
           {/* Roles */}
-          <Card className="border border-white/20 bg-white/10 backdrop-blur-xl shadow-lg" ref={errors.roles ? firstErrorRef : null}>
+          <div className="relative mb-8 group" ref={errors.roles ? firstErrorRef : null}>
+            <div className="absolute -inset-1 bg-gradient-to-r from-cobalt-600/50 via-white/20 to-cobalt-600/50 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-1000" />
+            <Card className="relative border border-zinc-700/50 bg-zinc-950/70 backdrop-blur-xl shadow-2xl rounded-xl overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
             <CardHeader>
               <CardTitle className="text-white">Creative Roles (1–3)</CardTitle>
             </CardHeader>
@@ -638,7 +687,8 @@ export default function ApplyPage() {
                 </>
               )}
             </CardContent>
-          </Card>
+            </Card>
+          </div>
 
           {/* Genres & Interests */}
           <Card className="border border-white/20 bg-white/10 backdrop-blur-xl shadow-lg" ref={errors.genres ? firstErrorRef : null}>

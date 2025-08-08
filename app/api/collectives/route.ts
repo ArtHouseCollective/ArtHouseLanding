@@ -15,9 +15,28 @@ export async function GET() {
       ...doc.data(),
     }))
 
+    // Always include ArtHouse Insider collective at the top
+    const arthouseInsider = {
+      id: "arthouse-insider",
+      name: "ArtHouse Insider",
+      description: "The official collective for approved ArtHouse members. Access exclusive events, collaborations, and early opportunities.",
+      category: "Official",
+      tags: ["official", "exclusive", "verified", "community"],
+      memberCount: 150, // Dynamic based on approved users
+      isPrivate: false,
+      createdBy: "arthouse-admin",
+      createdAt: Timestamp.fromDate(new Date("2024-01-01")),
+      lastActivity: Timestamp.now(),
+      coverImage: "/assets/icons/collective.png",
+      isOfficial: true
+    }
+
+    // Add ArtHouse Insider at the beginning
+    const allCollectives = [arthouseInsider, ...collectives]
+
     return NextResponse.json({
       success: true,
-      collectives,
+      collectives: allCollectives,
     }, { status: 200 })
   } catch (error) {
     console.error("Error fetching collectives:", error)

@@ -41,6 +41,7 @@ interface Collective {
   coverImage?: string
   members?: string[]
   admins?: string[]
+  isOfficial?: boolean
 }
 
 export default function CollectivesPage() {
@@ -428,19 +429,33 @@ export default function CollectivesPage() {
               {collectives.map((collective) => (
                 <Card
                   key={collective.id}
-                  className="bg-zinc-900/50 border-zinc-800 hover:border-zinc-600 transition-all duration-300 group"
+                  className={`${
+                    collective.isOfficial 
+                      ? "bg-gradient-to-br from-cobalt-900/50 via-zinc-900/50 to-cobalt-900/50 border-cobalt-600/50 hover:border-cobalt-400 shadow-lg shadow-cobalt-900/20" 
+                      : "bg-zinc-900/50 border-zinc-800 hover:border-zinc-600"
+                  } transition-all duration-300 group relative overflow-hidden`}
                 >
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <CardTitle className="text-white flex items-center gap-2">
                           {collective.name}
+                          {collective.isOfficial && (
+                            <Star className="w-4 h-4 text-cobalt-400 fill-cobalt-400" />
+                          )}
                           {collective.isPrivate && (
                             <EyeOff className="w-4 h-4 text-zinc-400" />
                           )}
                         </CardTitle>
                         <div className="flex items-center gap-2 mt-2">
-                          <Badge variant="outline" className="border-zinc-600 text-zinc-300 text-xs">
+                          <Badge 
+                            variant="outline" 
+                            className={`${
+                              collective.isOfficial 
+                                ? "border-cobalt-400 text-cobalt-300 bg-cobalt-900/20" 
+                                : "border-zinc-600 text-zinc-300"
+                            } text-xs`}
+                          >
                             {collective.category}
                           </Badge>
                           <div className="flex items-center text-zinc-500 text-xs">
