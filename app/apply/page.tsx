@@ -8,12 +8,12 @@ import { auth } from "@/lib/firebase-client"
 
 import { RetroNav } from "@/components/retro-nav"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Compass, Home, ImageIcon, Film, Music2, Globe, Upload } from 'lucide-react'
+import { ArrowLeft, Compass, Home, Film, Music2, Globe, Upload } from 'lucide-react'
 
 type IndustryId = "film_tv" | "digital" | "music"
 
@@ -23,65 +23,17 @@ const INDUSTRIES: { id: IndustryId; label: string; icon: React.ReactNode }[] = [
   { id: "music", label: "Music", icon: <Music2 className="h-4 w-4" /> },
 ]
 
-// Limit concise curated roles and genres to reduce clutter
+// Curated, concise role and genre sets per industry
 const ROLES_BY_INDUSTRY: Record<IndustryId, string[]> = {
-  film_tv: [
-    "Director",
-    "Producer",
-    "Screenwriter",
-    "Actor",
-    "Cinematographer",
-    "Editor",
-    "Composer",
-  ],
-  digital: [
-    "Content Creator",
-    "YouTuber",
-    "Influencer",
-    "Social Media Manager",
-    "Video Editor",
-    "Motion Graphics",
-  ],
-  music: [
-    "Singer",
-    "Musician",
-    "Songwriter",
-    "DJ",
-    "Music Producer",
-    "Audio Engineer",
-    "Composer",
-  ],
+  film_tv: ["Director", "Producer", "Screenwriter", "Actor", "Cinematographer", "Editor", "Composer"],
+  digital: ["Content Creator", "YouTuber", "Influencer", "Social Media Manager", "Video Editor", "Motion Graphics"],
+  music: ["Singer", "Musician", "Songwriter", "DJ", "Music Producer", "Audio Engineer", "Composer"],
 }
 
 const GENRES_BY_INDUSTRY: Record<IndustryId, string[]> = {
-  film_tv: [
-    "Horror",
-    "Romance",
-    "Thriller",
-    "Drama",
-    "Comedy",
-    "Documentary",
-    "Sci‑Fi",
-    "Action",
-  ],
-  digital: [
-    "Vlogging",
-    "Tutorials",
-    "Reviews",
-    "Gaming",
-    "Lifestyle",
-    "Tech",
-    "Fashion",
-  ],
-  music: [
-    "Pop",
-    "Hip‑Hop",
-    "Electronic",
-    "Rock",
-    "Jazz",
-    "Classical",
-    "Soundtrack",
-  ],
+  film_tv: ["Horror", "Romance", "Thriller", "Drama", "Comedy", "Documentary", "Sci‑Fi", "Action"],
+  digital: ["Vlogging", "Tutorials", "Reviews", "Gaming", "Lifestyle", "Tech", "Fashion"],
+  music: ["Pop", "Hip‑Hop", "Electronic", "Rock", "Jazz", "Classical", "Soundtrack"],
 }
 
 export default function ApplyPage() {
@@ -194,7 +146,7 @@ export default function ApplyPage() {
     setSubmitError("")
 
     try {
-      // Note: for now we send file metadata; hook up Blob/S3 upload later.
+      // Sending metadata for uploads for now; integrate storage in a follow-up.
       const payload = {
         name,
         email,
@@ -207,9 +159,7 @@ export default function ApplyPage() {
         roles,
         genres,
         attachments: {
-          mainPhoto: mainPhoto
-            ? { name: mainPhoto.name, size: mainPhoto.size, type: mainPhoto.type }
-            : null,
+          mainPhoto: mainPhoto ? { name: mainPhoto.name, size: mainPhoto.size, type: mainPhoto.type } : null,
           demo: demoFile ? { name: demoFile.name, size: demoFile.size, type: demoFile.type } : null,
         },
         submittedAt: new Date().toISOString(),
@@ -255,19 +205,19 @@ export default function ApplyPage() {
       <div className="min-h-screen bg-black text-white">
         <RetroNav />
         <div className="min-h-screen flex items-center justify-center px-4 pt-20">
-          <Card className="w-full max-w-md bg-zinc-900/50 border-zinc-700 backdrop-blur-sm">
+          <Card className="w-full max-w-md border border-white/10 bg-zinc-900/30 backdrop-blur-xl shadow-lg">
             <CardContent className="pt-6">
               <div className="text-center space-y-6">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-500/20 flex items-center justify-center">
-                  <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-emerald-400/15 ring-1 ring-emerald-400/20 flex items-center justify-center">
+                  <svg className="w-8 h-8 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold text-white mb-2">Already Approved!</h2>
-                  <p className="text-zinc-400 mb-4">You're already a member of ArtHouse.</p>
-                  <p className="text-sm text-zinc-500">
-                    Logged in as: <span className="text-zinc-300">{user?.email}</span>
+                  <p className="text-zinc-300 mb-4">You're already a member of ArtHouse.</p>
+                  <p className="text-sm text-zinc-400">
+                    Logged in as: <span className="text-zinc-200">{user?.email}</span>
                   </p>
                 </div>
                 <div className="space-y-3">
@@ -278,7 +228,7 @@ export default function ApplyPage() {
                   <Button
                     onClick={() => router.push("/discover")}
                     variant="outline"
-                    className="w-full border-zinc-600 text-white hover:bg-zinc-800"
+                    className="w-full border-white/10 text-white hover:bg-white/5"
                   >
                     <Compass className="w-4 h-4 mr-2" />
                     Explore ArtHouse
@@ -298,18 +248,18 @@ export default function ApplyPage() {
       <div className="min-h-screen bg-black text-white">
         <RetroNav />
         <div className="min-h-screen flex items-center justify-center px-4 pt-20">
-          <Card className="w-full max-w-md bg-zinc-900/50 border-zinc-700 backdrop-blur-sm">
+          <Card className="w-full max-w-md border border-white/10 bg-zinc-900/30 backdrop-blur-xl shadow-lg">
             <CardContent className="pt-6">
               <div className="text-center space-y-6">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-500/20 flex items-center justify-center">
-                  <svg className="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-emerald-400/15 ring-1 ring-emerald-400/20 flex items-center justify-center">
+                  <svg className="w-8 h-8 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold text-white mb-2">Application Submitted!</h2>
-                  <p className="text-zinc-400 mb-4">
-                    Thank you for applying to ArtHouse. We’ll review your application and get back to you.
+                  <p className="text-zinc-300 mb-4">
+                    Share your latest work with the community while we review your application.
                   </p>
                 </div>
                 <Button onClick={() => router.push("/")} className="w-full bg-white text-black hover:bg-zinc-200">
@@ -342,35 +292,34 @@ export default function ApplyPage() {
             </span>
           </h1>
           <p className="text-zinc-300 max-w-2xl mx-auto">
-            A concise application focused on your craft. Share your core links, pick your industry, and select up to 3
-            roles and interests.
+            Share your core links, pick your industry, and select up to 3 roles and interests.
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
           {/* Contact + Links */}
-          <Card className="bg-zinc-900/50 border-zinc-700 backdrop-blur-sm">
+          <Card className="border border-white/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] backdrop-blur-xl shadow-lg">
             <CardHeader>
               <CardTitle className="text-white">Contact & Links</CardTitle>
-              <CardDescription className="text-zinc-400">Minimal and focused</CardDescription>
+              {/* Removed CardDescription per request */}
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="name" className="text-white">
+                  <Label htmlFor="name" className="text-zinc-200">
                     Name
                   </Label>
                   <Input
                     id="name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="bg-zinc-800/50 border-zinc-600 text-white"
+                    className="bg-white/5 text-white placeholder:text-zinc-400 border-white/10 focus-visible:ring-2 focus-visible:ring-white/20 backdrop-blur-sm"
                     placeholder="Your name"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="email" className="text-white">
-                    Email *
+                  <Label htmlFor="email" className="text-zinc-200">
+                    Email
                   </Label>
                   <Input
                     id="email"
@@ -378,48 +327,48 @@ export default function ApplyPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="bg-zinc-800/50 border-zinc-600 text-white"
+                    className="bg-white/5 text-white placeholder:text-zinc-400 border-white/10 focus-visible:ring-2 focus-visible:ring-white/20 backdrop-blur-sm"
                     placeholder="hello@studio.com"
                   />
                 </div>
               </div>
 
               <div>
-                <Label htmlFor="website" className="text-white">
-                  Website / Portfolio *
+                <Label htmlFor="website" className="text-zinc-200">
+                  Website / Portfolio
                 </Label>
                 <Input
                   id="website"
                   value={website}
                   onChange={(e) => setWebsite(e.target.value)}
                   required
-                  className="bg-zinc-800/50 border-zinc-600 text-white"
+                  className="bg-white/5 text-white placeholder:text-zinc-400 border-white/10 focus-visible:ring-2 focus-visible:ring-white/20 backdrop-blur-sm"
                   placeholder="https://yourwebsite.com"
                 />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="instagram" className="text-white">
+                  <Label htmlFor="instagram" className="text-zinc-200">
                     Instagram
                   </Label>
                   <Input
                     id="instagram"
                     value={instagram}
                     onChange={(e) => setInstagram(e.target.value)}
-                    className="bg-zinc-800/50 border-zinc-600 text-white"
+                    className="bg-white/5 text-white placeholder:text-zinc-400 border-white/10 focus-visible:ring-2 focus-visible:ring-white/20 backdrop-blur-sm"
                     placeholder="@yourhandle"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="additional" className="text-white">
+                  <Label htmlFor="additional" className="text-zinc-200">
                     Additional (YouTube, IMDb, Vimeo, Spotify, etc.)
                   </Label>
                   <Input
                     id="additional"
                     value={additional}
                     onChange={(e) => setAdditional(e.target.value)}
-                    className="bg-zinc-800/50 border-zinc-600 text-white"
+                    className="bg-white/5 text-white placeholder:text-zinc-400 border-white/10 focus-visible:ring-2 focus-visible:ring-white/20 backdrop-blur-sm"
                     placeholder="Link to your reel, channel, profile..."
                   />
                 </div>
@@ -428,10 +377,9 @@ export default function ApplyPage() {
           </Card>
 
           {/* Industry */}
-          <Card className="bg-zinc-900/50 border-zinc-700 backdrop-blur-sm">
+          <Card className="border border-white/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] backdrop-blur-xl shadow-lg">
             <CardHeader>
-              <CardTitle className="text-white">Industry *</CardTitle>
-              <CardDescription className="text-zinc-400">Choose one</CardDescription>
+              <CardTitle className="text-white">Industry</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -444,14 +392,14 @@ export default function ApplyPage() {
                       onClick={() => setIndustry(opt.id)}
                       className={[
                         "rounded-lg border p-3 text-left transition",
-                        "bg-zinc-900/60 hover:bg-zinc-900",
-                        active ? "border-white" : "border-zinc-700",
+                        "bg-white/5 hover:bg-white/10 backdrop-blur-sm",
+                        active ? "border-white/30 ring-1 ring-white/20" : "border-white/10",
                       ].join(" ")}
                       aria-pressed={active}
                     >
                       <div className="flex items-center gap-2">
-                        {opt.icon}
-                        <span className="font-medium">{opt.label}</span>
+                        <span className="text-zinc-200">{opt.icon}</span>
+                        <span className="font-medium text-zinc-100">{opt.label}</span>
                       </div>
                     </button>
                   )
@@ -461,12 +409,9 @@ export default function ApplyPage() {
           </Card>
 
           {/* Roles */}
-          <Card className="bg-zinc-900/50 border-zinc-700 backdrop-blur-sm">
+          <Card className="border border-white/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] backdrop-blur-xl shadow-lg">
             <CardHeader>
               <CardTitle className="text-white">Creative Roles (1–3)</CardTitle>
-              <CardDescription className="text-zinc-400">
-                Options match your selected industry
-              </CardDescription>
             </CardHeader>
             <CardContent>
               {industry === "" ? (
@@ -481,18 +426,21 @@ export default function ApplyPage() {
                         <label
                           key={role}
                           className={[
-                            "flex items-center gap-2 rounded-md border px-3 py-2 cursor-pointer",
-                            checked ? "border-white bg-zinc-900" : "border-zinc-700 hover:bg-zinc-900/50",
+                            "flex items-center gap-2 rounded-md border px-3 py-2 cursor-pointer transition",
+                            checked
+                              ? "border-white/30 bg-white/8 ring-1 ring-white/20"
+                              : "border-white/10 hover:bg-white/5",
                             disabled ? "opacity-50 cursor-not-allowed" : "",
+                            "backdrop-blur-sm",
                           ].join(" ")}
                         >
                           <Checkbox
                             checked={checked}
                             onCheckedChange={() => toggleSelection(roles, setRoles, role)}
-                            className="border-zinc-600"
+                            className="border-white/30 data-[state=checked]:bg-white/20"
                             disabled={disabled}
                           />
-                          <span className="text-sm">{role}</span>
+                          <span className="text-sm text-zinc-100">{role}</span>
                         </label>
                       )
                     })}
@@ -500,7 +448,7 @@ export default function ApplyPage() {
                   {roles.length > 0 && (
                     <div className="mt-4 flex flex-wrap gap-2">
                       {roles.map((r) => (
-                        <Badge key={r} variant="secondary" className="bg-zinc-700 text-zinc-200">
+                        <Badge key={r} variant="secondary" className="bg-white/10 text-zinc-100 border border-white/15">
                           {r}
                         </Badge>
                       ))}
@@ -512,12 +460,9 @@ export default function ApplyPage() {
           </Card>
 
           {/* Genres & Interests */}
-          <Card className="bg-zinc-900/50 border-zinc-700 backdrop-blur-sm">
+          <Card className="border border-white/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] backdrop-blur-xl shadow-lg">
             <CardHeader>
               <CardTitle className="text-white">Genres & Interests (1–3)</CardTitle>
-              <CardDescription className="text-zinc-400">
-                Tailored by industry — composers can still pick film genres within Film & TV
-              </CardDescription>
             </CardHeader>
             <CardContent>
               {industry === "" ? (
@@ -532,18 +477,21 @@ export default function ApplyPage() {
                         <label
                           key={g}
                           className={[
-                            "flex items-center gap-2 rounded-md border px-3 py-2 cursor-pointer",
-                            checked ? "border-white bg-zinc-900" : "border-zinc-700 hover:bg-zinc-900/50",
+                            "flex items-center gap-2 rounded-md border px-3 py-2 cursor-pointer transition",
+                            checked
+                              ? "border-white/30 bg-white/8 ring-1 ring-white/20"
+                              : "border-white/10 hover:bg-white/5",
                             disabled ? "opacity-50 cursor-not-allowed" : "",
+                            "backdrop-blur-sm",
                           ].join(" ")}
                         >
                           <Checkbox
                             checked={checked}
                             onCheckedChange={() => toggleSelection(genres, setGenres, g)}
-                            className="border-zinc-600"
+                            className="border-white/30 data-[state=checked]:bg-white/20"
                             disabled={disabled}
                           />
-                          <span className="text-sm">{g}</span>
+                          <span className="text-sm text-zinc-100">{g}</span>
                         </label>
                       )
                     })}
@@ -551,7 +499,7 @@ export default function ApplyPage() {
                   {genres.length > 0 && (
                     <div className="mt-4 flex flex-wrap gap-2">
                       {genres.map((g) => (
-                        <Badge key={g} variant="secondary" className="bg-zinc-700 text-zinc-200">
+                        <Badge key={g} variant="secondary" className="bg-white/10 text-zinc-100 border border-white/15">
                           {g}
                         </Badge>
                       ))}
@@ -563,23 +511,20 @@ export default function ApplyPage() {
           </Card>
 
           {/* Uploads */}
-          <Card className="bg-zinc-900/50 border-zinc-700 backdrop-blur-sm">
+          <Card className="border border-white/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] backdrop-blur-xl shadow-lg">
             <CardHeader>
               <CardTitle className="text-white">Media</CardTitle>
-              <CardDescription className="text-zinc-400">
-                A single main photo and one demo piece (video, audio, or link above)
-              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="mainPhoto" className="text-white">
+                  <Label htmlFor="mainPhoto" className="text-zinc-200">
                     Main Photo
                   </Label>
                   <div className="mt-2">
-                    <label className="flex items-center gap-2 rounded-md border border-zinc-700 bg-zinc-900/60 px-3 py-2 hover:bg-zinc-900 cursor-pointer">
-                      <Upload className="h-4 w-4" />
-                      <span className="text-sm">Upload image</span>
+                    <label className="flex items-center gap-2 rounded-md border border-white/10 bg-white/5 px-3 py-2 hover:bg-white/10 cursor-pointer backdrop-blur-sm">
+                      <Upload className="h-4 w-4 text-zinc-200" />
+                      <span className="text-sm text-zinc-100">Upload image</span>
                       <input
                         id="mainPhoto"
                         type="file"
@@ -594,29 +539,29 @@ export default function ApplyPage() {
                   </div>
                   {mainPhoto && (
                     <div className="mt-3 flex items-center gap-3">
-                      <div className="h-16 w-16 rounded-md overflow-hidden bg-zinc-800/50 flex items-center justify-center">
+                      <div className="h-16 w-16 rounded-md overflow-hidden bg-white/5 border border-white/10 flex items-center justify-center backdrop-blur-sm">
                         <img
                           src={URL.createObjectURL(mainPhoto) || "/placeholder.svg"}
                           alt="Main preview"
                           className="h-full w-full object-cover"
                         />
                       </div>
-                      <div className="text-xs text-zinc-400">
-                        <div className="font-medium text-zinc-200">{mainPhoto.name}</div>
-                        <div>{(mainPhoto.size / 1024).toFixed(1)} KB</div>
+                      <div className="text-xs text-zinc-300">
+                        <div className="font-medium text-zinc-100">{mainPhoto.name}</div>
+                        <div className="text-zinc-400">{(mainPhoto.size / 1024).toFixed(1)} KB</div>
                       </div>
                     </div>
                   )}
                 </div>
 
                 <div>
-                  <Label htmlFor="demo" className="text-white">
+                  <Label htmlFor="demo" className="text-zinc-200">
                     Demo Piece
                   </Label>
                   <div className="mt-2">
-                    <label className="flex items-center gap-2 rounded-md border border-zinc-700 bg-zinc-900/60 px-3 py-2 hover:bg-zinc-900 cursor-pointer">
-                      <Upload className="h-4 w-4" />
-                      <span className="text-sm">Upload video or audio</span>
+                    <label className="flex items-center gap-2 rounded-md border border-white/10 bg-white/5 px-3 py-2 hover:bg-white/10 cursor-pointer backdrop-blur-sm">
+                      <Upload className="h-4 w-4 text-zinc-200" />
+                      <span className="text-sm text-zinc-100">Upload video or audio</span>
                       <input
                         id="demo"
                         type="file"
@@ -631,14 +576,14 @@ export default function ApplyPage() {
                   </div>
                   {demoFile && (
                     <div className="mt-3 space-y-2">
-                      <div className="text-xs text-zinc-400">
-                        <div className="font-medium text-zinc-200">{demoFile.name}</div>
-                        <div>{(demoFile.size / 1024).toFixed(1)} KB</div>
+                      <div className="text-xs text-zinc-300">
+                        <div className="font-medium text-zinc-100">{demoFile.name}</div>
+                        <div className="text-zinc-400">{(demoFile.size / 1024).toFixed(1)} KB</div>
                       </div>
                       {demoFile.type.startsWith("video/") ? (
                         <video
                           controls
-                          className="w-full rounded-md border border-zinc-700"
+                          className="w-full rounded-md border border-white/10 bg-black/30"
                           src={URL.createObjectURL(demoFile)}
                         />
                       ) : demoFile.type.startsWith("audio/") ? (
@@ -651,7 +596,7 @@ export default function ApplyPage() {
                 </div>
               </div>
 
-              <p className="text-xs text-zinc-500">
+              <p className="text-xs text-zinc-400">
                 Tip: You can also paste links above (YouTube, Vimeo, Spotify, IMDb) in the Additional field.
               </p>
             </CardContent>
@@ -660,8 +605,8 @@ export default function ApplyPage() {
           {/* Submit */}
           <div className="text-center pt-2">
             {submitError && (
-              <div className="mb-4 p-4 bg-red-900/50 border border-red-700 rounded-lg">
-                <p className="text-red-400">{submitError}</p>
+              <div className="mb-4 p-4 bg-red-900/30 border border-red-700/50 rounded-lg">
+                <p className="text-red-300">{submitError}</p>
               </div>
             )}
 
