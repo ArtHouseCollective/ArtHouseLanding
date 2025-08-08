@@ -10,6 +10,7 @@ const navItems = [
   { label: "Newsletter", href: "/newsletter" },
   { label: "Contact", href: "/contact" },
   { label: "Apply", href: "/apply" },
+  { label: "Dashboard", href: "/dashboard" },
   { label: "Login", href: "/login" },
   { label: "Merch", href: "/merch" },
 ]

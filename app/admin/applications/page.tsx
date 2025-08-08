@@ -18,6 +18,8 @@ import {
   Briefcase,
   Calendar,
   Hash,
+  Clock,
+  Star,
 } from "lucide-react"
 import Link from "next/link"
 
@@ -31,7 +33,7 @@ interface Application {
   projectId?: string
   appliedAt?: any
   createdAt?: any
-  status?: "pending" | "approved" | "rejected"
+  status?: "pending" | "approved" | "rejected" | "waitlist" | "shortlist"
   portfolioLink?: string
   bio?: string
 }
@@ -86,14 +88,14 @@ export default function AdminApplicationsPage() {
     }
   }
 
-  const handleStatusUpdate = async (applicationId: string, newStatus: "approved" | "rejected") => {
+  const handleStatusUpdate = async (applicationId: string, newStatus: "approved" | "rejected" | "waitlist" | "shortlist") => {
     setProcessingId(applicationId)
 
     try {
       const response = await fetch("/api/approve-application", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ applicationId, status: newStatus }),
+        body: JSON.stringify({ applicationId, action: newStatus }),
       })
 
       if (response.ok) {
@@ -137,6 +139,10 @@ export default function AdminApplicationsPage() {
         return <Badge className="bg-green-500/20 text-green-400 border-green-500/30">Approved</Badge>
       case "rejected":
         return <Badge className="bg-red-500/20 text-red-400 border-red-500/30">Rejected</Badge>
+      case "waitlist":
+        return <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/30">Waitlist</Badge>
+      case "shortlist":
+        return <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">Shortlist</Badge>
       default:
         return <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">Pending</Badge>
     }
@@ -201,7 +207,7 @@ export default function AdminApplicationsPage() {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
             <Card className="bg-zinc-900/50 border-zinc-800">
               <CardContent className="p-4">
                 <div className="text-2xl font-bold text-white">{applications.length}</div>
@@ -230,6 +236,22 @@ export default function AdminApplicationsPage() {
                   {applications.filter((app) => app.status === "rejected").length}
                 </div>
                 <div className="text-sm text-zinc-400">Rejected</div>
+              </CardContent>
+            </Card>
+            <Card className="bg-zinc-900/50 border-zinc-800">
+              <CardContent className="p-4">
+                <div className="text-2xl font-bold text-orange-400">
+                  {applications.filter((app) => app.status === "waitlist").length}
+                </div>
+                <div className="text-sm text-zinc-400">Waitlist</div>
+              </CardContent>
+            </Card>
+            <Card className="bg-zinc-900/50 border-zinc-800">
+              <CardContent className="p-4">
+                <div className="text-2xl font-bold text-blue-400">
+                  {applications.filter((app) => app.status === "shortlist").length}
+                </div>
+                <div className="text-sm text-zinc-400">Shortlist</div>
               </CardContent>
             </Card>
           </div>
@@ -351,33 +373,63 @@ export default function AdminApplicationsPage() {
                     )}
 
                     {/* Action Buttons */}
-                    {(!application.status || application.status === "pending") && (
-                      <div className="flex gap-3 pt-4 border-t border-zinc-700">
-                        <Button
-                          onClick={() => handleStatusUpdate(application.id, "approved")}
-                          disabled={processingId === application.id}
-                          className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
-                        >
-                          {processingId === application.id ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                          ) : (
-                            <CheckCircle className="w-4 h-4" />
-                          )}
-                          Approve
-                        </Button>
-                        <Button
-                          onClick={() => handleStatusUpdate(application.id, "rejected")}
-                          disabled={processingId === application.id}
-                          variant="destructive"
-                          className="bg-red-600 hover:bg-red-700 text-white flex items-center gap-2"
-                        >
-                          {processingId === application.id ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                          ) : (
-                            <XCircle className="w-4 h-4" />
-                          )}
-                          Reject
-                        </Button>
+                    {(!application.status || application.status === "pending" || application.status === "waitlist" || application.status === "shortlist") && (
+                      <div className="pt-4 border-t border-zinc-700">
+                        <div className="flex flex-wrap gap-2 mb-3">
+                          <Button
+                            onClick={() => handleStatusUpdate(application.id, "approved")}
+                            disabled={processingId === application.id}
+                            className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2 text-sm"
+                            size="sm"
+                          >
+                            {processingId === application.id ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                              <CheckCircle className="w-3 h-3" />
+                            )}
+                            Approve
+                          </Button>
+                          <Button
+                            onClick={() => handleStatusUpdate(application.id, "shortlist")}
+                            disabled={processingId === application.id}
+                            className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2 text-sm"
+                            size="sm"
+                          >
+                            {processingId === application.id ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                              <Star className="w-3 h-3" />
+                            )}
+                            Shortlist
+                          </Button>
+                          <Button
+                            onClick={() => handleStatusUpdate(application.id, "waitlist")}
+                            disabled={processingId === application.id}
+                            className="bg-orange-600 hover:bg-orange-700 text-white flex items-center gap-2 text-sm"
+                            size="sm"
+                          >
+                            {processingId === application.id ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                              <Clock className="w-3 h-3" />
+                            )}
+                            Waitlist
+                          </Button>
+                          <Button
+                            onClick={() => handleStatusUpdate(application.id, "rejected")}
+                            disabled={processingId === application.id}
+                            variant="destructive"
+                            className="bg-red-600 hover:bg-red-700 text-white flex items-center gap-2 text-sm"
+                            size="sm"
+                          >
+                            {processingId === application.id ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                              <XCircle className="w-3 h-3" />
+                            )}
+                            Reject
+                          </Button>
+                        </div>
                       </div>
                     )}
                   </CardContent>

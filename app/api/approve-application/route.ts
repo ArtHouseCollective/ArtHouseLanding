@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
   try {
     const { applicationId, action, reviewNotes, reviewedBy } = await request.json()
 
-    if (!applicationId || !action || !["approved", "rejected"].includes(action)) {
+    if (!applicationId || !action || !["approved", "rejected", "waitlist", "shortlist"].includes(action)) {
       return NextResponse.json({ error: "Invalid request parameters" }, { status: 400 })
     }
 
