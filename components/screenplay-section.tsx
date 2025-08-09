@@ -80,12 +80,15 @@ export default function ScreenplaySection() {
         </div>
 
         {/* Handwritten prompt to go to the creators carousel */}
-        <div className="mt-12 flex items-center gap-3" style={{ fontFamily: 'var(--font-hand)' }}>
+        <button
+          onClick={() => window.scrollTo({ top: window.innerHeight * 2, behavior: 'smooth' })}
+          className="mt-12 flex items-center gap-3" style={{ fontFamily: 'var(--font-hand)' }}
+        >
           <span className="text-red-400 text-2xl md:text-3xl">Discover Collaborators</span>
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" className="opacity-90">
             <path d="M7 8l5 5 5-5" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-        </div>
+        </button>
 
         {/* Red margin note removed; moved to top-right */}
       </div>

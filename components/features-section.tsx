@@ -110,9 +110,9 @@ export default function FeaturesSection({ user, isAuthLoading }: FeaturesSection
           <h2 className="display uppercase tracking-[0.25em] text-8xl md:text-[11rem] leading-none font-bold text-center mb-4 text-red-500">
             DON'T DO IT ALONE
           </h2>
-          <p className="text-zinc-300 mb-2">Your Creative Journey Was Meant To Be Collaborative</p>
+          <p className="text-red-400 mb-2">Your Creative Journey Was Meant To Be Collaborative</p>
           <p>
-            <a href={(!isAuthLoading && user) ? "/dashboard" : "/login"} className="text-zinc-400 underline underline-offset-4 hover:text-zinc-300">
+            <a href={(!isAuthLoading && user) ? "/dashboard" : "/login"} className="text-red-400 underline underline-offset-4 hover:text-red-300">
               Welcome Home
             </a>
           </p>
@@ -152,6 +152,12 @@ export default function FeaturesSection({ user, isAuthLoading }: FeaturesSection
                       {feature.description}
                     </p>
                   </div>
+                  {/* Shine sweep */}
+                  <motion.div
+                    className="pointer-events-none absolute -left-20 top-0 h-full w-16 rotate-12 bg-gradient-to-r from-transparent via-white/15 to-transparent"
+                    animate={{ x: ["-20%", "140%"] }}
+                    transition={{ duration: 2.2, repeat: Infinity, repeatDelay: 5, ease: "easeInOut" }}
+                  />
                 </div>
               </div>
             </motion.div>

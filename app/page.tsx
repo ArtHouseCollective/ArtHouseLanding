@@ -14,6 +14,7 @@ import HeroSection from "@/components/hero-section"
 import FeaturesSection from "@/components/features-section"
 import CTASection from "@/components/cta-section"
 import ScreenplaySection from "@/components/screenplay-section"
+import StoryViewer from "@/components/story-viewer"
 import { onAuthStateChanged } from "firebase/auth"
 import { auth, isFirebaseConfigured } from "@/lib/firebase-client"
 
@@ -164,13 +165,16 @@ export default function Page() {
     // Section 2: Screenplay-inspired page
     <ScreenplaySection key="script" />,
 
-    // Section 3: Founder's Circle
+    // Section 3: Comic Story Viewer
+    <StoryViewer key="story" />,
+
+    // Section 4: Founder's Circle
     <FounderCircleCarousel key="founders" />,
     
-    // Section 4: Features
+    // Section 5: Features
     <FeaturesSection key="features" user={user} isAuthLoading={isAuthLoading} />,
     
-    // Section 5: CTA
+    // Section 6: CTA
     <CTASection 
       key="cta" 
       user={user} 

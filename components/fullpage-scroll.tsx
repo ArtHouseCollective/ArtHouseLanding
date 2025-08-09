@@ -14,18 +14,24 @@ export default function FullpageScroll({ sections, className = "" }: FullpageScr
   const [scrollDirection, setScrollDirection] = useState<'up' | 'down'>('down')
   const containerRef = useRef<HTMLDivElement>(null)
   const touchStartY = useRef(0)
+  const [isMobile, setIsMobile] = useState(false)
 
-  // Prevent default scroll behavior
+  // Detect mobile and toggle body scroll only on desktop
   useEffect(() => {
-    const preventDefault = (e: Event) => e.preventDefault()
-    
-    // Disable scroll on body
-    document.body.style.overflow = 'hidden'
-    
-    return () => {
-      document.body.style.overflow = 'unset'
-    }
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
   }, [])
+
+  useEffect(() => {
+    if (isMobile) {
+      document.body.style.overflow = 'unset'
+    } else {
+      document.body.style.overflow = 'hidden'
+    }
+    return () => { document.body.style.overflow = 'unset' }
+  }, [isMobile])
 
   const navigateToSection = (sectionIndex: number) => {
     if (sectionIndex < 0 || sectionIndex >= sections.length || isScrolling) {
@@ -37,46 +43,58 @@ export default function FullpageScroll({ sections, className = "" }: FullpageScr
     setIsScrolling(true)
     setCurrentSection(sectionIndex)
     
-    // Reset scrolling flag after animation
-    setTimeout(() => setIsScrolling(false), 1000)
+    // Reset scrolling flag after animation (reduced from 1000ms for better responsiveness)
+    setTimeout(() => setIsScrolling(false), 600)
   }
 
   // Handle wheel events (desktop)
   useEffect(() => {
     let wheelTimeout: NodeJS.Timeout | null = null
+    let deltaAccumulator = 0
+    const threshold = 100 // Minimum delta to trigger scroll
     
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault()
       
-      if (isScrolling || wheelTimeout) return
+      if (isScrolling) return
       
-      // Debounce wheel events to prevent double-scrolling
+      // Accumulate delta to prevent tiny scroll movements from triggering
+      deltaAccumulator += Math.abs(e.deltaY)
+      
+      // Clear previous timeout
+      if (wheelTimeout) {
+        clearTimeout(wheelTimeout)
+      }
+      
+      // Set new timeout - only execute after scrolling stops
       wheelTimeout = setTimeout(() => {
+        if (deltaAccumulator >= threshold) {
+          const direction = e.deltaY > 0 ? 1 : -1
+          navigateToSection(currentSection + direction)
+        }
+        deltaAccumulator = 0
         wheelTimeout = null
-      }, 50)
-      
-      const direction = e.deltaY > 0 ? 1 : -1
-      navigateToSection(currentSection + direction)
+      }, 150) // Increased debounce time
     }
 
     const container = containerRef.current
-    if (container) {
+    if (container && !isMobile) {
       container.addEventListener('wheel', handleWheel, { passive: false })
       return () => {
         container.removeEventListener('wheel', handleWheel)
         if (wheelTimeout) clearTimeout(wheelTimeout)
       }
     }
-  }, [currentSection, isScrolling, navigateToSection])
+  }, [currentSection, isScrolling, navigateToSection, isMobile])
 
-  // Handle touch events (mobile)
+  // Handle touch events (mobile gesture navigation when fullpage enabled)
   useEffect(() => {
     const handleTouchStart = (e: TouchEvent) => {
       touchStartY.current = e.touches[0].clientY
     }
 
     const handleTouchEnd = (e: TouchEvent) => {
-      if (isScrolling) return
+      if (isScrolling || isMobile) return
       
       const touchEndY = e.changedTouches[0].clientY
       const diff = touchStartY.current - touchEndY
@@ -89,7 +107,7 @@ export default function FullpageScroll({ sections, className = "" }: FullpageScr
     }
 
     const container = containerRef.current
-    if (container) {
+    if (container && !isMobile) {
       container.addEventListener('touchstart', handleTouchStart)
       container.addEventListener('touchend', handleTouchEnd)
       return () => {
@@ -97,7 +115,7 @@ export default function FullpageScroll({ sections, className = "" }: FullpageScr
         container.removeEventListener('touchend', handleTouchEnd)
       }
     }
-  }, [currentSection, isScrolling])
+  }, [currentSection, isScrolling, isMobile])
 
   // Handle keyboard navigation
   useEffect(() => {
@@ -155,6 +173,17 @@ export default function FullpageScroll({ sections, className = "" }: FullpageScr
     }
   }
 
+  // Mobile: simple stacked sections with native scroll
+  if (isMobile) {
+    return (
+      <div className={`relative w-full ${className}`}>
+        {sections.map((Section, idx) => (
+          <div key={idx} className="min-h-screen">{Section}</div>
+        ))}
+      </div>
+    )
+  }
+
   return (
     <div 
       ref={containerRef}
@@ -170,7 +199,7 @@ export default function FullpageScroll({ sections, className = "" }: FullpageScr
           transition={{
             type: "tween",
             ease: [0.25, 0.1, 0.25, 1],
-            duration: 0.8
+            duration: 0.6
           }}
           className="absolute inset-0 w-full h-full"
         >
@@ -203,7 +232,7 @@ export default function FullpageScroll({ sections, className = "" }: FullpageScr
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 2, duration: 1 }}
         >
-          <div className="flex flex-col items-center text-white/80">
+          <div className="flex flex-col items-center text-white/80 cursor-pointer select-none" onClick={() => navigateToSection(currentSection + 1)} role="button" aria-label="Start">
             <span className="mb-2 text-3xl md:text-4xl tracking-widest display" style={{
               fontFamily: 'var(--font-hand)',
               letterSpacing: '0.15em',

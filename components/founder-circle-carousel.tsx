@@ -96,8 +96,11 @@ export default function FounderCircleCarousel() {
   }, [targetCount])
 
   // Split creators into two rows
-  const creatorsRow1 = creators.filter((_, i) => i % 2 === 0)
-  const creatorsRow2 = creators.filter((_, i) => i % 2 !== 0)
+  // Ensure enough cards per row by repeating data if needed
+  const baseRow1 = creators.filter((_, i) => i % 2 === 0)
+  const baseRow2 = creators.filter((_, i) => i % 2 !== 0)
+  const creatorsRow1 = baseRow1.length < 8 ? [...baseRow1, ...baseRow1] : baseRow1
+  const creatorsRow2 = baseRow2.length < 8 ? [...baseRow2, ...baseRow2] : baseRow2
 
   // Creative phrases for background animation
   const creativeWords = [
@@ -261,7 +264,7 @@ export default function FounderCircleCarousel() {
               animate={{ x: ["0%", "-33.333%"] }}
               transition={{ 
                 repeat: Infinity, 
-                duration: 120, 
+                duration: 40, 
                 ease: "linear",
                 repeatType: "loop"
               }}
@@ -279,7 +282,7 @@ export default function FounderCircleCarousel() {
               animate={{ x: ["-33.333%", "0%"] }}
               transition={{ 
                 repeat: Infinity, 
-                duration: 120, 
+                duration: 40, 
                 ease: "linear",
                 repeatType: "loop"
               }}
@@ -332,9 +335,9 @@ export default function FounderCircleCarousel() {
 // Creator Card Component
 function CreatorCard({ creator }: { creator: any }) {
   return (
-    <div className="relative w-64 flex-shrink-0 overflow-hidden transition-all duration-500 hover:scale-[1.01] group bg-zinc-900/40 border border-zinc-800/50 hover:border-red-600/70">
+    <div className="relative w-56 md:w-64 flex-shrink-0 overflow-hidden transition-all duration-500 hover:scale-[1.01] group bg-zinc-900/40 border border-zinc-800/50 hover:border-red-600/70">
       {/* Reel Autoplay or Image */}
-      <div className="relative w-full h-72 overflow-hidden">
+      <div className="relative w-full h-64 md:h-72 overflow-hidden">
         {creator.video ? (
           <video
             src={creator.video}
